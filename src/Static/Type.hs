@@ -1,24 +1,26 @@
 module Static.Type
   ( Type(..)
-  , TVar
-  , TEVar
+  , TVar(..)
+  , TEVar(..)
   , isMono
+  , tyFreeTEVars
   )
 where
 
+import           Data.Set                      as S
 
 -- | A, B, C
-newtype TVar = MkTVar String deriving (Eq, Show)
+newtype TVar = MkTVar String deriving (Eq, Show, Ord)
 
 -- | Existential types. alpha, beta. 
-newtype TEVar = MkTEVar String deriving (Eq, Show)
+newtype TEVar = MkTEVar String deriving (Eq, Show, Ord)
 
 data Type
   = TUnit
   | TVar TVar
   | TEVar TEVar
   | TArr Type Type
-  | TAll TEVar Type
+  | TAll TVar Type
   deriving(Eq, Show)
 
 -- | Monotypes: tau, sigma.
@@ -28,3 +30,11 @@ isMono (TVar  _ ) = True
 isMono (TEVar _ ) = True
 isMono (TArr a b) = isMono a && isMono b
 isMono _          = False
+
+
+tyFreeTEVars :: Type -> Set TEVar
+tyFreeTEVars TUnit        = S.empty
+tyFreeTEVars (TVar  _   ) = S.empty
+tyFreeTEVars (TEVar evar) = S.singleton evar
+tyFreeTEVars (TArr a b  ) = tyFreeTEVars a <> tyFreeTEVars b
+tyFreeTEVars (TAll _ ty ) = tyFreeTEVars ty

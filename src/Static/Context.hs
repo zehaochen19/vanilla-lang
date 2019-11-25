@@ -25,18 +25,22 @@ newtype Context = Context (S.Seq CtxMember)
 ctxElem :: CtxMember -> Context -> Bool
 ctxElem c (Context gamma) = c `elem` gamma
 
-ctxHole :: Context -> CtxMember -> Maybe (Context, Context)
-ctxHole (Context gamma) c = if c `elem` gamma
+ctxHole :: CtxMember -> Context -> Maybe (Context, Context)
+ctxHole c (Context gamma) = if c `elem` gamma
   then Just (Context a, Context $ S.drop 1 b)
   else Nothing
   where (a, b) = (== c) `S.breakl` gamma
 
 ctxHole2
-  :: Context -> CtxMember -> CtxMember -> Maybe (Context, Context, Context)
-ctxHole2 ctx c1 c2 = do
-  (a, ctx') <- ctxHole ctx c1
-  (b, c   ) <- ctxHole ctx' c2
+  :: CtxMember -> CtxMember -> Context -> Maybe (Context, Context, Context)
+ctxHole2 c1 c2 ctx = do
+  (a, ctx') <- ctxHole c1 ctx
+  (b, c   ) <- ctxHole c2 ctx'
   return (a, b, c)
+
+
+ctxUntil :: CtxMember -> Context -> Context
+ctxUntil c (Context gamma) = Context $ S.takeWhileL (/= c) gamma
 
 
 -- | Find the solution of alpha hat in the context

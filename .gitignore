@@ -2,3 +2,4 @@
 SystemF.cabal
 *~
 .ghci
+.ghcid
