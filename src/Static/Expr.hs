@@ -1,4 +1,8 @@
-module Static.Expr where
+module Static.Expr
+  ( EVar
+  , Expr(..)
+  )
+where
 
 
 import           Static.Type                    ( Type )

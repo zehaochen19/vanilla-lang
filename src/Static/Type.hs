@@ -1,5 +1,7 @@
 module Static.Type
   ( Type(..)
+  , TVar
+  , TEVar
   , isMono
   )
 where
