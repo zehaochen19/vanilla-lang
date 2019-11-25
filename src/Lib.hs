@@ -1,7 +1,4 @@
-module Lib
-  ( someFunc
-  )
-where
+module Lib where
 
 import           Static.Type
 import           Static.Expr
