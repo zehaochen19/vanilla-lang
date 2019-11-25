@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Static.Context where
 
 import qualified Data.Sequence                 as S
@@ -16,7 +17,7 @@ data CtxMember
   | CMarker TEVar
   deriving (Eq, Show)
 
-newtype Context = Context (S.Seq CtxMember)
+newtype Context = Context (S.Seq CtxMember) deriving(Eq, Show, Semigroup, Monoid)
 
 
 (|>) :: Context -> CtxMember -> Context
