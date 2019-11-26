@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
@@ -28,6 +29,9 @@ initCheckState :: CheckState
 initCheckState = CheckState freshVarStream
 
 
+type TypeCheck r = Members '[Error String, State CheckState] r
+
+
 freshTEVar :: Member (State CheckState) r => Sem r TEVar
 freshTEVar = do
   vars <- gets freshTypeVars
@@ -45,12 +49,7 @@ tySubstitue alpha ty1 ty2 = case ty2 of
     if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
 
 
-subtype
-  :: Members '[Error String, State CheckState] r
-  => Context
-  -> Type
-  -> Type
-  -> Sem r Context
+subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var
 subtype ctx (TVar a) (TVar a') | a == a' = pure ctx
 -- <:Unit
@@ -81,26 +80,38 @@ subtype _ a b =
 
 
 
-instantiateL
-  :: Members '[Error String, State CheckState] r
-  => Context
-  -> TEVar
-  -> Type
-  -> Sem r Context
+instantiateL :: TypeCheck r => Context -> TEVar -> Type -> Sem r Context
 -- InstLSolve
 instantiateL ctx ea ty
-  |
--- TODO: add type wellformedness in premise
-    isMono ty, Just (gamma, gamma') <- ctxHole (CEVar ea) ctx
+  | isMono ty
+  , Just (gamma, gamma') <- ctxHole (CEVar ea) ctx
+  , typeWellForm gamma ty
   = pure $ gamma |> CSolve ea ty <> gamma'
 -- InstLReach
-instantiateL ctx ea (TEVar eb) = undefined
+instantiateL ctx ea (TEVar eb)
+  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx
+  = pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
+-- InstLArr
+instantiateL ctx ea (TArr a1 a2) | Just (l, r) <- ctxHole (CEVar ea) ctx = do
+  ea1   <- freshTEVar
+  ea2   <- freshTEVar
+  theta <- instantiateR
+    (  l
+    |> CEVar ea2
+    |> CEVar ea1
+    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+    <> r
+    )
+    a1
+    ea1
+  instantiateL theta ea2 (applyCtx theta a2)
+-- InstLAllR
+instantiateL ctx ea (TAll beta b) =
+  ctxUntil (CVar beta) <$> instantiateL (ctx |> CVar beta) ea b
+instantiateL ctx ea ty =
+  throw $ "cannot instantiate " ++ show ea ++ " with " ++ show ty
 
 
-instantiateR
-  :: Members '[Error String, State CheckState] r
-  => Context
-  -> Type
-  -> TEVar
-  -> Sem r Context
+
+instantiateR :: TypeCheck r => Context -> Type -> TEVar -> Sem r Context
 instantiateR = undefined
