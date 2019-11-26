@@ -7,14 +7,14 @@ module Static.TypeCheck where
 import           Polysemy
 import           Polysemy.Error
 import           Polysemy.State
-import           Static.Type                    ( Type(..)
+import           Syntax.Type                    ( Type(..)
                                                 , TVar
                                                 , TEVar(..)
                                                 , tyFreeTEVars
                                                 , isMono
                                                 )
-import           Static.Expr                    ( Expr(..) )
-import           Static.Context
+import           Syntax.Expr                    ( Expr(..) )
+import           Syntax.Context
 import           Static.WellForm
 import           Utils                          ( freshVarStream )
 

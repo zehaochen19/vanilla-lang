@@ -1,8 +1,8 @@
 module Static.WellForm where
 
 
-import           Static.Type
-import           Static.Context
+import           Syntax.Type
+import           Syntax.Context
 import           Data.Maybe                     ( isJust )
 
 

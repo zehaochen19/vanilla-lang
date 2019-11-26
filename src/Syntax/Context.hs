@@ -1,12 +1,12 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module Static.Context where
+module Syntax.Context where
 
 import qualified Data.Sequence                 as S
-import           Static.Type                    ( Type(..)
+import           Syntax.Type                    ( Type(..)
                                                 , TVar
                                                 , TEVar
                                                 )
-import           Static.Expr                    ( EVar )
+import           Syntax.Expr                    ( EVar )
 import           Data.Maybe                     ( maybe )
 
 data CtxMember

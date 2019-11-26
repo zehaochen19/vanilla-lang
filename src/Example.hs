@@ -2,8 +2,8 @@
 
 module Example where
 
-import           Static.Expr                    ( Expr(..) )
-import           Static.Type                    ( Type(..) )
+import           Syntax.Expr                    ( Expr(..) )
+import           Syntax.Type                    ( Type(..) )
 
 
 

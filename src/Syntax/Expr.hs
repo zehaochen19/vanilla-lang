@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Static.Expr
+module Syntax.Expr
   ( EVar(..)
   , Expr(..)
   , evar
@@ -8,7 +8,7 @@ module Static.Expr
 where
 
 
-import           Static.Type                    ( Type )
+import           Syntax.Type                    ( Type )
 import           Data.String                    ( IsString )
 
 newtype EVar = MkEVar String deriving(Eq, Show, Ord, IsString)
