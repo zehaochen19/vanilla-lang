@@ -162,11 +162,19 @@ synthesize ctx (ELam x e)                            = do
 synthesize ctx (EApp e1 e2) = do
   (a, theta) <- synthesize ctx e1
   apply theta (applyCtx theta a) e2
+synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
 
 
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
-check = undefined
+
+-- 1I
+check ctx EUnit TUnit = pure ctx
+-- Sub
+check ctx e     b     = do
+  (a, theta) <- synthesize ctx e
+  subtype theta (applyCtx theta a) (applyCtx theta b)
+
 
 
 apply :: TypeCheck r => Context -> Type -> Expr -> Sem r (Type, Context)

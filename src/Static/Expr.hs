@@ -15,3 +15,4 @@ data Expr
   | ELam EVar Expr
   | EApp Expr Expr
   | EAnno Expr Type
+  deriving (Eq, Show)

@@ -28,20 +28,25 @@ ctxElem c (Context gamma) = c `elem` gamma
 
 ctxHole :: CtxMember -> Context -> Maybe (Context, Context)
 ctxHole c (Context gamma) = if c `elem` gamma
-  then Just (Context a, Context $ S.drop 1 b)
+  then Just (dropR $ Context l, Context r)
   else Nothing
-  where (a, b) = (== c) `S.breakl` gamma
+  where (r, l) = (== c) `S.breakr` gamma
 
 ctxHole2
   :: CtxMember -> CtxMember -> Context -> Maybe (Context, Context, Context)
 ctxHole2 c1 c2 ctx = do
-  (a, ctx') <- ctxHole c1 ctx
-  (b, c   ) <- ctxHole c2 ctx'
+  (ctx', c) <- ctxHole c2 ctx
+  (a   , b) <- ctxHole c1 ctx'
   return (a, b, c)
 
 
+dropR :: Context -> Context
+dropR (Context gamma) = case S.viewr gamma of
+  S.EmptyR      -> Context S.empty
+  gamma' S.:> _ -> Context gamma'
+
 ctxUntil :: CtxMember -> Context -> Context
-ctxUntil c (Context gamma) = Context $ S.takeWhileL (/= c) gamma
+ctxUntil c (Context gamma) = dropR . Context $ S.dropWhileR (/= c) gamma
 
 
 -- | Find the solution of alpha hat in the context
