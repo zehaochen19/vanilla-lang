@@ -2,43 +2,38 @@
 
 module Example where
 
-import           Syntax.Expr                    ( Expr(..) )
-import           Syntax.Type                    ( Type(..) )
-
-
+import           Syntax.Expr
+import           Syntax.Type
 
 
 id' :: Expr
-id' = EAnno (ELam "x" (EVar "x")) (TAll "A" (TArr (TVar "A") (TVar "A")))
+id' = ELam "x" (EVar "x") -: TAll "A" (TVar "A" --> TVar "A")
 
-id'' = EAnno (ELam "y" (EVar "y")) (TAll "B" (TArr (TVar "B") (TVar "B")))
+id'' = ELam "y" (EVar "y") -: TAll "B" (TArr (TVar "B") (TVar "B"))
 
 idUnit :: Expr
-idUnit = EApp id' EUnit
+idUnit = id' $$ EUnit
 
 idUnit' :: Expr
-idUnit' = EApp (ELam "x" (EVar "x")) EUnit
+idUnit' = ELam "x" (EVar "x") $$ EUnit
 
 idId :: Expr
 idId = EApp id' id''
 
 idIdAnno :: Expr
-idIdAnno = EAnno idId (TAll "C" (TArr (TVar "C") (TVar "C")))
+idIdAnno = idId -: TAll "C" (TVar "C" --> TVar "C")
 
 
 nestedId :: Expr
-nestedId = EAnno
-  (ELam "f" (ELam "x" (EApp (EVar "f") (EVar "x"))))
-  (TAll
-    "A"
-    (TArr (TAll "A" (TArr (TVar "A") (TVar "A"))) (TArr (TVar "A") (TVar "A")))
-  )
+nestedId = ELam "f" (ELam "x" (EVar "f" $$ EVar "x"))
+  -: TAll "B" (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B"))
+
 
 nestedIdUnit :: Expr
-nestedIdUnit = EApp (EApp nestedId id') EUnit
+nestedIdUnit = nestedId $$ id' $$ EUnit
 
 nestedIdId :: Expr
-nestedIdId = EApp (EApp nestedId id') id'
+nestedIdId = nestedId $$ id' $$ id'
 
 nestedIdIdUnit :: Expr
-nestedIdIdUnit = EApp (EApp (EApp nestedId id') id') EUnit
+nestedIdIdUnit = nestedId $$ id' $$ id'' $$ EUnit

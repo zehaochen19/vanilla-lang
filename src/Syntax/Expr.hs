@@ -4,6 +4,8 @@ module Syntax.Expr
   ( EVar(..)
   , Expr(..)
   , evar
+  , ($$)
+  , (-:)
   )
 where
 
@@ -24,3 +26,13 @@ data Expr
   | EApp Expr Expr
   | EAnno Expr Type
   deriving (Eq, Show)
+
+
+infixl 1 $$
+($$) :: Expr -> Expr -> Expr
+($$) = EApp
+
+
+infixl 2 -:
+(-:) :: Expr -> Type -> Expr
+(-:) = EAnno

@@ -7,6 +7,7 @@ module Syntax.Type
   , isMono
   , tyFreeTEVars
   , tvar
+  , (-->)
   )
 where
 
@@ -29,6 +30,12 @@ data Type
   | TArr Type Type
   | TAll TVar Type
   deriving(Eq, Show)
+
+
+infixr 1 -->
+(-->) :: Type -> Type -> Type
+(-->) = TArr
+
 
 -- | Monotypes: tau, sigma.
 isMono :: Type -> Bool
