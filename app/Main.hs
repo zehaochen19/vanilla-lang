@@ -1,6 +1,10 @@
 module Main where
 
-import           Lib
+
+import           Example
+import           Static.TypeCheck               ( typecheck )
 
 main :: IO ()
-main = someFunc
+main = do
+  print $ typecheck id'
+  print $ typecheck idUnit

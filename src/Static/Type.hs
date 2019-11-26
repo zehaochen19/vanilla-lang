@@ -1,19 +1,26 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Static.Type
   ( Type(..)
   , TVar(..)
   , TEVar(..)
   , isMono
   , tyFreeTEVars
+  , tvar
   )
 where
 
 import           Data.Set                      as S
+import           Data.String                    ( IsString )
 
 -- | A, B, C
-newtype TVar = MkTVar String deriving (Eq, Show, Ord)
+newtype TVar = MkTVar String deriving (Eq, Show, Ord, IsString)
+
+tvar :: String -> TVar
+tvar = MkTVar
 
 -- | Existential types. alpha, beta. 
-newtype TEVar = MkTEVar String deriving (Eq, Show, Ord)
+newtype TEVar = MkTEVar String deriving (Eq, Show, Ord, IsString)
 
 data Type
   = TUnit

@@ -5,7 +5,13 @@ I can only implement a System F.
 
 ## (Planned) Features
 
-- [ ] Higher-rank
-- [ ] Type inference polymorphism
+- [x] Static semantic
+- [x] Higher-rank polymorphism
+- [x] Type inference
+- [ ] Dynamic semantic
 - [ ] Parser
-- [ ] Extended basic types
+- [ ] Extended basic types (Int, Boolean, ...)
+
+## References
+
+TODO

@@ -46,6 +46,7 @@ tySubstitue alpha ty1 ty2 = case ty2 of
   TEVar _      -> ty2
   TAll beta a ->
     if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
+  TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
 
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
@@ -138,10 +139,12 @@ instantiateR ctx (TArr a1 a2) ea | Just (l, r) <- ctxHole (CEVar ea) ctx = do
     a1
   instantiateR theta (applyCtx theta a2) ea2
 -- InstRAllL
-instantiate ctx (TAll beta b) ea = do
+instantiateR ctx (TAll beta b) ea = do
   eb <- freshTEVar
   let ctx' = ctx |> CMarker eb |> CEVar eb
   ctxUntil (CMarker eb) <$> instantiateR ctx' (tySubstitue beta (TEVar eb) b) ea
+instantiateR ctx ty eb =
+  throw $ "cannot instantiate " ++ show ty ++ " with " ++ show eb
 
 
 synthesize :: TypeCheck r => Context -> Expr -> Sem r (Type, Context)
@@ -167,7 +170,6 @@ synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
 
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
-
 -- 1I
 check ctx EUnit TUnit = pure ctx
 -- ForallI
@@ -206,3 +208,12 @@ apply ctx (TEVar ea) e | Just (l, r) <- ctxHole (CEVar ea) ctx = do
 apply ctx (TArr a c) e = do
   delta <- check ctx e a
   return (c, delta)
+apply ctx e1 e2 =
+  throw $ "cannot infer type after applying " ++ show e1 ++ " with " ++ show e2
+
+
+typecheck :: Expr -> Either String (Type, Context)
+typecheck expr = do
+  (ty, ctx) <- run . runError . evalState initCheckState $ synthesize mempty
+                                                                      expr
+  return (applyCtx ctx ty, ctx)
