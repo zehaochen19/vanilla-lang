@@ -76,7 +76,7 @@ subtype ctx (TEVar alphaHat) a | alphaHat `notElem` tyFreeTEVars a =
 subtype ctx a (TEVar alphaHat) | alphaHat `notElem` tyFreeTEVars a =
   instantiateR ctx a alphaHat
 subtype _ a b =
-  throw $ "cannot establish subtyping with " ++ show a ++ " " ++ show b
+  throw $ "cannot establish subtyping with " ++ show a ++ " <: " ++ show b
 
 
 
@@ -112,6 +112,34 @@ instantiateL ctx ea ty =
   throw $ "cannot instantiate " ++ show ea ++ " with " ++ show ty
 
 
-
+-- | Under input context gamma, instantiate ea such that A <: ea, with output context delta
 instantiateR :: TypeCheck r => Context -> Type -> TEVar -> Sem r Context
-instantiateR = undefined
+-- InstRSolve
+instantiateR ctx ty ea
+  | isMono ty
+  , Just (gamma, gamma') <- ctxHole (CEVar ea) ctx
+  , typeWellForm gamma ty
+  = pure $ gamma |> CSolve ea ty <> gamma'
+-- InstRReach
+instantiateR ctx (TEVar eb) ea
+  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx
+  = pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
+-- InstRArr
+instantiateR ctx (TArr a1 a2) ea | Just (l, r) <- ctxHole (CEVar ea) ctx = do
+  ea1   <- freshTEVar
+  ea2   <- freshTEVar
+  theta <- instantiateL
+    (  l
+    |> CEVar ea2
+    |> CEVar ea1
+    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+    <> r
+    )
+    ea1
+    a1
+  instantiateR theta (applyCtx theta a2) ea2
+-- InstRAllL
+instantiate ctx (TAll beta b) ea = do
+  eb <- freshTEVar
+  let ctx' = ctx |> CMarker eb |> CEVar eb
+  ctxUntil (CMarker eb) <$> instantiateR ctx' (tySubstitue beta (TEVar eb) b) ea

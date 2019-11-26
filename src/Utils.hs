@@ -1,6 +1,5 @@
 module Utils where
 
-import           Control.Monad                  ( replicateM )
 
 freshVarStream :: [String]
 freshVarStream = do
