@@ -1,3 +1,5 @@
 .stack-work/
 SystemF.cabal
 *~
+.ghci
+.ghcid
