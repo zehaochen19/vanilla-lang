@@ -10,6 +10,7 @@ main = do
   print $ typecheck idId
   print $ typecheck idIdAnno
   print $ typecheck idUnit
+  print $ typecheck idUnit'
   print $ typecheck nestedId
   print $ typecheck nestedIdUnit
   print $ typecheck nestedIdId

@@ -9,16 +9,21 @@ import           Static.Type                    ( Type(..) )
 
 
 id' :: Expr
-id' = EAnno (ELam "x" (EVar "x")) (TAll "B" (TArr (TVar "B") (TVar "B")))
+id' = EAnno (ELam "x" (EVar "x")) (TAll "A" (TArr (TVar "A") (TVar "A")))
+
+id'' = EAnno (ELam "y" (EVar "y")) (TAll "B" (TArr (TVar "B") (TVar "B")))
 
 idUnit :: Expr
 idUnit = EApp id' EUnit
 
+idUnit' :: Expr
+idUnit' = EApp (ELam "x" (EVar "x")) EUnit
+
 idId :: Expr
-idId = EApp id' id'
+idId = EApp id' id''
 
 idIdAnno :: Expr
-idIdAnno = EAnno idId (TAll "A" (TArr (TVar "A") (TVar "A")))
+idIdAnno = EAnno idId (TAll "C" (TArr (TVar "C") (TVar "C")))
 
 
 nestedId :: Expr
