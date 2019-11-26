@@ -184,4 +184,25 @@ check ctx e b = do
 
 
 apply :: TypeCheck r => Context -> Type -> Expr -> Sem r (Type, Context)
-apply = undefined
+-- ForallApp
+apply ctx (TAll alpha a) e = do
+  ea <- freshTEVar
+  apply (ctx |> CEVar ea) (tySubstitue alpha (TEVar ea) a) e
+-- eaApp
+apply ctx (TEVar ea) e | Just (l, r) <- ctxHole (CEVar ea) ctx = do
+  ea1   <- freshTEVar
+  ea2   <- freshTEVar
+  delta <- check
+    (  l
+    |> CEVar ea2
+    |> CEVar ea1
+    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+    <> r
+    )
+    e
+    (TEVar ea1)
+  return (TEVar ea2, delta)
+-- -->App
+apply ctx (TArr a c) e = do
+  delta <- check ctx e a
+  return (c, delta)
