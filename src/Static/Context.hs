@@ -11,7 +11,7 @@ import           Data.Maybe                     ( maybe )
 
 data CtxMember
   = CVar TVar
-  | CAsump EVar Type
+  | CAssump EVar Type
   | CEVar TEVar
   | CSolve TEVar Type
   | CMarker TEVar
@@ -51,6 +51,14 @@ ctxSolve (Context gamma) alpha = loop gamma
   loop S.Empty        = Nothing
   loop (_ S.:|> CSolve alpha' ty) | alpha == alpha' = Just ty
   loop (ctx' S.:|> _) = loop ctx'
+
+
+ctxAssump :: Context -> EVar -> Maybe Type
+ctxAssump (Context gamma) x = loop gamma
+ where
+  loop S.Empty                           = Nothing
+  loop (_ S.:|> CAssump x' ty) | x == x' = Just ty
+  loop (ctx' S.:|> _)                    = loop ctx'
 
 
 

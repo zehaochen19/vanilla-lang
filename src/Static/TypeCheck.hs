@@ -13,9 +13,9 @@ import           Static.Type                    ( Type(..)
                                                 , tyFreeTEVars
                                                 , isMono
                                                 )
+import           Static.Expr                    ( Expr(..) )
 import           Static.Context
 import           Static.WellForm
-
 import           Utils                          ( freshVarStream )
 
 -- | Apply bidirectional typechecking
@@ -27,7 +27,6 @@ newtype CheckState = CheckState {
 
 initCheckState :: CheckState
 initCheckState = CheckState freshVarStream
-
 
 type TypeCheck r = Members '[Error String, State CheckState] r
 
@@ -143,3 +142,32 @@ instantiate ctx (TAll beta b) ea = do
   eb <- freshTEVar
   let ctx' = ctx |> CMarker eb |> CEVar eb
   ctxUntil (CMarker eb) <$> instantiateR ctx' (tySubstitue beta (TEVar eb) b) ea
+
+
+synthesize :: TypeCheck r => Context -> Expr -> Sem r (Type, Context)
+-- Var
+synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
+-- Anno
+synthesize ctx (EAnno e ty) | typeWellForm ctx ty    = (,) ty <$> check ctx e ty
+--1I ==>
+synthesize ctx EUnit                                 = pure (TUnit, ctx)
+-- -->I==>
+synthesize ctx (ELam x e)                            = do
+  ea <- freshTEVar
+  eb <- freshTEVar
+  let ctx' = ctx |> CEVar ea |> CEVar eb |> CAssump x (TEVar ea)
+  delta <- ctxUntil (CAssump x (TEVar ea)) <$> check ctx' e (TEVar eb)
+  return (TArr (TEVar ea) (TEVar eb), delta)
+-- -->E
+synthesize ctx (EApp e1 e2) = do
+  (a, theta) <- synthesize ctx e1
+  apply theta (applyCtx theta a) e2
+
+
+
+check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
+check = undefined
+
+
+apply :: TypeCheck r => Context -> Type -> Expr -> Sem r (Type, Context)
+apply = undefined
