@@ -35,7 +35,7 @@ freshTEVar :: Member (State CheckState) r => Sem r TEVar
 freshTEVar = do
   vars <- gets freshTypeVars
   put $ CheckState (tail vars)
-  return $ MkTEVar . head $ vars
+  return $ MkTEVar . ("'" ++) . head $ vars
 
 
 -- | [ty1/alpha]ty2
