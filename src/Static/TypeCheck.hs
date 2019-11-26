@@ -170,8 +170,14 @@ check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
 
 -- 1I
 check ctx EUnit TUnit = pure ctx
+-- ForallI
+check ctx e (TAll alpha a) =
+  ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
+-- -->I
+check ctx (ELam x e) (TArr a b) =
+  ctxUntil (CAssump x a) <$> check (ctx |> CAssump x a) e b
 -- Sub
-check ctx e     b     = do
+check ctx e b = do
   (a, theta) <- synthesize ctx e
   subtype theta (applyCtx theta a) (applyCtx theta b)
 
