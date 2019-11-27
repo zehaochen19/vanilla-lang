@@ -32,7 +32,7 @@ data Type
   deriving(Eq, Show)
 
 
-infixr 1 -->
+infixr 2 -->
 (-->) :: Type -> Type -> Type
 (-->) = TArr
 
