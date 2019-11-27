@@ -8,6 +8,8 @@ module Syntax.Type
   , tyFreeTEVars
   , tvar
   , (-->)
+  , isTArr
+  , isTAll
   )
 where
 
@@ -52,3 +54,12 @@ tyFreeTEVars (TVar  _   ) = S.empty
 tyFreeTEVars (TEVar evar) = S.singleton evar
 tyFreeTEVars (TArr a b  ) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TAll _ ty ) = tyFreeTEVars ty
+
+
+isTArr :: Type -> Bool
+isTArr (TArr _ _) = True
+isTArr _          = False
+
+isTAll :: Type -> Bool
+isTAll (TAll _ _) = True
+isTAll _          = False

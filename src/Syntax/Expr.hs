@@ -6,6 +6,7 @@ module Syntax.Expr
   , evar
   , ($$)
   , (-:)
+  , isELam
   )
 where
 
@@ -28,6 +29,9 @@ data Expr
   | ELet EVar Expr Expr
   deriving (Eq, Show)
 
+isELam :: Expr -> Bool
+isELam (ELam _ _) = True
+isELam _          = False
 
 infixl 2 $$
 ($$) :: Expr -> Expr -> Expr

@@ -1,2 +1,8 @@
+import           Test.Hspec
+import           TypeCheckSpec
+import           EvalSpec
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = hspec $ do
+  typecheckSpec
+  evalSpec
