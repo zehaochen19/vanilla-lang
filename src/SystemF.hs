@@ -18,6 +18,9 @@ module SystemF
   , letNestedIdId
   , letNestedIdUnit
   , illtypedLetNestedUnit
+  , unitId
+  , letNestIdUnitId
+  , illtypedLetNestedIdUnitIdId
   )
 where
 
@@ -78,3 +81,21 @@ letNestedIdUnit = ELet "myNestedId" nestedId
 illtypedLetNestedUnit :: Expr
 illtypedLetNestedUnit =
   ELet "nestedId" nestedId (EVar "nestedId" $$ EUnit $$ EUnit)
+
+
+unitId = ELam "x" (EVar "x") -: TArr TUnit TUnit
+
+letNestIdUnitId =
+  ELet "nestedId" nestedId
+    $  ELet "unitId" unitId
+    $  EVar "nestedId"
+    $$ EVar "unitId"
+    $$ EUnit
+
+
+illtypedLetNestedIdUnitIdId =
+  ELet "nestedId" nestedId
+    $  ELet "unitId" unitId
+    $  EVar "nestedId"
+    $$ EVar "unitId"
+    $$ id'
