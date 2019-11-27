@@ -30,3 +30,6 @@ main = do
   putStrLn "nestedIdIdUnit"
   print $ typecheck nestedIdIdUnit
   print $ eval nestedIdIdUnit
+  putStrLn "letIdUnit"
+  print $ typecheck letIdUnit
+  print $ eval letIdUnit

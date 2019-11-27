@@ -14,6 +14,7 @@ module SystemF
   , nestedIdId'
   , nestedIdUnit
   , nestedIdIdUnit
+  , letIdUnit
   )
 where
 
@@ -60,3 +61,6 @@ nestedIdId' = (nestedId $$ id' $$ id') -: TAll "A" (TVar "A" --> TVar "A")
 
 nestedIdIdUnit :: Expr
 nestedIdIdUnit = nestedId $$ id' $$ id'' $$ EUnit
+
+letIdUnit :: Expr
+letIdUnit = ELet "myid" id' (EVar "myid" $$ EUnit)
