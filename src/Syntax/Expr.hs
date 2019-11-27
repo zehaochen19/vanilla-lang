@@ -28,11 +28,11 @@ data Expr
   deriving (Eq, Show)
 
 
-infixl 1 $$
+infixl 2 $$
 ($$) :: Expr -> Expr -> Expr
 ($$) = EApp
 
 
-infixl 2 -:
+infixl 1 -:
 (-:) :: Expr -> Type -> Expr
 (-:) = EAnno

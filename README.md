@@ -3,13 +3,16 @@
 Brilliant PL people implement their own dependently typed languages.
 I can only implement a System F.
 
+For simplicity, this programming language only supports type checking and evaluation on closed terms.
+
 ## (Planned) Features
 
 - [x] Static semantic
 - [x] Higher-rank polymorphism
-- [x] Type inference
-- [ ] Dynamic semantic
+- [x] Bidirectional type inference
+- [x] Dynamic semantic
 - [ ] Parser
+- [ ] Extended grammar (if, let, ...)
 - [ ] Extended basic types (Int, Boolean, ...)
 
 ## References

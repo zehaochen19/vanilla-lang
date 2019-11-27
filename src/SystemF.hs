@@ -1,9 +1,30 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Example where
+module SystemF
+  ( step
+  , eval
+  , typecheck
+  , id'
+  , id''
+  , idIdAnno
+  , idUnit
+  , idUnit'
+  , nestedId
+  , nestedIdId
+  , nestedIdId'
+  , nestedIdUnit
+  , nestedIdIdUnit
+  )
+where
+
+
 
 import           Syntax.Expr
 import           Syntax.Type
+import           Dynamic.Step                   ( step
+                                                , eval
+                                                )
+import           Static.TypeCheck               ( typecheck )
 
 
 id' :: Expr
@@ -28,12 +49,14 @@ nestedId :: Expr
 nestedId = ELam "f" (ELam "x" (EVar "f" $$ EVar "x"))
   -: TAll "B" (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B"))
 
+nestedIdId :: Expr
+nestedIdId = nestedId $$ id' -: TAll "A" (TVar "A" --> TVar "A")
 
 nestedIdUnit :: Expr
 nestedIdUnit = nestedId $$ id' $$ EUnit
 
-nestedIdId :: Expr
-nestedIdId = nestedId $$ id' $$ id'
+nestedIdId' :: Expr
+nestedIdId' = (nestedId $$ id' $$ id') -: TAll "A" (TVar "A" --> TVar "A")
 
 nestedIdIdUnit :: Expr
 nestedIdIdUnit = nestedId $$ id' $$ id'' $$ EUnit
