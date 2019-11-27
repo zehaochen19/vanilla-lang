@@ -33,3 +33,12 @@ main = do
   putStrLn "letIdUnit"
   print $ typecheck letIdUnit
   print $ eval letIdUnit
+  putStrLn "letNestedIdId"
+  print $ typecheck letNestedIdId
+  print $ eval letNestedIdId
+  putStrLn "letNestedIdUnit"
+  print $ typecheck letNestedIdUnit
+  print $ eval letNestedIdUnit
+  putStrLn "mistypedLetNestedUnit"
+  print $ typecheck illtypedLetNestedUnit
+  print $ eval illtypedLetNestedUnit
