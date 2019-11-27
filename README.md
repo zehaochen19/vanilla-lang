@@ -11,9 +11,12 @@ For simplicity, this programming language only supports type checking and evalua
 - [x] Higher-rank polymorphism
 - [x] Bidirectional type inference
 - [x] Dynamic semantic
+- [ ] Examples
 - [ ] Parser
-- [ ] Extended grammar (if, let, ...)
+- [x] Let Binding (not verified)
+- [ ] If-Else clause
 - [ ] Extended basic types (Int, Boolean, ...)
+- [ ] Unit tests
 
 ## References
 

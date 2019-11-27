@@ -25,6 +25,7 @@ data Expr
   | ELam EVar Expr
   | EApp Expr Expr
   | EAnno Expr Type
+  | ELet EVar Expr Expr
   deriving (Eq, Show)
 
 
