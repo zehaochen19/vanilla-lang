@@ -42,3 +42,6 @@ main = do
   putStrLn "mistypedLetNestedUnit"
   print $ typecheck illtypedLetNestedUnit
   print $ eval illtypedLetNestedUnit
+  putStrLn "lambdaIdIdUnit"
+  print $ typecheck lambdaIdIdUnit
+  print $ eval lambdaIdIdUnit
