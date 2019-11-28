@@ -21,6 +21,7 @@ module SystemF
   , unitId
   , letNestIdUnitId
   , illtypedLetNestedIdUnitIdId
+  , lambdaIdIdUnit
   )
 where
 
@@ -99,3 +100,5 @@ illtypedLetNestedIdUnitIdId =
     $  EVar "nestedId"
     $$ EVar "unitId"
     $$ id'
+
+lambdaIdIdUnit = ELam "f" (ELam "x" $ EVar "f" $$ EVar "x") $$ id' $$ EUnit
