@@ -6,6 +6,7 @@ module Syntax.Type
   , TEVar(..)
   , isMono
   , tyFreeTEVars
+  , tyFreeTVars
   , tvar
   , (-->)
   , isTArr
@@ -54,6 +55,14 @@ tyFreeTEVars (TVar  _   ) = S.empty
 tyFreeTEVars (TEVar evar) = S.singleton evar
 tyFreeTEVars (TArr a b  ) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TAll _ ty ) = tyFreeTEVars ty
+
+tyFreeTVars :: Type -> Set TVar
+tyFreeTVars TUnit       = S.empty
+tyFreeTVars (TVar  a  ) = S.singleton a
+tyFreeTVars (TEVar _  ) = S.empty
+tyFreeTVars (TArr a b ) = tyFreeTVars a <> tyFreeTVars b
+tyFreeTVars (TAll a ty) = S.delete a $ tyFreeTVars ty
+
 
 
 isTArr :: Type -> Bool

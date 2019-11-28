@@ -11,6 +11,7 @@ import           Syntax.Type                    ( Type(..)
                                                 , TVar
                                                 , TEVar(..)
                                                 , tyFreeTEVars
+                                                , tyFreeTVars
                                                 , isMono
                                                 )
 import           Syntax.Expr                    ( Expr(..) )
@@ -40,13 +41,15 @@ freshTEVar = do
 
 -- | [ty1/alpha]ty2
 tySubstitue :: TVar -> Type -> Type -> Type
-tySubstitue alpha ty1 ty2 = case ty2 of
-  TUnit        -> TUnit
-  TVar  alpha' -> if alpha == alpha' then ty1 else ty2
-  TEVar _      -> ty2
-  TAll beta a ->
-    if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
-  TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+tySubstitue alpha ty1 ty2 = if not . null $ tyFreeTVars ty1
+  then error $ "Non-closed type: " ++ show ty1
+  else case ty2 of
+    TUnit        -> TUnit
+    TVar  alpha' -> if alpha == alpha' then ty1 else ty2
+    TEVar _      -> ty2
+    TAll beta a ->
+      if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
+    TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
 
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
