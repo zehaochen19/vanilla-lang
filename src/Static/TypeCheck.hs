@@ -170,10 +170,12 @@ synthesize ctx (EApp e1 e2) = do
   apply theta (applyCtx theta a) e2
 -- Let==>
 synthesize ctx (ELet x e1 e2) = do
-  (a, theta) <- synthesize ctx e1
+  eb <- freshTEVar
+  let ctx' = ctx |> CEVar eb
+  (a, theta) <- synthesize ctx' e1
   let a' = applyCtx theta a
-  (b, delta) <- synthesize (theta |> CAssump x a') e2
-  return (applyCtx delta b, ctxUntil (CAssump x a') delta)
+  delta <- check (theta |> CAssump x a') e2 (TEVar eb)
+  return (TEVar eb, ctxUntil (CAssump x a') delta)
 synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
 
