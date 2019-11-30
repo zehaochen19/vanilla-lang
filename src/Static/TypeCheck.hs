@@ -171,7 +171,9 @@ synthesize ctx (EApp e1 e2) = do
 -- Let==>
 synthesize ctx (ELet x e1 e2) = do
   (a, theta) <- synthesize ctx e1
-  synthesize (ctx |> CAssump x (applyCtx theta a)) e2
+  let a' = applyCtx theta a
+  (b, delta) <- synthesize (ctx |> CAssump x a') e2
+  return (applyCtx delta b, ctxUntil (CAssump x a') delta)
 synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
 
@@ -188,7 +190,8 @@ check ctx (ELam x e) (TArr a b) =
 -- Let
 check ctx (ELet x e1 e2) b = do
   (a, theta) <- synthesize ctx e1
-  check (theta |> CAssump x (applyCtx theta a)) e2 b
+  let a' = applyCtx theta a
+  ctxUntil (CAssump x a') <$> check (theta |> CAssump x a') e2 b
 -- Sub
 check ctx e b = do
   (a, theta) <- synthesize ctx e
