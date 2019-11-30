@@ -4,21 +4,20 @@
 
 module SystemF where
 
-import           Syntax.Type
-import           Syntax.Expr
-import           Syntax.Context                 ( applyCtx )
-import           Static.TypeCheck
-import           Dynamic.Step                   ( eval )
-import           Polysemy
-import           Polysemy.Error
-import           Polysemy.State
-
+import Dynamic.Step (eval)
+import Polysemy
+import Polysemy.Error
+import Polysemy.State
+import Static.TypeCheck
+import Syntax.Context (applyCtx)
+import Syntax.Expr
+import Syntax.Type
 
 -- | Given an expression, first typecheck it and then evaluate it
 interpret :: Member (Error String) r => Expr -> Sem r (Expr, Type)
 interpret expr = do
   (ty, ctx) <-
-    evalState initCheckState
-    $       synthesize mempty expr
-    `catch` (\e -> throw $ "Typecheck error:\n" ++ e)
+    evalState initCheckState $
+      synthesize mempty expr
+        `catch` (\e -> throw $ "Typecheck error:\n" ++ e)
   return (eval expr, applyCtx ctx ty)

@@ -1,12 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module EvalSpec where
 
-import           Test.Hspec
-import           Dynamic.Step                   ( eval )
-import           Syntax.Expr
-import           SystemF.Program
-
-
+import Dynamic.Step (eval)
+import Syntax.Expr
+import SystemF.Program
+import Test.Hspec
 
 evalSpec = describe "eval" $ do
   it "evals id'" $ do

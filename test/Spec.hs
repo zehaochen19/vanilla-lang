@@ -1,6 +1,6 @@
-import           Test.Hspec
-import           TypeCheckSpec
-import           EvalSpec
+import EvalSpec
+import Test.Hspec
+import TypeCheckSpec
 
 main :: IO ()
 main = hspec $ do

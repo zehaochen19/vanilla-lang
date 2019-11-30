@@ -1,8 +1,6 @@
 module Main where
 
-
-import           SystemF.Program
-
+import SystemF.Program
 
 main :: IO ()
 main = do

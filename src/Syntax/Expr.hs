@@ -1,21 +1,19 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Syntax.Expr
-  ( EVar(..)
-  , Expr(..)
-  , evar
-  , ($$)
-  , (-:)
-  , isELam
+  ( EVar (..),
+    Expr (..),
+    evar,
+    ($$),
+    (-:),
+    isELam,
   )
 where
 
+import Data.String (IsString)
+import Syntax.Type (Type)
 
-import           Syntax.Type                    ( Type )
-import           Data.String                    ( IsString )
-
-newtype EVar = MkEVar String deriving(Eq, Show, Ord, IsString)
-
+newtype EVar = MkEVar String deriving (Eq, Show, Ord, IsString)
 
 evar :: String -> EVar
 evar = MkEVar
@@ -31,13 +29,14 @@ data Expr
 
 isELam :: Expr -> Bool
 isELam (ELam _ _) = True
-isELam _          = False
+isELam _ = False
 
 infixl 2 $$
+
 ($$) :: Expr -> Expr -> Expr
 ($$) = EApp
 
-
 infixl 1 -:
+
 (-:) :: Expr -> Type -> Expr
 (-:) = EAnno
