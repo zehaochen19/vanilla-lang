@@ -67,4 +67,7 @@ typecheckSpec = describe "typeckeck" $ do
       in  ty `shouldBe` TAll "A" (TVar "A" --> TVar "A") --> TUnit
   it "checks applyToUnitId"
     $ let Right (ty, _) = typecheck applyToUnitId in ty `shouldBe` TUnit
+  it "checks cont" $ typecheck cont `shouldSatisfy` isRight
+  it "checks runCont" $ typecheck runCont `shouldSatisfy` isRight
+
 
