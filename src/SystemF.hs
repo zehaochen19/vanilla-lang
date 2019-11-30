@@ -120,5 +120,6 @@ cont = ELam "a" (ELam "callback" (EVar "callback" $$ EVar "a"))
   -: TAll "A" (TVar "A" --> TAll "R" ((TVar "A" --> TVar "R") --> TVar "R"))
 
 runCont :: Expr
-runCont = ELam "f" (EVar "f" $$ ELam "x" (EVar "x"))
-  -: TAll "A" (TAll "R" ((TVar "A" --> TVar "R") --> TVar "R") --> TVar "A")
+runCont =
+  ELam "f" (ELet "callback" (ELam "x" (EVar "x")) (EVar "f" $$ EVar "callback"))
+    -: TAll "A" (TAll "R" ((TVar "A" --> TVar "R") --> TVar "R") --> TVar "A")
