@@ -4,7 +4,7 @@ module TypeCheckSpec where
 import           Test.Hspec
 import           Static.TypeCheck               ( typecheck )
 import           Syntax.Type
-import           SystemF
+import           SystemF.Program
 import           Data.Either                    ( isLeft
                                                 , isRight
                                                 )

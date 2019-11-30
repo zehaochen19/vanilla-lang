@@ -4,7 +4,7 @@ module EvalSpec where
 import           Test.Hspec
 import           Dynamic.Step                   ( eval )
 import           Syntax.Expr
-import           SystemF
+import           SystemF.Program
 
 
 
