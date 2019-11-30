@@ -172,7 +172,7 @@ synthesize ctx (EApp e1 e2) = do
 synthesize ctx (ELet x e1 e2) = do
   (a, theta) <- synthesize ctx e1
   let a' = applyCtx theta a
-  (b, delta) <- synthesize (ctx |> CAssump x a') e2
+  (b, delta) <- synthesize (theta |> CAssump x a') e2
   return (applyCtx delta b, ctxUntil (CAssump x a') delta)
 synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
