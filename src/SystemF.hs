@@ -22,6 +22,8 @@ module SystemF
   , letNestIdUnitId
   , illtypedLetNestedIdUnitIdId
   , lambdaIdIdUnit
+  , applyToUnit
+  , applyToUnitId
   )
 where
 
@@ -102,3 +104,9 @@ illtypedLetNestedIdUnitIdId =
     $$ id'
 
 lambdaIdIdUnit = ELam "f" (ELam "x" $ EVar "f" $$ EVar "x") $$ id' $$ EUnit
+
+
+applyToUnit =
+  ELam "f" (EVar "f" $$ EUnit) -: TAll "A" (TVar "A" --> TVar "A") --> TUnit
+
+applyToUnitId = applyToUnit $$ id'

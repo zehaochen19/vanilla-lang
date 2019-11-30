@@ -62,4 +62,9 @@ typecheckSpec = describe "typeckeck" $ do
   it "rejects illtypedLetNestedIdUnitIdId"
     $               typecheck illtypedLetNestedIdUnitIdId
     `shouldSatisfy` isLeft
+  it "checks applyToUnit"
+    $ let Right (ty, _) = typecheck applyToUnit
+      in  ty `shouldBe` TAll "A" (TVar "A" --> TVar "A") --> TUnit
+  it "checks applyToUnitId"
+    $ let Right (ty, _) = typecheck applyToUnitId in ty `shouldBe` TUnit
 

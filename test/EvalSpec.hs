@@ -36,3 +36,4 @@ evalSpec = describe "eval" $ do
   it "evals letIdUnit" $ eval letIdUnit `shouldBe` EUnit
   it "evals letNestedIdUnit" $ eval letNestedIdUnit `shouldBe` EUnit
   it "evals letNestIdUnitId" $ eval letNestIdUnitId `shouldBe` EUnit
+  it "checks applyToUnitId" $ eval applyToUnitId `shouldBe` EUnit
