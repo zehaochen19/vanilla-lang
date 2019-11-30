@@ -1,7 +1,7 @@
 module Main where
 
 
-import           SystemF
+import           SystemF.Program
 
 
 main :: IO ()
