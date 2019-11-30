@@ -69,5 +69,8 @@ typecheckSpec = describe "typeckeck" $ do
     $ let Right (ty, _) = typecheck applyToUnitId in ty `shouldBe` TUnit
   it "checks cont" $ typecheck cont `shouldSatisfy` isRight
   it "checks runCont" $ typecheck runCont `shouldSatisfy` isRight
+  it "infers polyLet" $ do
+    let Right (ty, _) = typecheck polyLet
+    ty `shouldBe` TUnit
 
 

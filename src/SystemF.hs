@@ -26,6 +26,7 @@ module SystemF
   , applyToUnitId
   , cont
   , runCont
+  , polyLet
   )
 where
 
@@ -123,3 +124,11 @@ runCont :: Expr
 runCont =
   ELam "f" (ELet "callback" (ELam "x" (EVar "x")) (EVar "f" $$ EVar "callback"))
     -: TAll "A" (TAll "R" ((TVar "A" --> TVar "R") --> TVar "R") --> TVar "A")
+
+-- polymorphic let
+polyLet =
+  ELet "id" id'
+    $  ELet "myId"   (EVar "id" $$ id')
+    $  ELet "myUnit" (EVar "id" $$ EUnit)
+    $  EVar "myId"
+    $$ EVar "myUnit"
