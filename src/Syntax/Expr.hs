@@ -21,6 +21,10 @@ evar = MkEVar
 data Expr
   = EVar EVar
   | EUnit
+  | ETrue
+  | EFalse
+  | EZero
+  | ESucc Expr
   | ELam EVar Expr
   | EApp Expr Expr
   | EAnno Expr Type

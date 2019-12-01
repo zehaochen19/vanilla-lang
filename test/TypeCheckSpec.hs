@@ -74,3 +74,6 @@ typecheckSpec = describe "typeckeck" $ do
   it "infers polyLet" $ do
     let Right (ty, _) = typecheck polyLet
     ty `shouldBe` TUnit
+  it "infers polyLetNat" $ do
+    let Right (ty, _) = typecheck polyLetNat
+    ty `shouldBe` TNat

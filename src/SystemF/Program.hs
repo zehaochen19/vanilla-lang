@@ -27,6 +27,7 @@ module SystemF.Program
     cont,
     runCont,
     polyLet,
+    polyLetNat,
   )
 where
 
@@ -126,5 +127,10 @@ polyLet =
   ELet "id" id'
     $ ELet "myId" (EVar "id" $$ id')
     $ ELet "myUnit" (EVar "id" $$ EUnit)
-    $ EVar "myId"
-      $$ EVar "myUnit"
+    $ EVar "myId" $$ EVar "myUnit"
+
+polyLetNat =
+  ELet "id" id'
+    $ ELet "myId" (EVar "id" $$ id'')
+    $ ELet "my0" (EVar "id" $$ EZero)
+    $ ESucc (EVar "myId" $$ EVar "my0")

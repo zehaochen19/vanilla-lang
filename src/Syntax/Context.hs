@@ -70,6 +70,8 @@ applyCtx :: Context -> Type -> Type
 applyCtx gamma ty = case ty of
   TVar _ -> ty
   TUnit -> TUnit
+  TBool -> TBool
+  TNat -> TNat
   TEVar alpha -> maybe ty (applyCtx gamma) $ ctxSolve gamma alpha
   TArr a b -> TArr (applyCtx gamma a) (applyCtx gamma b)
   TAll alpha a -> TAll alpha $ applyCtx gamma a
