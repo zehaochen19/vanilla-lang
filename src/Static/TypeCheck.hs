@@ -45,6 +45,7 @@ tySubstitue alpha ty1 ty2 =
     then error $ "Non-closed type: " ++ show ty1
     else case ty2 of
       TUnit -> TUnit
+      TBool -> TBool
       TVar alpha' -> if alpha == alpha' then ty1 else ty2
       TEVar _ -> ty2
       TAll beta a ->
@@ -56,6 +57,8 @@ subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 subtype ctx (TVar a) (TVar a') | a == a' = pure ctx
 -- <:Unit
 subtype ctx TUnit TUnit = pure ctx
+-- <:Bool
+subtype ctx TBool TBool = pure ctx
 -- <:ExVar
 subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
 -- <:-->
@@ -156,6 +159,10 @@ synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
 synthesize ctx (EAnno e ty) | typeWellForm ctx ty = (,) ty <$> check ctx e ty
 --1I ==>
 synthesize ctx EUnit = pure (TUnit, ctx)
+-- True ==>
+synthesize ctx ETrue = pure (TBool, ctx)
+-- False ==>
+synthesize ctx EFalse = pure (TBool, ctx)
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -180,6 +187,10 @@ synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
 -- 1I
 check ctx EUnit TUnit = pure ctx
+-- TrueI
+check ctx ETrue TBool = pure ctx
+-- FalseI
+check ctx EFalse TBool = pure ctx
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
