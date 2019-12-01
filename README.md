@@ -14,7 +14,14 @@ For simplicity, this programming language only supports type checking and evalua
 - [x] Examples
 - [x] Unit tests
 - [x] Let Binding (not verified)
-- [ ] Extended basic types (Nat, Boolean, List, ...)
+- [ ] Extended basic types
+
+      - [x] Bool
+      - [x] Nat
+      - [ ] Product
+      - [ ] Sum
+      - [ ] List
+
 - [ ] If-Else clause
 - [ ] Parser
 - [ ] Top-level definitions
