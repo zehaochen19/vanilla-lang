@@ -14,12 +14,13 @@ For simplicity, this programming language only supports type checking and evalua
 - [x] Examples
 - [x] Unit tests
 - [x] Let Binding (not verified)
+- [ ] Extended basic types (Nat, Boolean, List, ...)
+- [ ] If-Else clause
 - [ ] Parser
+- [ ] Top-level definitions
 
 Maybe in future
 
-- [ ] Extended basic types (Nat, Boolean, List, ...)
-- [ ] If-Else clause
 - [ ] Fixpoint for recursive functions
 - [ ] GADT
 - [ ] Existential types
