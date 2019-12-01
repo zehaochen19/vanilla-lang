@@ -15,22 +15,15 @@ For simplicity, this programming language only supports type checking and evalua
 - [x] Unit tests
 - [x] Let Binding (not verified)
 - [ ] Extended basic types
-
-      - [x] Bool
-      - [x] Nat
-      - [ ] Product
-      - [ ] Sum
-      - [ ] List
-
+  - [x] Bool
+  - [x] Nat
+  - [ ] Product
+  - [ ] Sum
+  - [ ] List
 - [ ] If-Else clause
 - [ ] Parser
 - [ ] Top-level definitions
-
-Maybe in future
-
 - [ ] Fixpoint for recursive functions
-- [ ] GADT
-- [ ] Existential types
 
 ## References
 
