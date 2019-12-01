@@ -6,6 +6,8 @@ value :: Expr -> Bool
 value EUnit = True
 value ETrue = True
 value EFalse = True
+value EZero = True
+value (ESucc n) = value n
 value (ELam _ _) = True
 value _ = False
 
@@ -16,6 +18,8 @@ substitute x e1 e2 = case e2 of
   EUnit -> EUnit
   ETrue -> ETrue
   EFalse -> EFalse
+  EZero -> EZero
+  ESucc n -> ESucc $ substitute x e1 n
   abs@(ELam y e2') -> if x == y then abs else ELam y $ substitute x e1 e2'
   EApp e21 e22 -> EApp (substitute x e1 e21) (substitute x e1 e22)
   EAnno e2' _ -> substitute x e1 e2'
@@ -30,6 +34,8 @@ step expr = case expr of
   EUnit -> EUnit
   ETrue -> ETrue
   EFalse -> EFalse
+  EZero -> EZero
+  ESucc n -> ESucc $ step n
   abs@(ELam _ _) -> abs
   EApp e1 e2 | not $ value e1 -> EApp (step e1) e2
   EApp e1 e2 | not $ value e2 -> EApp e1 (step e2)

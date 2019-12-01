@@ -23,6 +23,8 @@ data Expr
   | EUnit
   | ETrue
   | EFalse
+  | EZero
+  | ESucc Expr
   | ELam EVar Expr
   | EApp Expr Expr
   | EAnno Expr Type

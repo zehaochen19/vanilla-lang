@@ -29,6 +29,7 @@ newtype TEVar = MkTEVar String deriving (Eq, Show, Ord, IsString)
 data Type
   = TUnit
   | TBool
+  | TNat
   | TVar TVar
   | TEVar TEVar
   | TArr Type Type
@@ -44,6 +45,7 @@ infixr 2 -->
 isMono :: Type -> Bool
 isMono TUnit = True
 isMono TBool = True
+isMono TNat = True
 isMono (TVar _) = True
 isMono (TEVar _) = True
 isMono (TArr a b) = isMono a && isMono b
@@ -52,6 +54,7 @@ isMono _ = False
 tyFreeTEVars :: Type -> Set TEVar
 tyFreeTEVars TUnit = S.empty
 tyFreeTEVars TBool = S.empty
+tyFreeTEVars TNat = S.empty
 tyFreeTEVars (TVar _) = S.empty
 tyFreeTEVars (TEVar evar) = S.singleton evar
 tyFreeTEVars (TArr a b) = tyFreeTEVars a <> tyFreeTEVars b
@@ -60,6 +63,7 @@ tyFreeTEVars (TAll _ ty) = tyFreeTEVars ty
 tyFreeTVars :: Type -> Set TVar
 tyFreeTVars TUnit = S.empty
 tyFreeTVars TBool = S.empty
+tyFreeTVars TNat = S.empty
 tyFreeTVars (TVar a) = S.singleton a
 tyFreeTVars (TEVar _) = S.empty
 tyFreeTVars (TArr a b) = tyFreeTVars a <> tyFreeTVars b

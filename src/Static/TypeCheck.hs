@@ -46,6 +46,7 @@ tySubstitue alpha ty1 ty2 =
     else case ty2 of
       TUnit -> TUnit
       TBool -> TBool
+      TNat -> TNat
       TVar alpha' -> if alpha == alpha' then ty1 else ty2
       TEVar _ -> ty2
       TAll beta a ->
@@ -60,6 +61,8 @@ subtype ctx TUnit TUnit = pure ctx
 -- <:Bool
 subtype ctx TBool TBool = pure ctx
 -- <:ExVar
+-- <:Nat
+subtype ctx TNat TNat = pure ctx
 subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
 -- <:-->
 subtype ctx (TArr a1 a2) (TArr b1 b2) = do
@@ -157,12 +160,18 @@ synthesize :: TypeCheck r => Context -> Expr -> Sem r (Type, Context)
 synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
 -- Anno
 synthesize ctx (EAnno e ty) | typeWellForm ctx ty = (,) ty <$> check ctx e ty
---1I ==>
+-- 1I ==>
 synthesize ctx EUnit = pure (TUnit, ctx)
 -- True ==>
 synthesize ctx ETrue = pure (TBool, ctx)
 -- False ==>
 synthesize ctx EFalse = pure (TBool, ctx)
+-- ZeroI ==>
+synthesize ctx EZero = pure (TNat, ctx)
+-- Succ =>
+synthesize ctx (ESucc n) = do
+  θ <- check ctx n TNat
+  return (TNat, θ)
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -191,6 +200,10 @@ check ctx EUnit TUnit = pure ctx
 check ctx ETrue TBool = pure ctx
 -- FalseI
 check ctx EFalse TBool = pure ctx
+-- ZeroI
+check ctx EZero TNat = pure ctx
+-- Succ
+check ctx (ESucc n) TNat = check ctx n TNat
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
