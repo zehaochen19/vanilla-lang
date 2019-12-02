@@ -22,10 +22,7 @@ import Syntax.Type
 import Utils (freshVarStream)
 
 -- | Apply bidirectional typechecking
-newtype CheckState
-  = CheckState
-      { freshTypeVars :: [String]
-      }
+newtype CheckState = CheckState {freshTypeVars :: [String]}
 
 initCheckState :: CheckState
 initCheckState = CheckState freshVarStream
@@ -105,12 +102,7 @@ instantiateL ctx ea (TArr a1 a2) | Just (l, r) <- ctxHole (CEVar ea) ctx = do
   ea2 <- freshTEVar
   theta <-
     instantiateR
-      ( l
-          |> CEVar ea2
-          |> CEVar ea1
-          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-          <> r
-      )
+      (l |> CEVar ea2 |> CEVar ea1 |> CSolve ea (TArr (TEVar ea1) (TEVar ea2)) <> r)
       a1
       ea1
   instantiateL theta ea2 (applyCtx theta a2)
@@ -138,12 +130,7 @@ instantiateR ctx (TArr a1 a2) ea | Just (l, r) <- ctxHole (CEVar ea) ctx = do
   ea2 <- freshTEVar
   theta <-
     instantiateL
-      ( l
-          |> CEVar ea2
-          |> CEVar ea1
-          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-          <> r
-      )
+      (l |> CEVar ea2 |> CEVar ea1 |> CSolve ea (TArr (TEVar ea1) (TEVar ea2)) <> r)
       ea1
       a1
   instantiateR theta (applyCtx theta a2) ea2
@@ -231,12 +218,7 @@ apply ctx (TEVar ea) e | Just (l, r) <- ctxHole (CEVar ea) ctx = do
   ea2 <- freshTEVar
   delta <-
     check
-      ( l
-          |> CEVar ea2
-          |> CEVar ea1
-          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-          <> r
-      )
+      (l |> CEVar ea2 |> CEVar ea1 |> CSolve ea (TArr (TEVar ea1) (TEVar ea2)) <> r)
       e
       (TEVar ea1)
   return (TEVar ea2, delta)
@@ -250,8 +232,5 @@ apply ctx e1 e2 =
 typecheck :: Expr -> Either String (Type, Context)
 typecheck expr = do
   (ty, ctx) <-
-    run . runError . evalState initCheckState $
-      synthesize
-        mempty
-        expr
+    run . runError . evalState initCheckState $ synthesize mempty expr
   return (applyCtx ctx ty, ctx)
