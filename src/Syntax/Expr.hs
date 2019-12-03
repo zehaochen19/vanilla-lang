@@ -26,6 +26,7 @@ data Expr
   | EZero
   | ESucc Expr
   | ELam EVar Expr
+  | EALam EVar Type Expr
   | EApp Expr Expr
   | EAnno Expr Type
   | ELet EVar Expr Expr
@@ -33,6 +34,7 @@ data Expr
 
 isELam :: Expr -> Bool
 isELam (ELam _ _) = True
+isELam EALam {} = True
 isELam _ = False
 
 infixl 2 $$

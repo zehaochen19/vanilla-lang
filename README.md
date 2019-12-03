@@ -15,6 +15,7 @@ For simplicity, this programming language only supports type checking and evalua
 - [x] Unit tests
 - [x] Let Binding (not verified)
 - [ ] Extended basic types
+  - [ ] Annoted Lambda
   - [x] Bool
   - [x] Nat
   - [ ] Product

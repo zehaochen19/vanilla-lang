@@ -9,6 +9,7 @@ value EFalse = True
 value EZero = True
 value (ESucc n) = value n
 value (ELam _ _) = True
+value EALam {} = True
 value _ = False
 
 -- | [x := expr1] expr2 or [expr1/x]expr2
@@ -21,6 +22,7 @@ substitute x e1 e2 = case e2 of
   EZero -> EZero
   ESucc n -> ESucc $ substitute x e1 n
   abs@(ELam y e2') -> if x == y then abs else ELam y $ substitute x e1 e2'
+  abs@(EALam y ty e2') -> if x == y then abs else EALam y ty $ substitute x e1 e2'
   EApp e21 e22 -> EApp (substitute x e1 e21) (substitute x e1 e22)
   EAnno e2' _ -> substitute x e1 e2'
   ELet y e1' e2' ->
@@ -37,6 +39,7 @@ step expr = case expr of
   EZero -> EZero
   ESucc n -> ESucc $ step n
   abs@(ELam _ _) -> abs
+  abs@EALam {} -> abs
   EApp e1 e2 | not $ value e1 -> EApp (step e1) e2
   EApp e1 e2 | not $ value e2 -> EApp e1 (step e2)
   EApp (ELam x e1) e2 -> substitute x e2 e1

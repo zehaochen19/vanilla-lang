@@ -197,6 +197,12 @@ check ctx e (TAll alpha a) =
 -- -->I
 check ctx (ELam x e) (TArr a b) =
   ctxUntil (CAssump x a) <$> check (ctx |> CAssump x a) e b
+-- A-->I
+check ctx (EALam x ty e) (TArr a b) = do
+  theta <- subtype ctx a ty
+  let ty' = applyCtx theta ty
+  delta <- check (theta |> CAssump x ty') e (applyCtx theta b)
+  return $ ctxUntil (CAssump x ty') delta
 -- Let
 check ctx (ELet x e1 e2) b = do
   (a, theta) <- synthesize ctx e1
