@@ -11,11 +11,11 @@ For simplicity, this programming language only supports type checking and evalua
 - [x] Higher-rank polymorphism
 - [x] Type inference
 - [x] Dynamic semantic
+- [x] Both annoted and implicit λ
 - [x] Examples
 - [x] Unit tests
 - [x] Let Binding (not verified)
 - [ ] Extended basic types
-  - [ ] Annoted Lambda
   - [x] Bool
   - [x] Nat
   - [ ] Product
