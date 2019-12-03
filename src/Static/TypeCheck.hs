@@ -57,9 +57,9 @@ subtype ctx (TVar a) (TVar a') | a == a' = pure ctx
 subtype ctx TUnit TUnit = pure ctx
 -- <:Bool
 subtype ctx TBool TBool = pure ctx
--- <:ExVar
 -- <:Nat
 subtype ctx TNat TNat = pure ctx
+-- <:ExVar
 subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
 -- <:-->
 subtype ctx (TArr a1 a2) (TArr b1 b2) = do
@@ -166,6 +166,12 @@ synthesize ctx (ELam x e) = do
   let ctx' = ctx |> CEVar ea |> CEVar eb |> CAssump x (TEVar ea)
   delta <- ctxUntil (CAssump x (TEVar ea)) <$> check ctx' e (TEVar eb)
   return (TArr (TEVar ea) (TEVar eb), delta)
+-- A-->I==>
+synthesize ctx (EALam x ty e) = do
+  eb <- freshTEVar
+  let ctx' = ctx |> CEVar eb |> CAssump x ty
+  delta <- ctxUntil (CAssump x ty) <$> check ctx' e (TEVar eb)
+  return (TArr ty (TEVar eb), delta)
 -- -->E
 synthesize ctx (EApp e1 e2) = do
   (a, theta) <- synthesize ctx e1
