@@ -184,6 +184,15 @@ synthesize ctx (ELet x e1 e2) = do
   let a' = applyCtx theta a
   delta <- check (theta |> CAssump x a') e2 (TEVar eb)
   return (TEVar eb, ctxUntil (CAssump x a') delta)
+-- If==>
+synthesize ctx (EIf b e1 e2) = do
+  theta <- check ctx b TBool
+  (a, delta) <- synthesize theta e1
+  (b, sigma) <- synthesize delta e2
+  -- inferred types should be subtype to each other
+  psi <- subtype sigma a b
+  chi <- subtype psi b a
+  return (applyCtx chi a, chi)
 synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
