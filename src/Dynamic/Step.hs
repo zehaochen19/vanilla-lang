@@ -43,6 +43,7 @@ step expr = case expr of
   EApp e1 e2 | not $ value e1 -> EApp (step e1) e2
   EApp e1 e2 | not $ value e2 -> EApp e1 (step e2)
   EApp (ELam x e1) e2 -> substitute x e2 e1
+  EApp (EALam x _ e1) e2 -> substitute x e2 e1
   EAnno e _ -> e
   ELet x e1 e2 -> substitute x e1 e2
   e -> e
