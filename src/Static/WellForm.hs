@@ -1,7 +1,7 @@
 module Static.WellForm where
 
 import Data.Maybe (isJust)
-import Syntax.Context
+import Static.Context
 import Syntax.Type
 
 typeWellForm :: Context -> Type -> Bool

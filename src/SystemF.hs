@@ -8,8 +8,8 @@ import Dynamic.Step (eval)
 import Polysemy
 import Polysemy.Error
 import Polysemy.State
+import Static.Context (applyCtx)
 import Static.TypeCheck
-import Syntax.Context (applyCtx)
 import Syntax.Expr
 import Syntax.Type
 

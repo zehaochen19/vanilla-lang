@@ -8,8 +8,8 @@ module Static.TypeCheck where
 import Polysemy
 import Polysemy.Error
 import Polysemy.State
+import Static.Context
 import Static.WellForm
-import Syntax.Context
 import Syntax.Expr (Expr (..))
 import Syntax.Type
   ( TEVar (..),

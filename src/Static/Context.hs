@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Syntax.Context where
+module Static.Context where
 
 import Data.Maybe (maybe)
 import qualified Data.Sequence as S
