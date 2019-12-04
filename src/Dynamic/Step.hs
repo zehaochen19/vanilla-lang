@@ -23,6 +23,9 @@ substitute x e1 e2 =
         EFalse -> EFalse
         EZero -> EZero
         ESucc n -> ESucc $ loop n
+        ENatCase n e1' y e2' ->
+          ENatCase (loop n) (loop e1') y $
+            if x == y then e2' else loop e2'
         abs@(ELam y e2') -> if x == y then abs else ELam y $ loop e2'
         abs@(EALam y ty e2') -> if x == y then abs else EALam y ty $ loop e2'
         EApp e21 e22 -> EApp (loop e21) (loop e22)
@@ -41,6 +44,9 @@ step expr = case expr of
   EFalse -> EFalse
   EZero -> EZero
   ESucc n -> ESucc $ step n
+  ENatCase n e1 x e2 | not $ value n -> ENatCase (step n) e1 x e2
+  ENatCase EZero e1 _ _ -> e1
+  ENatCase (ESucc n') _ x e -> substitute x n' e
   abs@(ELam _ _) -> abs
   abs@EALam {} -> abs
   EApp e1 e2 | not $ value e1 -> EApp (step e1) e2
