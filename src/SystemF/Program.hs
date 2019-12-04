@@ -31,6 +31,9 @@ module SystemF.Program
     annotedIdSZero,
     ifElseIdNat,
     ifElseIdNatZero,
+    nonZero,
+    nonZeroZero,
+    nonZeroTwo,
   )
 where
 
@@ -150,3 +153,12 @@ ifElseIdNat =
 
 ifElseIdNatZero :: Expr
 ifElseIdNatZero = ifElseIdNat $$ EZero
+
+nonZero :: Expr
+nonZero =
+  EALam "n" TNat (ENatCase (EVar "n") ETrue "n'" EFalse)
+    -: (TNat --> TBool)
+
+nonZeroZero = nonZero $$ EZero
+
+nonZeroTwo = nonZero $$ ESucc (ESucc EZero)

@@ -94,3 +94,12 @@ typecheckSpec = describe "typeckeck" $ do
   it "infers ifElseIdNatZero" $ do
     ty <- isRightAndUnpackTy ifElseIdNatZero
     ty `shouldBe` TNat
+  it "checks nonZero" $ do
+    ty <- isRightAndUnpackTy nonZero
+    ty `shouldBe` (TNat --> TBool)
+  it "infers nonZeroZero" $ do
+    ty <- isRightAndUnpackTy nonZeroZero
+    ty `shouldBe` TBool
+  it "infers nonZeroTwo" $ do
+    ty <- isRightAndUnpackTy nonZeroTwo
+    ty `shouldBe` TBool

@@ -40,3 +40,5 @@ evalSpec = describe "eval" $ do
   it "evals annotedIdSZero" $ eval annotedIdSZero `shouldBe` ESucc EZero
   it "evals ifElseIdNat" $ eval ifElseIdNat `shouldSatisfy` isELam
   it "evals ifElseIdNatZero" $ eval ifElseIdNatZero `shouldBe` EZero
+  it "evals nonZeroZero" $ eval nonZeroZero `shouldBe` ETrue
+  it "evals nonZeroTwo" $ eval nonZeroTwo `shouldBe` EFalse
