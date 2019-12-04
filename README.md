@@ -22,9 +22,9 @@ For simplicity, this programming language only supports type checking and evalua
   - [ ] Sum
   - [ ] List
 - [x] If-Else clause
+- [x] Fixpoint for general recursion
 - [ ] Parser
 - [ ] Top-level definitions
-- [ ] Fixpoint for recursive functions
 
 ## References
 
