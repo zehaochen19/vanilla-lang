@@ -21,7 +21,7 @@ For simplicity, this programming language only supports type checking and evalua
   - [ ] Product
   - [ ] Sum
   - [ ] List
-- [ ] If-Else clause
+- [x] If-Else clause
 - [ ] Parser
 - [ ] Top-level definitions
 - [ ] Fixpoint for recursive functions
