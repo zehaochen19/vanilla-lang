@@ -6,6 +6,7 @@ import Dynamic.Step (eval)
 import Syntax.Expr
 import SystemF.Program
 import Test.Hspec
+import Utils (intToNat)
 
 evalSpec = describe "eval" $ do
   it "evals id'" $ do
@@ -42,3 +43,5 @@ evalSpec = describe "eval" $ do
   it "evals ifElseIdNatZero" $ eval ifElseIdNatZero `shouldBe` EZero
   it "evals nonZeroZero" $ eval nonZeroZero `shouldBe` ETrue
   it "evals nonZeroTwo" $ eval nonZeroTwo `shouldBe` EFalse
+  it "evals 0 + 2 = 2" $ eval (natAdd $$ EZero $$ intToNat 2) `shouldBe` intToNat 2
+  it "evals 4 + 6 = 10" $ eval (natAdd $$ intToNat 4 $$ intToNat 6) `shouldBe` intToNat 10

@@ -204,7 +204,7 @@ synthesize ctx (EIf b e1 e2) = do
   return (applyCtx chi a, chi)
 synthesize ctx (EFix e) = do
   (ty, theta) <- synthesize ctx e
-  case ty of
+  case applyCtx theta ty of
     TArr a b | a == b -> do
       delta <- subtype theta (applyCtx theta a) (applyCtx theta b)
       sigma <- subtype delta (applyCtx delta a) (applyCtx delta b)

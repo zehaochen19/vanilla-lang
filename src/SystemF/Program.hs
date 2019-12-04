@@ -1,47 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SystemF.Program
-  ( step,
-    eval,
-    typecheck,
-    id',
-    id'',
-    idIdAnno,
-    idUnit,
-    idUnit',
-    nestedId,
-    nestedIdId,
-    nestedIdId',
-    nestedIdUnit,
-    nestedIdIdUnit,
-    letIdUnit,
-    letNestedIdId,
-    letNestedIdUnit,
-    illtypedLetNestedUnit,
-    unitId,
-    letNestIdUnitId,
-    illtypedLetNestedIdUnitIdId,
-    lambdaIdIdUnit,
-    applyToUnit,
-    applyToUnitId,
-    cont,
-    runCont,
-    polyLet,
-    polyLetNat,
-    annotedIdSZero,
-    ifElseIdNat,
-    ifElseIdNatZero,
-    nonZero,
-    nonZeroZero,
-    nonZeroTwo,
-  )
-where
+module SystemF.Program where
 
-import Dynamic.Step
-  ( eval,
-    step,
-  )
-import Static.TypeCheck (typecheck)
 import Syntax.Expr
 import Syntax.Type
 
@@ -162,3 +122,21 @@ nonZero =
 nonZeroZero = nonZero $$ EZero
 
 nonZeroTwo = nonZero $$ ESucc (ESucc EZero)
+
+natAdd :: Expr
+natAdd =
+  EFix
+    ( ELam
+        "f"
+        ( EALam
+            "x"
+            TNat
+            ( EALam
+                "y"
+                TNat
+                (ENatCase (EVar "x") (EVar "y") "x'" (ESucc (EVar "f" $$ EVar "x'" $$ EVar "y")))
+            )
+        )
+    )
+
+natAddAnno = natAdd -: TNat --> TNat --> TNat

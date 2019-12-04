@@ -1,5 +1,7 @@
 module Main where
 
+import Dynamic.Step (eval)
+import Static.TypeCheck (typecheck)
 import SystemF.Program
 
 main :: IO ()
