@@ -214,6 +214,11 @@ check ctx (ELet x e1 e2) b = do
   (a, theta) <- synthesize ctx e1
   let a' = applyCtx theta a
   ctxUntil (CAssump x a') <$> check (theta |> CAssump x a') e2 b
+-- If
+check ctx (EIf b e1 e2) ty = do
+  theta <- check ctx b TBool
+  delta <- check theta e1 ty
+  check delta e2 ty
 -- Sub
 check ctx e b = do
   (a, theta) <- synthesize ctx e

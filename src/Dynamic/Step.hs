@@ -51,4 +51,5 @@ step expr = case expr of
   ELet x e1 e2 -> substitute x e1 e2
   EIf ETrue e _ -> e
   EIf EFalse _ e -> e
+  EIf b e1 e2 -> EIf (step b) e1 e2
   e -> e
