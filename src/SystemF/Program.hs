@@ -141,8 +141,8 @@ natAdd =
 
 natAddAnno = natAdd -: TNat --> TNat --> TNat
 
-pred :: Expr
-pred = EALam "n" TNat (ENatCase (EVar "n") EZero "n'" (EVar "n'")) -: TNat --> TNat
+natPred :: Expr
+natPred = EALam "n" TNat (ENatCase (EVar "n") EZero "n'" (EVar "n'")) -: TNat --> TNat
 
 natMinus :: Expr
 natMinus =
@@ -165,3 +165,21 @@ natMinus =
         )
     )
     -: TNat --> TNat --> TNat
+
+fibonacci :: Expr
+fibonacci =
+  EFix
+    ( ELam
+        "fib"
+        ( EALam
+            "n"
+            TNat
+            ( ENatCase
+                (EVar "n")
+                (ESucc EZero)
+                "n'"
+                (natAdd $$ (EVar "fib" $$ EVar "n'") $$ (EVar "fib" $$ (natPred $$ EVar "n'")))
+            )
+        )
+    )
+    -: TNat --> TNat

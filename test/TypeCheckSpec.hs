@@ -11,11 +11,11 @@ import Syntax.Type
 import SystemF.Program
 import Test.Hspec
 
-isRightAndUnpackTy e = do
+checksAndShouldBe e ty = do
   let res = typecheck e
   res `shouldSatisfy` isRight
-  let Right (ty, _) = res
-  return ty
+  let Right (ty', _) = res
+  ty `shouldBe` ty'
 
 typecheckSpec = describe "typeckeck" $ do
   it "infers id'" $ do
@@ -88,27 +88,22 @@ typecheckSpec = describe "typeckeck" $ do
     res `shouldSatisfy` isRight
     let Right (ty, _) = res
     ty `shouldBe` TNat
-  it "checks ifElseIdNat" $ do
-    ty <- isRightAndUnpackTy ifElseIdNat
-    ty `shouldBe` TNat --> TNat
-  it "infers ifElseIdNatZero" $ do
-    ty <- isRightAndUnpackTy ifElseIdNatZero
-    ty `shouldBe` TNat
-  it "checks nonZero" $ do
-    ty <- isRightAndUnpackTy nonZero
-    ty `shouldBe` TNat --> TBool
-  it "infers nonZeroZero" $ do
-    ty <- isRightAndUnpackTy nonZeroZero
-    ty `shouldBe` TBool
-  it "infers nonZeroTwo" $ do
-    ty <- isRightAndUnpackTy nonZeroTwo
-    ty `shouldBe` TBool
-  it "infers natAdd" $ do
-    ty <- isRightAndUnpackTy natAdd
-    ty `shouldBe` TNat --> TNat --> TNat
-  it "checks natAddAnno" $ do
-    ty <- isRightAndUnpackTy natAddAnno
-    ty `shouldBe` TNat --> TNat --> TNat
-  it "checks natMinus" $ do
-    ty <- isRightAndUnpackTy natMinus
-    ty `shouldBe` TNat --> TNat --> TNat
+  it "checks ifElseIdNat"
+    $ checksAndShouldBe ifElseIdNat
+    $ TNat --> TNat
+  it "infers ifElseIdNatZero" $ checksAndShouldBe ifElseIdNatZero TNat
+  it "checks nonZero"
+    $ checksAndShouldBe nonZero
+    $ TNat --> TBool
+  it "infers nonZeroZero" $ checksAndShouldBe nonZeroZero TBool
+  it "infers nonZeroTwo" $ checksAndShouldBe nonZeroTwo TBool
+  it "infers natAdd"
+    $ checksAndShouldBe natAdd
+    $ TNat --> TNat --> TNat
+  it "checks natAddAnno"
+    $ checksAndShouldBe natAddAnno
+    $ TNat --> TNat --> TNat
+  it "checks natMinus"
+    $ checksAndShouldBe natMinus
+    $ TNat --> TNat --> TNat
+  it "checks fibonacci" $ checksAndShouldBe fibonacci $ TNat --> TNat
