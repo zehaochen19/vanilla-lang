@@ -11,6 +11,12 @@ import Syntax.Type
 import SystemF.Program
 import Test.Hspec
 
+isRightAndUnpackTy e = do
+  let res = typecheck e
+  res `shouldSatisfy` isRight
+  let Right (ty, _) = res
+  return ty
+
 typecheckSpec = describe "typeckeck" $ do
   it "infers id'" $ do
     let id'Res = typecheck id'
@@ -81,4 +87,10 @@ typecheckSpec = describe "typeckeck" $ do
     let res = typecheck annotedIdSZero
     res `shouldSatisfy` isRight
     let Right (ty, _) = res
+    ty `shouldBe` TNat
+  it "checks ifElseIdNat" $ do
+    ty <- isRightAndUnpackTy ifElseIdNat
+    ty `shouldBe` TNat --> TNat
+  it "infers ifElseIdNatZero" $ do
+    ty <- isRightAndUnpackTy ifElseIdNatZero
     ty `shouldBe` TNat

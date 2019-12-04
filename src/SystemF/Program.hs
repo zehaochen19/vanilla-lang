@@ -29,6 +29,8 @@ module SystemF.Program
     polyLet,
     polyLetNat,
     annotedIdSZero,
+    ifElseIdNat,
+    ifElseIdNatZero,
   )
 where
 
@@ -140,3 +142,11 @@ annotedIdSZero :: Expr
 annotedIdSZero =
   EALam "f" (TNat --> TNat) (ESucc (EVar "f" $$ EZero))
     $$ ELam "x" (EVar "x") -: TNat
+
+ifElseIdNat :: Expr
+ifElseIdNat =
+  EIf ETrue (ELam "x" $ EVar "x") (EALam "x" TNat $ EVar "x")
+    -: TNat --> TNat
+
+ifElseIdNatZero :: Expr
+ifElseIdNatZero = ifElseIdNat $$ EZero

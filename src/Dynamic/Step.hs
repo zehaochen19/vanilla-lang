@@ -14,19 +14,22 @@ value _ = False
 
 -- | [x := expr1] expr2 or [expr1/x]expr2
 substitute :: EVar -> Expr -> Expr -> Expr
-substitute x e1 e2 = case e2 of
-  EVar y -> if x == y then e1 else EVar y
-  EUnit -> EUnit
-  ETrue -> ETrue
-  EFalse -> EFalse
-  EZero -> EZero
-  ESucc n -> ESucc $ substitute x e1 n
-  abs@(ELam y e2') -> if x == y then abs else ELam y $ substitute x e1 e2'
-  abs@(EALam y ty e2') -> if x == y then abs else EALam y ty $ substitute x e1 e2'
-  EApp e21 e22 -> EApp (substitute x e1 e21) (substitute x e1 e22)
-  EAnno e2' _ -> substitute x e1 e2'
-  ELet y e1' e2' ->
-    ELet y (substitute x e1 e1') (if x == y then e2' else substitute x e1 e2')
+substitute x e1 e2 =
+  let loop = substitute x e1
+   in case e2 of
+        EVar y -> if x == y then e1 else EVar y
+        EUnit -> EUnit
+        ETrue -> ETrue
+        EFalse -> EFalse
+        EZero -> EZero
+        ESucc n -> ESucc $ loop n
+        abs@(ELam y e2') -> if x == y then abs else ELam y $ loop e2'
+        abs@(EALam y ty e2') -> if x == y then abs else EALam y ty $ loop e2'
+        EApp e21 e22 -> EApp (loop e21) (loop e22)
+        EAnno e2' _ -> loop e2'
+        ELet y e1' e2' ->
+          ELet y (loop e1') (if x == y then e2' else loop e2')
+        EIf b e1' e2' -> EIf (loop b) (loop e1') (loop e2')
 
 eval :: Expr -> Expr
 eval e = let e' = step e in if e' == e then e else eval e'
@@ -46,4 +49,7 @@ step expr = case expr of
   EApp (EALam x _ e1) e2 -> substitute x e2 e1
   EAnno e _ -> e
   ELet x e1 e2 -> substitute x e1 e2
+  EIf ETrue e _ -> e
+  EIf EFalse _ e -> e
+  EIf b e1 e2 -> EIf (step b) e1 e2
   e -> e
