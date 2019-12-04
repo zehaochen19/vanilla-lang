@@ -38,3 +38,5 @@ evalSpec = describe "eval" $ do
   it "evals applyToUnitId" $ eval applyToUnitId `shouldBe` EUnit
   it "evals polyLetNat" $ eval polyLetNat `shouldBe` ESucc EZero
   it "evals annotedIdSZero" $ eval annotedIdSZero `shouldBe` ESucc EZero
+  it "evals ifElseIdNat" $ eval ifElseIdNat `shouldSatisfy` isELam
+  it "evals ifElseIdNatZero" $ eval ifElseIdNatZero `shouldBe` EZero
