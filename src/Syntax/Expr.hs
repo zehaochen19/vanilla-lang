@@ -32,6 +32,7 @@ data Expr
   | EAnno Expr Type
   | ELet EVar Expr Expr
   | EIf Expr Expr Expr
+  | EFix Expr
   deriving (Eq, Show)
 
 isELam :: Expr -> Bool

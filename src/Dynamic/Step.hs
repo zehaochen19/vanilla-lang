@@ -33,29 +33,40 @@ substitute x e1 e2 =
         ELet y e1' e2' ->
           ELet y (loop e1') (if x == y then e2' else loop e2')
         EIf b e1' e2' -> EIf (loop b) (loop e1') (loop e2')
+        EFix e -> EFix $ loop e
 
 eval :: Expr -> Expr
 eval e = let e' = step e in if e' == e then e else eval e'
 
 step :: Expr -> Expr
 step expr = case expr of
+  -- Unit
   EUnit -> EUnit
+  -- Bool
   ETrue -> ETrue
   EFalse -> EFalse
+  -- Nat
   EZero -> EZero
   ESucc n -> ESucc $ step n
   ENatCase n e1 x e2 | not $ value n -> ENatCase (step n) e1 x e2
   ENatCase EZero e1 _ _ -> e1
   ENatCase (ESucc n') _ x e -> substitute x n' e
+  -- Lam
   abs@(ELam _ _) -> abs
   abs@EALam {} -> abs
   EApp e1 e2 | not $ value e1 -> EApp (step e1) e2
   EApp e1 e2 | not $ value e2 -> EApp e1 (step e2)
   EApp (ELam x e1) e2 -> substitute x e2 e1
   EApp (EALam x _ e1) e2 -> substitute x e2 e1
+  -- Anno
   EAnno e _ -> e
+  -- Let
   ELet x e1 e2 -> substitute x e1 e2
+  -- IfElse
   EIf ETrue e _ -> e
   EIf EFalse _ e -> e
   EIf b e1 e2 -> EIf (step b) e1 e2
+  -- Fixpoint
+  EFix e | not $ value e -> EFix $ step e
+  EFix (ELam f e) -> substitute f (EFix $ ELam f e) e
   e -> e
