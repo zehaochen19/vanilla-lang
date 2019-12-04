@@ -140,3 +140,28 @@ natAdd =
     )
 
 natAddAnno = natAdd -: TNat --> TNat --> TNat
+
+pred :: Expr
+pred = EALam "n" TNat (ENatCase (EVar "n") EZero "n'" (EVar "n'")) -: TNat --> TNat
+
+natMinus :: Expr
+natMinus =
+  EFix
+    ( ELam
+        "f"
+        ( EALam
+            "x"
+            TNat
+            ( EALam
+                "y"
+                TNat
+                ( ENatCase
+                    (EVar "y")
+                    (EVar "x")
+                    "y'"
+                    (ENatCase (EVar "x") EZero "x'" (EVar "f" $$ EVar "x'" $$ EVar "y'"))
+                )
+            )
+        )
+    )
+    -: TNat --> TNat --> TNat

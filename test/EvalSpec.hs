@@ -45,3 +45,4 @@ evalSpec = describe "eval" $ do
   it "evals nonZeroTwo" $ eval nonZeroTwo `shouldBe` EFalse
   it "evals 0 + 2 = 2" $ eval (natAdd $$ EZero $$ intToNat 2) `shouldBe` intToNat 2
   it "evals 4 + 6 = 10" $ eval (natAdd $$ intToNat 4 $$ intToNat 6) `shouldBe` intToNat 10
+  it "evals 6 - 2 = 4" $ eval (natMinus $$ intToNat 6 $$ intToNat 2) `shouldBe` intToNat 4

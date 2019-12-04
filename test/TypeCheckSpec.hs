@@ -109,3 +109,6 @@ typecheckSpec = describe "typeckeck" $ do
   it "checks natAddAnno" $ do
     ty <- isRightAndUnpackTy natAddAnno
     ty `shouldBe` TNat --> TNat --> TNat
+  it "checks natMinus" $ do
+    ty <- isRightAndUnpackTy natMinus
+    ty `shouldBe` TNat --> TNat --> TNat
