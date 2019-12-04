@@ -77,3 +77,8 @@ typecheckSpec = describe "typeckeck" $ do
   it "infers polyLetNat" $ do
     let Right (ty, _) = typecheck polyLetNat
     ty `shouldBe` TNat
+  it "infers annotedIdSZero" $ do
+    let res = typecheck annotedIdSZero
+    res `shouldSatisfy` isRight
+    let Right (ty, _) = res
+    ty `shouldBe` TNat

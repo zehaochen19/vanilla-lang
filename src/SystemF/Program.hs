@@ -28,6 +28,7 @@ module SystemF.Program
     runCont,
     polyLet,
     polyLetNat,
+    annotedIdSZero,
   )
 where
 
@@ -134,3 +135,8 @@ polyLetNat =
     $ ELet "myId" (EVar "id" $$ id'')
     $ ELet "my0" (EVar "id" $$ EZero)
     $ ESucc (EVar "myId" $$ EVar "my0")
+
+annotedIdSZero :: Expr
+annotedIdSZero =
+  EALam "f" (TNat --> TNat) (ESucc (EVar "f" $$ EZero))
+    $$ ELam "x" (EVar "x") -: TNat
