@@ -69,4 +69,5 @@ step expr = case expr of
   -- Fixpoint
   EFix e | not $ value e -> EFix $ step e
   EFix (ELam f e) -> substitute f (EFix $ ELam f e) e
+  EFix (EALam f ty e) -> substitute f (EFix $ EALam f ty e) e
   e -> e

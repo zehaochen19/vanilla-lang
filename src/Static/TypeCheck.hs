@@ -202,6 +202,14 @@ synthesize ctx (EIf b e1 e2) = do
   psi <- subtype sigma a b
   chi <- subtype psi b a
   return (applyCtx chi a, chi)
+synthesize ctx (EFix e) = do
+  (ty, theta) <- synthesize ctx e
+  case ty of
+    TArr a b | a == b -> do
+      delta <- subtype theta (applyCtx theta a) (applyCtx theta b)
+      sigma <- subtype delta (applyCtx delta a) (applyCtx delta b)
+      return (applyCtx sigma a, sigma)
+    _ -> throw $ "cannot synthesize fixpoint: " ++ show (EFix e)
 synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
@@ -243,6 +251,8 @@ check ctx (EIf b e1 e2) ty = do
   theta <- check ctx b TBool
   delta <- check theta e1 ty
   check delta e2 ty
+-- Fix
+check ctx (EFix e) ty = check ctx e $ TArr ty ty
 -- Sub
 check ctx e b = do
   (a, theta) <- synthesize ctx e
