@@ -157,8 +157,17 @@ synthesize ctx EFalse = pure (TBool, ctx)
 synthesize ctx EZero = pure (TNat, ctx)
 -- Succ =>
 synthesize ctx (ESucc n) = do
-  θ <- check ctx n TNat
-  return (TNat, θ)
+  theta <- check ctx n TNat
+  return (TNat, theta)
+-- NatCase ==>
+synthesize ctx (ENatCase n e1 x e2) = do
+  theta <- check ctx n TNat
+  (a, delta) <- synthesize theta e1
+  eb <- freshTEVar
+  sigma <- check (delta |> CEVar eb |> CAssump x TNat) e2 (TEVar eb)
+  psi <- subtype sigma a (TEVar eb)
+  chi <- subtype psi (TEVar eb) a
+  return (TEVar eb, ctxUntil (CAssump x TNat) chi)
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -206,6 +215,12 @@ check ctx EFalse TBool = pure ctx
 check ctx EZero TNat = pure ctx
 -- Succ
 check ctx (ESucc n) TNat = check ctx n TNat
+-- NatCase
+check ctx (ENatCase n e1 x e2) ty = do
+  theta <- check ctx n TNat
+  delta <- check theta e1 (applyCtx theta ty)
+  ctxUntil (CAssump x TNat)
+    <$> check (delta |> CAssump x TNat) e2 (applyCtx delta ty)
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
