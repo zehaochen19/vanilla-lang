@@ -24,7 +24,7 @@ For simplicity, this programming language only supports type checking and evalua
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
 - [ ] Parser
-- [ ] Top-level definitions
+- [ ] Top-level definitions (low priority, let bindings are somehow suffcient)
 
 ## References
 
