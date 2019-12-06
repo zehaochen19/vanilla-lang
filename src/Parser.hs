@@ -8,6 +8,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void
 import Syntax.Expr
+import Syntax.Type
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -47,16 +48,18 @@ keywords =
       "fix"
     ]
 
+checkVar :: Text -> Parser Text
+checkVar x =
+  if x `S.member` keywords
+    then fail $ "keyword " ++ show x ++ " cannot be an expression variable"
+    else return x
+
 evarP :: Parser EVar
-evarP = (lexeme . try) (p >>= check) <?> "Expression Variable"
+evarP = (lexeme . fmap MkEVar) (p >>= checkVar) <?> "Expression Variable"
   where
-    p =
-      fmap T.pack $
-        (\us x xs -> us ++ x : xs)
-          <$> many (char '_')
-          <*> letterChar
-          <*> many (char '_' <|> alphaNumChar)
-    check x =
-      if x `S.member` keywords
-        then fail $ "keyword " ++ show x ++ " cannot be an expression variable"
-        else return . MkEVar $ x
+    p = fmap T.pack $ (:) <$> lowerChar <*> many alphaNumChar
+
+tvarP :: Parser TVar
+tvarP = (lexeme . fmap MkTVar) (p >>= checkVar) <?> "Type Variable"
+  where
+    p = fmap T.pack $ (:) <$> upperChar <*> many alphaNumChar
