@@ -107,3 +107,4 @@ typecheckSpec = describe "typeckeck" $ do
     $ checksAndShouldBe natMinus
     $ TNat --> TNat --> TNat
   it "checks fibonacci" $ checksAndShouldBe fibonacci $ TNat --> TNat
+  it "checks aLetId" $ checksAndShouldBe aLetId TBool

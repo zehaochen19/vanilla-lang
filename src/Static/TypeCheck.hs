@@ -196,10 +196,11 @@ synthesize ctx (ELet x e1 e2) = do
   return (TEVar eb, ctxUntil (CAssump x a') delta)
 -- ALet==>
 synthesize ctx (EALet x ty e1 e2) = do
-  theta <- check ctx e1 ty
-  let xAssump = CAssump x ty
-  (a, delta) <- synthesize (theta |> xAssump) e2
-  return (a, ctxUntil xAssump delta)
+  eb <- freshTEVar
+  theta <- check (ctx |> CEVar eb) e1 ty
+  let xAssump = CAssump x (applyCtx theta ty)
+  delta <- check (theta |> xAssump) e2 (TEVar eb)
+  return (TEVar eb, ctxUntil xAssump delta)
 -- If==>
 synthesize ctx (EIf b e1 e2) = do
   theta <- check ctx b TBool

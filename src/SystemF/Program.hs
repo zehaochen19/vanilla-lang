@@ -183,3 +183,11 @@ fibonacci =
         )
     )
     -: TNat --> TNat
+
+aLetId :: Expr
+aLetId =
+  EALet
+    "id"
+    (TAll "A" (TVar "A" --> TVar "A"))
+    (ELam "x" $ EVar "x")
+    (EVar "id" $$ ETrue)
