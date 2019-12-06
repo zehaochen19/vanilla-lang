@@ -5,6 +5,7 @@
 
 module Static.TypeCheck where
 
+import Data.Text (Text)
 import Polysemy
 import Polysemy.Error
 import Polysemy.State
@@ -22,7 +23,7 @@ import Syntax.Type
 import Utils (freshVarStream)
 
 -- | Apply bidirectional typechecking
-newtype CheckState = CheckState {freshTypeVars :: [String]}
+newtype CheckState = CheckState {freshTypeVars :: [Text]}
 
 initCheckState :: CheckState
 initCheckState = CheckState freshVarStream
@@ -33,7 +34,7 @@ freshTEVar :: Member (State CheckState) r => Sem r TEVar
 freshTEVar = do
   vars <- gets freshTypeVars
   put $ CheckState (tail vars)
-  return $ MkTEVar . ("'" ++) . head $ vars
+  return $ MkTEVar . head $ vars
 
 -- | [ty1/alpha]ty2
 tySubstitue :: TVar -> Type -> Type -> Type

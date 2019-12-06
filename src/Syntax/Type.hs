@@ -25,7 +25,7 @@ tvar :: Text -> TVar
 tvar = MkTVar
 
 -- | Existential types. alpha, beta.
-newtype TEVar = MkTEVar String deriving (Eq, Show, Ord, IsString)
+newtype TEVar = MkTEVar Text deriving (Eq, Show, Ord, IsString)
 
 data Type
   = TUnit

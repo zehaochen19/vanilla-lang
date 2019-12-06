@@ -1,12 +1,14 @@
 module Utils where
 
+import Data.Text (Text)
+import qualified Data.Text as T
 import Syntax.Expr
 
-freshVarStream :: [String]
+freshVarStream :: [Text]
 freshVarStream = do
   digit <- nums
   letter <- letters
-  return $ letter : show digit
+  return . T.pack $ '\'' : letter : show digit
   where
     letters = ['a' .. 'z']
     nums = [0 ..]
