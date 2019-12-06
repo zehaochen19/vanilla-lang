@@ -69,7 +69,7 @@ tvarP = MkTVar <$> varP
 
 typeTermP :: Parser Type
 typeTermP =
-  paren typeP
+  try (paren typeP)
     <|> tUnitP
     <|> tBoolP
     <|> tNatP
@@ -90,3 +90,60 @@ typeP = makeExprParser typeTermP [[infixR "→" TArr]]
   where
     infixR :: Text -> (Type -> Type -> Type) -> Operator Parser Type
     infixR name f = InfixR (f <$ symbol name)
+
+exprTermP :: Parser Expr
+exprTermP =
+  try (paren exprP)
+    <|> eUnitP
+    <|> eTrueP
+    <|> eFalseP
+    <|> eZeroP
+    <|> eSuccP
+    <|> eNatCaseP
+    <|> eLamP
+    <|> eAnnoP
+    <|> eLetP
+    <|> eIfP
+    <|> eFixP
+  where
+    eUnitP = symbol "()" $> EUnit
+    eTrueP = symbol "True" $> ETrue
+    eFalseP = symbol "False" $> EFalse
+    eZeroP = symbol "0" $> EZero
+    eSuccP = ESucc <$> (symbol "S" *> exprP)
+    eNatCaseP = do
+      symbol "natcase"
+      n <- exprP
+      (e1, x, e2) <- natCaseBranchP
+      return $ ENatCase n e1 x e2
+      where
+        natCaseBranchP = do
+          e1 <- symbol "{" >> symbol "0" >> symbol "→" >> exprP
+          x <- symbol "," >> symbol "S" >> evarP
+          e2 <- exprP
+          return (e1, x, e2)
+    eLamP = do
+      x <- symbol "λ" >> evarP
+      annotation <- optional annotationP
+      body <- exprP
+      case annotation of
+        Nothing -> return $ ELam x body
+        Just ty -> return $ EALam x ty body
+    eAnnoP = do
+      e <- exprP
+      EAnno e <$> annotationP
+    annotationP = symbol ":" >> typeP
+    eLetP = do
+      x <- symbol "let" >> evarP
+      e1 <- symbol "=" >> exprP
+      e2 <- symbol "in" >> exprP
+      return $ ELet x e1 e2
+    eIfP = do
+      b <- symbol "if" >> exprP
+      e1 <- symbol "then" >> exprP
+      e2 <- symbol "else" >> exprP
+      return $ EIf b e1 e2
+    eFixP = symbol "fix" >> (EFix <$> exprP)
+
+exprP :: Parser Expr
+exprP = makeExprParser exprTermP [[InfixL (EApp <$ space1)]]

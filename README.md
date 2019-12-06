@@ -17,7 +17,7 @@ Expressions     e         ::=   x                       -- variable
                               | False
                               | 0
                               | S e                     -- natural number successor
-                              | natcase e e1 x e2       -- case n {0 → e1, S x → e2}
+                              | natcase e e1 x e2       -- natcase n {0 → e1, S x → e2}
                               | λx.e                    -- implicit λ
                               | λx : A.e                -- annotated λ
                               | e1 e2
