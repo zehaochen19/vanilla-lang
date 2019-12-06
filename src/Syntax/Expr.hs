@@ -32,6 +32,7 @@ data Expr
   | EApp Expr Expr
   | EAnno Expr Type
   | ELet EVar Expr Expr
+  | EALet EVar Type Expr Expr
   | EIf Expr Expr Expr
   | EFix Expr
   deriving (Eq, Show)
