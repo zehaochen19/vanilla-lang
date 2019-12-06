@@ -1,0 +1,5 @@
+let id =
+  λx . x : ∀A. A → A
+in
+
+id ()
