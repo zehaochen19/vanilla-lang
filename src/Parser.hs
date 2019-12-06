@@ -47,13 +47,16 @@ keywords =
       "if",
       "then",
       "else",
-      "fix"
+      "fix",
+      "Nat",
+      "Bool",
+      "Unit"
     ]
 
 checkVar :: Text -> Parser Text
 checkVar x =
   if x `S.member` keywords
-    then fail $ "keyword " ++ show x ++ " cannot be an variable"
+    then fail $ "keyword " ++ T.unpack x ++ " cannot be an variable"
     else return x
 
 varP :: Parser Text
@@ -74,7 +77,7 @@ typeTermP =
     <|> tBoolP
     <|> tNatP
     <|> tAllP
-    <|> TVar <$> tvarP
+    <|> try (TVar <$> tvarP)
   where
     tUnitP = symbol "Unit" $> TUnit
     tBoolP = symbol "Bool" $> TBool
@@ -100,11 +103,10 @@ exprTermP =
     <|> eZeroP
     <|> eSuccP
     <|> eNatCaseP
-    <|> eLamP
-    <|> eAnnoP
     <|> eLetP
     <|> eIfP
     <|> eFixP
+    <|> try (EVar <$> evarP)
   where
     eUnitP = symbol "()" $> EUnit
     eTrueP = symbol "True" $> ETrue
@@ -120,19 +122,9 @@ exprTermP =
         natCaseBranchP = do
           e1 <- symbol "{" >> symbol "0" >> symbol "→" >> exprP
           x <- symbol "," >> symbol "S" >> evarP
-          e2 <- exprP
+          e2 <- symbol "→" >> exprP
+          symbol "}"
           return (e1, x, e2)
-    eLamP = do
-      x <- symbol "λ" >> evarP
-      annotation <- optional annotationP
-      body <- exprP
-      case annotation of
-        Nothing -> return $ ELam x body
-        Just ty -> return $ EALam x ty body
-    eAnnoP = do
-      e <- exprP
-      EAnno e <$> annotationP
-    annotationP = symbol ":" >> typeP
     eLetP = do
       x <- symbol "let" >> evarP
       e1 <- symbol "=" >> exprP
@@ -146,4 +138,23 @@ exprTermP =
     eFixP = symbol "fix" >> (EFix <$> exprP)
 
 exprP :: Parser Expr
-exprP = makeExprParser exprTermP [[InfixL (EApp <$ space1)]]
+exprP =
+  makeExprParser
+    exprTermP
+    [ [InfixL (EApp <$ space)],
+      [Prefix eLamP],
+      [Postfix eAnnoP]
+    ]
+  where
+    annotationP = symbol ":" >> typeP
+    eAnnoP = do
+      ty <- annotationP
+      return $ \e -> EAnno e ty
+    eLamP = do
+      x <- symbol "λ" >> evarP
+      annotation <- optional annotationP
+      dotP
+      return $ \e ->
+        case annotation of
+          Nothing -> ELam x e
+          Just ty -> EALam x ty e
