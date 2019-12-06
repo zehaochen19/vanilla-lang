@@ -2,6 +2,7 @@
 
 module Parser where
 
+import Data.Functor (($>))
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.Text (Text)
@@ -54,13 +55,37 @@ checkVar x =
     then fail $ "keyword " ++ show x ++ " cannot be an variable"
     else return x
 
-identifierP :: Parser Text
-identifierP = lexeme (p >>= checkVar) <?> "Identifier"
+varP :: Parser Text
+varP = lexeme ((p >>= checkVar) <?> "variable")
   where
     p = fmap T.pack $ (:) <$> letterChar <*> many alphaNumChar
 
 evarP :: Parser EVar
-evarP = MkEVar <$> identifierP
+evarP = MkEVar <$> varP
 
 tvarP :: Parser TVar
-tvarP = MkTVar <$> identifierP
+tvarP = MkTVar <$> varP
+
+typeP :: Parser Type
+typeP =
+  paren typeP
+    <|> tUnitP
+    <|> tBoolP
+    <|> tNatP
+    <|> tAllP
+    <|> try tArrP
+    <|> TVar
+    <$> tvarP
+  where
+    tUnitP = symbol "Unit" $> TUnit
+    tBoolP = symbol "Bool" $> TBool
+    tNatP = symbol "Nat" $> TNat
+    tAllP = do
+      symbol "∀"
+      tyVar <- tvarP
+      dotP
+      TAll tyVar <$> typeP
+    tArrP = do
+      tyA <- typeP
+      symbol "→"
+      TArr tyA <$> typeP
