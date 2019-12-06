@@ -142,9 +142,12 @@ exprTermP =
         Just ty -> EALam x ty body
     eLetP = do
       x <- symbol "let" >> evarP
+      anno <- optional annotationP
       e1 <- symbol "=" >> exprP
       e2 <- symbol "in" >> exprP
-      return $ ELet x e1 e2
+      return $ case anno of
+        Nothing -> ELet x e1 e2
+        Just ty -> EALet x ty e1 e2
     eIfP = do
       b <- symbol "if" >> exprP
       e1 <- symbol "then" >> exprP

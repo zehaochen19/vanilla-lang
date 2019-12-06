@@ -1,6 +1,5 @@
-let add =
-  (fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)}))
-  : Nat → Nat → Nat
+let add : Nat → Nat → Nat =
+  fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)})
 in
 
 -- 3 + 2 = 5
