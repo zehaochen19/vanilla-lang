@@ -2,6 +2,7 @@
 
 module Parser where
 
+import Control.Monad.Combinators.Expr (Operator (..), makeExprParser)
 import Data.Functor (($>))
 import qualified Data.Set as S
 import Data.Set (Set)
@@ -66,16 +67,14 @@ evarP = MkEVar <$> varP
 tvarP :: Parser TVar
 tvarP = MkTVar <$> varP
 
-typeP :: Parser Type
-typeP =
+typeTermP :: Parser Type
+typeTermP =
   paren typeP
     <|> tUnitP
     <|> tBoolP
     <|> tNatP
     <|> tAllP
-    <|> try tArrP
-    <|> TVar
-    <$> tvarP
+    <|> TVar <$> tvarP
   where
     tUnitP = symbol "Unit" $> TUnit
     tBoolP = symbol "Bool" $> TBool
@@ -85,7 +84,9 @@ typeP =
       tyVar <- tvarP
       dotP
       TAll tyVar <$> typeP
-    tArrP = do
-      tyA <- typeP
-      symbol "→"
-      TArr tyA <$> typeP
+
+typeP :: Parser Type
+typeP = makeExprParser typeTermP [[infixR "→" TArr]]
+  where
+    infixR :: Text -> (Type -> Type -> Type) -> Operator Parser Type
+    infixR name f = InfixR (f <$ symbol name)

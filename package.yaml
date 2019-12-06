@@ -24,6 +24,7 @@ dependencies:
   - containers
   - polysemy
   - megaparsec
+  - parser-combinators
   - text
 
 library:
