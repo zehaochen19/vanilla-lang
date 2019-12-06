@@ -3,6 +3,7 @@
 module Parser where
 
 import Control.Monad.Combinators.Expr (Operator (..), makeExprParser)
+import Data.Either.Extra (mapLeft)
 import Data.Functor (($>))
 import qualified Data.Set as S
 import Data.Set (Set)
@@ -16,6 +17,12 @@ import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void Text
+
+programP :: Parser Expr
+programP = exprP <* eof
+
+runProgramP :: String -> Text -> Either String Expr
+runProgramP path prog = mapLeft show $ runParser programP path prog
 
 sc :: Parser ()
 sc = L.space space1 lineComment blockComment
