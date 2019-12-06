@@ -17,6 +17,7 @@ where
 import Data.Set as S
 import Data.String (IsString)
 import Data.Text (Text)
+import qualified Data.Text as T
 
 -- | A, B, C
 newtype TVar = MkTVar Text deriving (Eq, Show, Ord, IsString)
@@ -35,7 +36,7 @@ data Type
   | TEVar TEVar
   | TArr Type Type
   | TAll TVar Type
-  deriving (Eq, Show)
+  deriving (Eq)
 
 infixr 2 -->
 
@@ -77,3 +78,12 @@ isTArr _ = False
 isTAll :: Type -> Bool
 isTAll (TAll _ _) = True
 isTAll _ = False
+
+instance Show Type where
+  show TUnit = "Unit"
+  show TBool = "Bool"
+  show TNat = "Nat"
+  show (TVar (MkTVar x)) = T.unpack x
+  show (TEVar (MkTEVar x)) = "Existential " ++ T.unpack x
+  show (TArr a b) = show a ++ " → " ++ show b
+  show (TAll a ty) = "∀" ++ show a ++ ". " ++ show ty
