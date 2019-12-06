@@ -5,6 +5,28 @@ I can only implement a System F.
 
 For simplicity, this programming language only supports type checking and evaluation on closed terms.
 
+## Grammar
+
+```
+Types           A, B, C   ::= Unit | Bool | Nat | α | ∀α.A | A → B
+Monotypes       τ, σ      ::= Unit | Bool | Nat | α | τ → σ
+
+Expressions     e         ::=   x                       -- variable
+                              | ()                      -- unit
+                              | True
+                              | False
+                              | 0
+                              | S e                     -- natural number successor
+                              | natcase e e1 x e2       -- case n {0 → e1, S x → e2}
+                              | λx.e                    -- implicit λ
+                              | λx : A.e                -- annotated λ
+                              | e1 e2
+                              | e : A                   -- annotation
+                              | let x = e1 in e2
+                              | if e then e1 else e2
+                              | fix e                   -- fixpoint
+```
+
 ## (Planned) Features
 
 - [x] Static semantic
