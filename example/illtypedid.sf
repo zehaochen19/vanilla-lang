@@ -1,0 +1,4 @@
+let id : Nat → Nat =
+  (λx . x)
+in
+  id ()

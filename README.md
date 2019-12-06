@@ -13,8 +13,8 @@ Monotypes       τ, σ      ::= Unit | Bool | Nat | α | τ → σ
 
 Expressions     e         ::=   x                               -- variable
                               | ()                              -- unit
-                              | True
-                              | False
+                              | True                            -- boolean constant true
+                              | False                           -- boolean constant false
                               | 0                               -- natural number zero
                               | S e                             -- natural number successor
                               | natcase n {0 → e1, S x → e2}    -- natural number elimination
@@ -23,20 +23,22 @@ Expressions     e         ::=   x                               -- variable
                               | e1 e2                           -- application
                               | e : A                           -- annotation
                               | let x = e1 in e2                -- let binding
+                              | let x : A = e1 in e2            -- annotated let binding
                               | if e then e1 else e2            -- if-else
                               | fix e                           -- fixpoint
 ```
 
 ## Usage
 
-First, `stack` should be install in `PATH`
+First of all, `stack` should be install in `PATH`
+
+### Add operator for natural numbers
 
 Given `example/add.sf`:
 
 ```
-let add =
-  (fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)}))
-  : Nat → Nat → Nat
+let add : Nat → Nat → Nat =
+  fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)})
 in
 
 -- 3 + 2 = 5
@@ -59,6 +61,28 @@ TNat
 Result:
 ESucc (ESucc (ESucc (ESucc (ESucc EZero))))
 ```
+
+### Ill-typed program
+
+Given `examples/illtypedid`:
+
+```
+let id : Nat → Nat =
+  (λx . x)
+in
+  id ()
+```
+
+It reports typechecking error:
+
+```
+Typecheck error:
+cannot establish subtyping with Unit <: Nat
+```
+
+### Unit tests
+
+`stack test`
 
 ## (Planned) Features
 
