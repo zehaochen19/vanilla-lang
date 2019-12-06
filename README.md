@@ -31,7 +31,7 @@ Expressions     e         ::=   x                               -- variable
 
 First, `stack` should be install in `PATH`
 
-Given `example/id.sf`:
+Given `example/add.sf`:
 
 ```
 let add =
