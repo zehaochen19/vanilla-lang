@@ -51,7 +51,7 @@ keywords =
 checkVar :: Text -> Parser Text
 checkVar x =
   if x `S.member` keywords
-    then fail $ "keyword " ++ show x ++ " cannot be an expression variable"
+    then fail $ "keyword " ++ show x ++ " cannot be an variable"
     else return x
 
 identifierP :: Parser Text
