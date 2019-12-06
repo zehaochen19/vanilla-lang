@@ -16,11 +16,12 @@ where
 
 import Data.Set as S
 import Data.String (IsString)
+import Data.Text (Text)
 
 -- | A, B, C
-newtype TVar = MkTVar String deriving (Eq, Show, Ord, IsString)
+newtype TVar = MkTVar Text deriving (Eq, Show, Ord, IsString)
 
-tvar :: String -> TVar
+tvar :: Text -> TVar
 tvar = MkTVar
 
 -- | Existential types. alpha, beta.

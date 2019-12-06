@@ -58,5 +58,5 @@ evarP = (lexeme . try) (p >>= check) <?> "Expression Variable"
           <*> many (char '_' <|> alphaNumChar)
     check x =
       if x `S.member` keywords
-        then fail $ "keyword " ++ show x ++ " cannot be an identifier"
-        else return . MkEVar $ T.unpack x
+        then fail $ "keyword " ++ show x ++ " cannot be an expression variable"
+        else return . MkEVar $ x

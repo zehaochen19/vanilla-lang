@@ -11,11 +11,12 @@ module Syntax.Expr
 where
 
 import Data.String (IsString)
+import Data.Text (Text)
 import Syntax.Type (Type)
 
-newtype EVar = MkEVar String deriving (Eq, Show, Ord, IsString)
+newtype EVar = MkEVar Text deriving (Eq, Show, Ord, IsString)
 
-evar :: String -> EVar
+evar :: Text -> EVar
 evar = MkEVar
 
 data Expr
