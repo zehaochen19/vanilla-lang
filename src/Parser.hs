@@ -84,7 +84,7 @@ typeTermP =
     <|> tBoolP
     <|> tNatP
     <|> tAllP
-    <|> try (TVar <$> tvarP)
+    <|> TVar <$> tvarP
   where
     tUnitP = symbol "Unit" $> TUnit
     tBoolP = symbol "Bool" $> TBool
@@ -110,6 +110,7 @@ exprTermP =
     <|> eZeroP
     <|> eSuccP
     <|> eNatCaseP
+    <|> eLamP
     <|> eLetP
     <|> eIfP
     <|> eFixP
@@ -132,6 +133,13 @@ exprTermP =
           e2 <- symbol "→" >> exprP
           symbol "}"
           return (e1, x, e2)
+    eLamP = do
+      x <- symbol "λ" >> evarP
+      annotation <- optional annotationP
+      body <- dotP >> exprP
+      return $ case annotation of
+        Nothing -> ELam x body
+        Just ty -> EALam x ty body
     eLetP = do
       x <- symbol "let" >> evarP
       e1 <- symbol "=" >> exprP
@@ -144,24 +152,16 @@ exprTermP =
       return $ EIf b e1 e2
     eFixP = symbol "fix" >> (EFix <$> exprP)
 
+annotationP = symbol ":" >> typeP
+
 exprP :: Parser Expr
 exprP =
   makeExprParser
     exprTermP
     [ [InfixL (EApp <$ space)],
-      [Prefix eLamP],
       [Postfix eAnnoP]
     ]
   where
-    annotationP = symbol ":" >> typeP
     eAnnoP = do
       ty <- annotationP
       return $ \e -> EAnno e ty
-    eLamP = do
-      x <- symbol "λ" >> evarP
-      annotation <- optional annotationP
-      dotP
-      return $ \e ->
-        case annotation of
-          Nothing -> ELam x e
-          Just ty -> EALam x ty e

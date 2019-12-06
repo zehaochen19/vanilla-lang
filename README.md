@@ -11,20 +11,20 @@ For simplicity, this programming language only supports type checking and evalua
 Types           A, B, C   ::= Unit | Bool | Nat | α | ∀α.A | A → B
 Monotypes       τ, σ      ::= Unit | Bool | Nat | α | τ → σ
 
-Expressions     e         ::=   x                       -- variable
-                              | ()                      -- unit
+Expressions     e         ::=   x                               -- variable
+                              | ()                              -- unit
                               | True
                               | False
-                              | 0
-                              | S e                     -- natural number successor
-                              | natcase e e1 x e2       -- natcase n {0 → e1, S x → e2}
-                              | λx.e                    -- implicit λ
-                              | λx : A.e                -- annotated λ
-                              | e1 e2
-                              | e : A                   -- annotation
-                              | let x = e1 in e2
-                              | if e then e1 else e2
-                              | fix e                   -- fixpoint
+                              | 0                               -- natural number zero
+                              | S e                             -- natural number successor
+                              | natcase n {0 → e1, S x → e2}    -- natural number elimination
+                              | λx.e                            -- implicit λ
+                              | λx : A.e                        -- annotated λ
+                              | e1 e2                           -- application
+                              | e : A                           -- annotation
+                              | let x = e1 in e2                -- let binding
+                              | if e then e1 else e2            -- if-else
+                              | fix e                           -- fixpoint
 ```
 
 ## Usage
@@ -34,27 +34,30 @@ First, `stack` should be install in `PATH`
 Given `example/id.sf`:
 
 ```
-let id =
-  λx . x : ∀A. A → A
+let add =
+  (fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)}))
+  : Nat → Nat → Nat
 in
-  id ()
+
+-- 3 + 2 = 5
+add (S (S (S 0))) (S S (0))
 ```
 
 Run
 
 ```
 stack install
-systemf example/id.sf
+systemf example/add.sf
 ```
 
 It should output the inferred type and evaluated value of this program:
 
 ```
 Type:
-TUnit
+TNat
 
 Result:
-EUnit
+ESucc (ESucc (ESucc (ESucc (ESucc EZero))))
 ```
 
 ## (Planned) Features

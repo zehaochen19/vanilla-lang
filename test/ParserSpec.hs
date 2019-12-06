@@ -4,6 +4,7 @@ module ParserSpec where
 
 import Data.Either
   ( isLeft,
+    isRight,
   )
 import Parser
 import Syntax.Expr
@@ -37,13 +38,13 @@ expressionParseSpec =
       runParser exprP "" "λx : Nat. x"
         `shouldBe` Right (EALam "x" TNat $ EVar "x")
     it "parse annotated nat id" $
-      runParser exprP "" "λx : Nat. x : Nat → Nat"
+      runParser exprP "" "(λx : Nat. x) : Nat → Nat"
         `shouldBe` Right (EAnno (EALam "x" TNat $ EVar "x") (TNat --> TNat))
     it "parse unannotated id" $
       runParser exprP "" "λx . x"
         `shouldBe` Right (ELam "x" $ EVar "x")
     it "parse annoated id" $
-      runParser exprP "" "λx . x : ∀A.A→A"
+      runParser exprP "" "(λx . x) : ∀A.A→A"
         `shouldBe` Right
           (EAnno (ELam "x" $ EVar "x") (TAll "A" (TVar "A" --> TVar "A")))
     it "parse unit with parenthesis" $
@@ -71,6 +72,9 @@ expressionParseSpec =
       runParser exprP "" "let n = S 0 in natcase n { 0 → False, S x → True } "
         `shouldBe` Right
           (ELet "n" (ESucc EZero) (ENatCase (EVar "n") EFalse "x" ETrue))
+    it "parse a chain of lambdas" $
+      runParser exprP "" "λ f . λ x . f x"
+        `shouldSatisfy` isRight
 
 parserSpec = do
   typeParserSpec
