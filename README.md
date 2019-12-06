@@ -27,6 +27,36 @@ Expressions     e         ::=   x                       -- variable
                               | fix e                   -- fixpoint
 ```
 
+## Usage
+
+First, `stack` should be install in `PATH`
+
+Given `example/id.sf`:
+
+```
+let id =
+  λx . x : ∀A. A → A
+in
+  id ()
+```
+
+Run
+
+```
+stack install
+systemf example/id.sf
+```
+
+It should output the inferred type and evaluated value of this program:
+
+```
+Type:
+TUnit
+
+Result:
+EUnit
+```
+
 ## (Planned) Features
 
 - [x] Static semantic
@@ -45,8 +75,8 @@ Expressions     e         ::=   x                       -- variable
   - [ ] List
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
-- [ ] Parser
-- [ ] Top-level definitions (low priority, let bindings are somehow suffcient)
+- [x] Parser
+- [ ] Pretty printing
 
 ## References
 
