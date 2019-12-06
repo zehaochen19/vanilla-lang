@@ -54,12 +54,13 @@ checkVar x =
     then fail $ "keyword " ++ show x ++ " cannot be an expression variable"
     else return x
 
-evarP :: Parser EVar
-evarP = (lexeme . fmap MkEVar) (p >>= checkVar) <?> "Expression Variable"
+identifierP :: Parser Text
+identifierP = lexeme (p >>= checkVar) <?> "Identifier"
   where
-    p = fmap T.pack $ (:) <$> lowerChar <*> many alphaNumChar
+    p = fmap T.pack $ (:) <$> letterChar <*> many alphaNumChar
+
+evarP :: Parser EVar
+evarP = MkEVar <$> identifierP
 
 tvarP :: Parser TVar
-tvarP = (lexeme . fmap MkTVar) (p >>= checkVar) <?> "Type Variable"
-  where
-    p = fmap T.pack $ (:) <$> upperChar <*> many alphaNumChar
+tvarP = MkTVar <$> identifierP
