@@ -75,6 +75,12 @@ expressionParseSpec =
     it "parse a chain of lambdas" $
       runParser exprP "" "λ f . λ x . f x"
         `shouldSatisfy` isRight
+    it "parse a recursive function" $
+      runParser
+        exprP
+        ""
+        "(fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)})) : Nat → Nat → Nat"
+        `shouldSatisfy` isRight
 
 parserSpec = do
   typeParserSpec
