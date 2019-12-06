@@ -50,6 +50,7 @@ tySubstitue alpha ty1 ty2 =
       TAll beta a ->
         if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
       TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+      TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var
@@ -62,6 +63,10 @@ subtype ctx TBool TBool = pure ctx
 subtype ctx TNat TNat = pure ctx
 -- <:ExVar
 subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
+-- <:Product
+subtype ctx (TProd a1 b1) (TProd a2 b2) = do
+  theta <- subtype ctx a1 a2
+  subtype ctx (applyCtx theta b1) (applyCtx theta b2)
 -- <:-->
 subtype ctx (TArr a1 a2) (TArr b1 b2) = do
   theta <- subtype ctx b1 a1

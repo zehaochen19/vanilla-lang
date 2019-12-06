@@ -73,5 +73,6 @@ applyCtx gamma ty = case ty of
   TBool -> TBool
   TNat -> TNat
   TEVar alpha -> maybe ty (applyCtx gamma) $ ctxSolve gamma alpha
+  TProd a b -> TProd (applyCtx gamma a) (applyCtx gamma b)
   TArr a b -> TArr (applyCtx gamma a) (applyCtx gamma b)
   TAll alpha a -> TAll alpha $ applyCtx gamma a

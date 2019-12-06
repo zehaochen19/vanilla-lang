@@ -34,6 +34,7 @@ data Type
   | TNat
   | TVar TVar
   | TEVar TEVar
+  | TProd Type Type
   | TArr Type Type
   | TAll TVar Type
   deriving (Eq)
@@ -50,6 +51,7 @@ isMono TBool = True
 isMono TNat = True
 isMono (TVar _) = True
 isMono (TEVar _) = True
+isMono (TProd a b) = isMono a && isMono b
 isMono (TArr a b) = isMono a && isMono b
 isMono _ = False
 
@@ -59,6 +61,7 @@ tyFreeTEVars TBool = S.empty
 tyFreeTEVars TNat = S.empty
 tyFreeTEVars (TVar _) = S.empty
 tyFreeTEVars (TEVar evar) = S.singleton evar
+tyFreeTEVars (TProd a b) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TArr a b) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TAll _ ty) = tyFreeTEVars ty
 
@@ -68,6 +71,7 @@ tyFreeTVars TBool = S.empty
 tyFreeTVars TNat = S.empty
 tyFreeTVars (TVar a) = S.singleton a
 tyFreeTVars (TEVar _) = S.empty
+tyFreeTVars (TProd a b) = tyFreeTVars a <> tyFreeTVars b
 tyFreeTVars (TArr a b) = tyFreeTVars a <> tyFreeTVars b
 tyFreeTVars (TAll a ty) = S.delete a $ tyFreeTVars ty
 
@@ -85,5 +89,6 @@ instance Show Type where
   show TNat = "Nat"
   show (TVar (MkTVar x)) = T.unpack x
   show (TEVar (MkTEVar x)) = "Existential " ++ T.unpack x
+  show (TProd a b) = "(" ++ show a ++ ", " ++ show b ++ ")"
   show (TArr a b) = show a ++ " → " ++ show b
   show (TAll a ty) = "∀" ++ show a ++ ". " ++ show ty
