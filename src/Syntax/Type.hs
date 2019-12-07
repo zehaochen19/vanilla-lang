@@ -20,7 +20,10 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 -- | A, B, C
-newtype TVar = MkTVar Text deriving (Eq, Show, Ord, IsString)
+newtype TVar = MkTVar Text deriving (Eq, Ord, IsString)
+
+instance Show TVar where
+  show (MkTVar v) = T.unpack v
 
 tvar :: Text -> TVar
 tvar = MkTVar
@@ -89,6 +92,15 @@ instance Show Type where
   show TNat = "Nat"
   show (TVar (MkTVar x)) = T.unpack x
   show (TEVar (MkTEVar x)) = "Existential " ++ T.unpack x
-  show (TProd a b) = "(" ++ show a ++ ", " ++ show b ++ ")"
-  show (TArr a b) = show a ++ " → " ++ show b
-  show (TAll a ty) = "∀" ++ show a ++ ". " ++ show ty
+  show (TProd a b) = "(" ++ tyParen a ++ ", " ++ tyParen b ++ ")"
+  show (TArr a b) = tyParen a ++ " → " ++ tyParen b
+  show (TAll a ty) = "∀" ++ show a ++ ". " ++ tyParen ty
+
+tyParen :: Type -> String
+tyParen ty = case ty of
+  TUnit -> show ty
+  TBool -> show ty
+  TNat -> show ty
+  TVar _ -> show ty
+  TEVar _ -> show ty
+  _ -> "(" ++ show ty ++ ")"

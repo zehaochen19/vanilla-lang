@@ -138,7 +138,7 @@ cannot establish subtyping with Unit <: Nat
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
 - [x] Parser
-- [ ] Pretty printing
+- [x] Pretty printing
 
 ## References
 
