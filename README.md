@@ -132,7 +132,7 @@ cannot establish subtyping with Unit <: Nat
 - [ ] Extended basic types
   - [x] Bool
   - [x] Nat
-  - [ ] Product
+  - [x] Product
   - [ ] Sum
   - [ ] List
 - [x] If-Else clause
