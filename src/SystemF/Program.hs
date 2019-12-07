@@ -202,3 +202,6 @@ idProd =
     (TAll "A" (TVar "A" --> TVar "A"))
     (ELam "x" $ EVar "x")
     (EProd (EVar "id" $$ EFalse) (EVar "id" $$ EZero))
+
+boolNatProj1 :: Expr
+boolNatProj1 = EProj1 boolNatProd

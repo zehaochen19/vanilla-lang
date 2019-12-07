@@ -110,3 +110,4 @@ typecheckSpec = describe "typeckeck" $ do
   it "infers aLetId" $ checksAndShouldBe aLetId TBool
   it "infers boolNatProd" $ checksAndShouldBe boolNatProd $ TProd TBool TNat
   it "infers idProd" $ checksAndShouldBe idProd $ TProd TBool TNat
+  it "infers boolNatProj1" $ checksAndShouldBe boolNatProj1 TBool
