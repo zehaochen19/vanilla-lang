@@ -65,9 +65,41 @@ Result:
 ESucc (ESucc (ESucc (ESucc (ESucc EZero))))
 ```
 
-### Ill-typed program
+### Mutual Recursion
 
-Given `examples/illtypedid`:
+Mutual recursive functions can be easily defined with the fixpoint and projections.
+
+Given `example/evenodd.sf`:
+
+```
+let evenodd =
+  fix (λ eo : (Nat → Bool, Nat → Bool).
+    let e = λ n : Nat. natcase n { 0 → True, S x → eo.2 x } in
+    let o = λ n : Nat. natcase n { 0 → False, S x → eo.1 x } in
+    (e, o))
+in
+
+let even = evenodd.1 in
+let odd = evenodd.2 in
+
+let five = S(S(S(S(S(0))))) in
+
+(even five, odd five)
+```
+
+It reports:
+
+```
+Type:
+(Bool, Bool)
+
+Result:
+EProd EFalse ETrue
+```
+
+### Ill-typed Program
+
+Given `example/illtypedid`:
 
 ```
 let id : Nat → Nat =
