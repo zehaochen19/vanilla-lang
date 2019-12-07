@@ -182,14 +182,14 @@ synthesize ctx (EProd e1 e2) = do
 -- Proj1==>
 synthesize ctx (EProj1 e) = do
   (prod, theta) <- synthesize ctx e
-  case prod of
+  case applyCtx theta prod of
     TProd a _ -> return (a, theta)
     _ -> throw $ "cannot do projection on type: " ++ show prod
 -- Proj2==>
 -- Proj1==>
 synthesize ctx (EProj2 e) = do
   (prod, theta) <- synthesize ctx e
-  case prod of
+  case applyCtx theta prod of
     TProd _ b -> return (b, theta)
     _ -> throw $ "cannot do projection on type: " ++ show prod
 -- -->I==>

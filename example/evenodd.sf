@@ -1,7 +1,7 @@
-let evenodd =
-  fix (λ eo : (Nat → Bool, Nat → Bool).
-    let e = λ n : Nat. natcase n { 0 → True, S x → eo.2 x } in
-    let o = λ n : Nat. natcase n { 0 → False, S x → eo.1 x } in
+let evenodd : (Nat → Bool, Nat → Bool) =
+  fix (λ eo  .
+    let e = λ n . natcase n { 0 → True, S x → eo.2 x } in
+    let o = λ n . natcase n { 0 → False, S x → eo.1 x } in
     (e, o))
 in
 
