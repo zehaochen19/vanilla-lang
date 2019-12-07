@@ -31,6 +31,10 @@ typeParserSpec = describe "typeP should" $ do
     runParser typeP "" "∀B . (∀A . A → A) → (B → B)"
       `shouldBe` Right
         (TAll "B" (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B")))
+  it "parse type of prod" $
+    runParser typeP "" "(Nat, Nat → Nat)"
+      `shouldBe` Right
+        (TProd TNat (TNat --> TNat))
 
 expressionParseSpec =
   describe "exprP should" $ do
@@ -81,6 +85,8 @@ expressionParseSpec =
         ""
         "(fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)})) : Nat → Nat → Nat"
         `shouldSatisfy` isRight
+    it "parse a product" $
+      runParser exprP "" "(True, 0)" `shouldBe` Right (EProd ETrue EZero)
 
 parserSpec = do
   typeParserSpec

@@ -80,6 +80,7 @@ tvarP = MkTVar <$> varP
 typeTermP :: Parser Type
 typeTermP =
   try (paren typeP)
+    <|> try tProdP
     <|> tUnitP
     <|> tBoolP
     <|> tNatP
@@ -94,6 +95,10 @@ typeTermP =
       tyVar <- tvarP
       dotP
       TAll tyVar <$> typeP
+    tProdP = do
+      ty1 <- symbol "(" >> typeP
+      ty2 <- symbol "," >> typeP
+      symbol ")" $> TProd ty1 ty2
 
 typeP :: Parser Type
 typeP = makeExprParser typeTermP [[infixR "→" TArr]]
@@ -104,6 +109,7 @@ typeP = makeExprParser typeTermP [[infixR "→" TArr]]
 exprTermP :: Parser Expr
 exprTermP =
   try (paren exprP)
+    <|> try eProdP
     <|> eUnitP
     <|> eTrueP
     <|> eFalseP
@@ -116,6 +122,10 @@ exprTermP =
     <|> eFixP
     <|> try (EVar <$> evarP)
   where
+    eProdP = do
+      e1 <- symbol "(" >> exprP
+      e2 <- symbol "," >> exprP
+      symbol ")" $> EProd e1 e2
     eUnitP = symbol "()" $> EUnit
     eTrueP = symbol "True" $> ETrue
     eFalseP = symbol "False" $> EFalse

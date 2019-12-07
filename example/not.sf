@@ -1,0 +1,5 @@
+let not : Bool → Bool =
+  λb. if b then False else True
+in
+
+(not True, not False)
