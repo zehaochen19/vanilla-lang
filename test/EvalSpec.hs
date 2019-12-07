@@ -48,3 +48,4 @@ evalSpec = describe "eval" $ do
   it "evals 6 - 2 = 4" $ eval (natMinus $$ intToNat 6 $$ intToNat 2) `shouldBe` intToNat 4
   it "evals fibinacci 10 = 55" $ (natToInt . eval $ (fibonacci $$ intToNat 10)) `shouldBe` 144
   it "evals aLetId" $ eval aLetId `shouldBe` ETrue
+  it "evals idProd" $ eval idProd `shouldBe` EProd EFalse EZero

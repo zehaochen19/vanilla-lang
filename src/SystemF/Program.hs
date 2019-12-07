@@ -191,3 +191,14 @@ aLetId =
     (TAll "A" (TVar "A" --> TVar "A"))
     (ELam "x" $ EVar "x")
     (EVar "id" $$ ETrue)
+
+boolNatProd :: Expr
+boolNatProd = EProd ETrue (ESucc EZero)
+
+idProd :: Expr
+idProd =
+  EALet
+    "id"
+    (TAll "A" (TVar "A" --> TVar "A"))
+    (ELam "x" $ EVar "x")
+    (EProd (EVar "id" $$ EFalse) (EVar "id" $$ EZero))
