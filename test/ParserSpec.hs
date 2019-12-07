@@ -35,6 +35,10 @@ typeParserSpec = describe "typeP should" $ do
     runParser typeP "" "(Nat, Nat → Nat)"
       `shouldBe` Right
         (TProd TNat (TNat --> TNat))
+  it "parse a pair of arrow" $
+    runParser typeP "" "(Nat → Nat, Nat → Nat)"
+      `shouldBe` Right
+        (TProd (TNat --> TNat) (TNat --> TNat))
 
 expressionParseSpec =
   describe "exprP should" $ do
@@ -89,6 +93,19 @@ expressionParseSpec =
       runParser exprP "" "(True, 0)" `shouldBe` Right (EProd ETrue EZero)
     it "parse a proj1" $
       runParser exprP "" "(True, 0).1" `shouldBe` Right (EProj1 (EProd ETrue EZero))
+    it "parse a chain of lets" $ do
+      let res =
+            runParser
+              exprP
+              ""
+              "let evenodd =\
+              \ fix (λ eo : (Nat → Bool, Nat → Bool).\
+              \ let e = λ n : Nat. natcase n { 0 → True, S x → eo.2 x } in\
+              \ let o = λ n : Nat. natcase n { 0 → False, S x → eo.1 x } in\
+              \ (e, o))\
+              \ in evenodd.1"
+      print res
+      res `shouldSatisfy` isRight
 
 parserSpec = do
   typeParserSpec

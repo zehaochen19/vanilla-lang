@@ -171,8 +171,8 @@ exprP :: Parser Expr
 exprP =
   makeExprParser
     exprTermP
-    [ [InfixL (EApp <$ space)],
-      [Postfix eProjP],
+    [ [Postfix eProjP],
+      [InfixL (EApp <$ space)],
       [Postfix eAnnoP]
     ]
   where
