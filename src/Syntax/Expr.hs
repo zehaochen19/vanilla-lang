@@ -28,6 +28,8 @@ data Expr
   | ESucc Expr
   | ENatCase Expr Expr EVar Expr
   | EProd Expr Expr
+  | EProj1 Expr
+  | EProj2 Expr
   | ELam EVar Expr
   | EALam EVar Type Expr
   | EApp Expr Expr

@@ -179,6 +179,19 @@ synthesize ctx (EProd e1 e2) = do
   (a, theta) <- synthesize ctx e1
   (b, delta) <- synthesize theta e2
   return (TProd a b, delta)
+-- Proj1==>
+synthesize ctx (EProj1 e) = do
+  (prod, theta) <- synthesize ctx e
+  case prod of
+    TProd a _ -> return (a, theta)
+    _ -> throw $ "cannot do projection on type: " ++ show prod
+-- Proj2==>
+-- Proj1==>
+synthesize ctx (EProj2 e) = do
+  (prod, theta) <- synthesize ctx e
+  case prod of
+    TProd _ b -> return (b, theta)
+    _ -> throw $ "cannot do projection on type: " ++ show prod
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -251,6 +264,18 @@ check ctx (ENatCase n e1 x e2) ty = do
 check ctx (EProd e1 e2) (TProd a b) = do
   theta <- check ctx e1 a
   check theta e2 (applyCtx theta b)
+-- Proj1
+check ctx (EProj1 e) ty = do
+  (prod, theta) <- synthesize ctx e
+  case prod of
+    TProd a _ -> subtype theta (applyCtx theta a) (applyCtx theta ty)
+    _ -> throw $ "cannot do projection on type: " ++ show prod
+-- Proj2
+check ctx (EProj2 e) ty = do
+  (prod, theta) <- synthesize ctx e
+  case prod of
+    TProd _ a -> subtype theta (applyCtx theta a) (applyCtx theta ty)
+    _ -> throw $ "cannot do projection on type: " ++ show prod
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a

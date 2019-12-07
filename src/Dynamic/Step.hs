@@ -28,6 +28,8 @@ substitute x e1 e2 =
           ENatCase (loop n) (loop e1') y $
             if x == y then e2' else loop e2'
         EProd e1 e2 -> EProd (loop e1) (loop e2)
+        EProj1 e -> EProj1 $ loop e
+        EProj2 e -> EProj2 $ loop e
         abs@(ELam y e2') -> if x == y then abs else ELam y $ loop e2'
         abs@(EALam y ty e2') -> if x == y then abs else EALam y ty $ loop e2'
         EApp e21 e22 -> EApp (loop e21) (loop e22)
@@ -58,6 +60,10 @@ step expr = case expr of
   EProd e1 e2 | not $ value e1 -> EProd (step e1) e2
   EProd e1 e2 | not $ value e2 -> EProd e1 (step e2)
   prod@EProd {} -> prod
+  EProj1 e | not $ value e -> EProj1 $ step e
+  EProj1 (EProd e _) -> e
+  EProj2 e | not $ value e -> EProj2 $ step e
+  EProj2 (EProd _ e) -> e
   -- Lam
   abs@(ELam _ _) -> abs
   abs@EALam {} -> abs

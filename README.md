@@ -18,6 +18,9 @@ Expressions     e         ::=   x                               -- variable
                               | 0                               -- natural number zero
                               | S e                             -- natural number successor
                               | natcase n {0 → e1, S x → e2}    -- natural number elimination
+                              | (e1, e2)                        -- product
+                              | e.1                             -- projection first
+                              | e.2                             -- projection second
                               | λx.e                            -- implicit λ
                               | λx : A.e                        -- annotated λ
                               | e1 e2                           -- application
