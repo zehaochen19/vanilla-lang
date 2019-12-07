@@ -2,4 +2,7 @@ let not : Bool → Bool =
   λb. if b then False else True
 in
 
-(not True, not False)
+let pair = (not True, not False)
+in
+
+pair.1

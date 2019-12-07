@@ -172,9 +172,11 @@ exprP =
   makeExprParser
     exprTermP
     [ [InfixL (EApp <$ space)],
+      [Postfix eProjP],
       [Postfix eAnnoP]
     ]
   where
     eAnnoP = do
       ty <- annotationP
       return $ \e -> EAnno e ty
+    eProjP = (symbol ".1" $> EProj1) <|> (symbol ".2" $> EProj2)

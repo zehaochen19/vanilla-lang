@@ -87,6 +87,8 @@ expressionParseSpec =
         `shouldSatisfy` isRight
     it "parse a product" $
       runParser exprP "" "(True, 0)" `shouldBe` Right (EProd ETrue EZero)
+    it "parse a proj1" $
+      runParser exprP "" "(True, 0).1" `shouldBe` Right (EProj1 (EProd ETrue EZero))
 
 parserSpec = do
   typeParserSpec
