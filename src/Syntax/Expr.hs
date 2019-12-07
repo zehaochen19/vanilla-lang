@@ -27,6 +27,7 @@ data Expr
   | EZero
   | ESucc Expr
   | ENatCase Expr Expr EVar Expr
+  | EProd Expr Expr
   | ELam EVar Expr
   | EALam EVar Type Expr
   | EApp Expr Expr

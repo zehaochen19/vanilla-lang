@@ -174,6 +174,11 @@ synthesize ctx (ENatCase n e1 x e2) = do
   psi <- subtype sigma a (TEVar eb)
   chi <- subtype psi (TEVar eb) a
   return (TEVar eb, ctxUntil (CAssump x TNat) chi)
+-- Prod==>
+synthesize ctx (EProd e1 e2) = do
+  (a, theta) <- synthesize ctx e1
+  (b, delta) <- synthesize theta e2
+  return (TProd a b, delta)
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -242,6 +247,10 @@ check ctx (ENatCase n e1 x e2) ty = do
   delta <- check theta e1 (applyCtx theta ty)
   ctxUntil (CAssump x TNat)
     <$> check (delta |> CAssump x TNat) e2 (applyCtx delta ty)
+-- Prod
+check ctx (EProd e1 e2) (TProd a b) = do
+  theta <- check ctx e1 a
+  check theta e2 (applyCtx theta b)
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a

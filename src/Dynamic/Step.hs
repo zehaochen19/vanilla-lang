@@ -8,6 +8,7 @@ value ETrue = True
 value EFalse = True
 value EZero = True
 value (ESucc n) = value n
+value (EProd e1 e2) = value e1 && value e2
 value (ELam _ _) = True
 value EALam {} = True
 value _ = False
@@ -26,6 +27,7 @@ substitute x e1 e2 =
         ENatCase n e1' y e2' ->
           ENatCase (loop n) (loop e1') y $
             if x == y then e2' else loop e2'
+        EProd e1 e2 -> EProd (loop e1) (loop e2)
         abs@(ELam y e2') -> if x == y then abs else ELam y $ loop e2'
         abs@(EALam y ty e2') -> if x == y then abs else EALam y ty $ loop e2'
         EApp e21 e22 -> EApp (loop e21) (loop e22)
@@ -52,6 +54,10 @@ step expr = case expr of
   ENatCase n e1 x e2 | not $ value n -> ENatCase (step n) e1 x e2
   ENatCase EZero e1 _ _ -> e1
   ENatCase (ESucc n') _ x e -> substitute x n' e
+  -- Product
+  EProd e1 e2 | not $ value e1 -> EProd (step e1) e2
+  EProd e1 e2 | not $ value e2 -> EProd e1 (step e2)
+  prod@EProd {} -> prod
   -- Lam
   abs@(ELam _ _) -> abs
   abs@EALam {} -> abs
