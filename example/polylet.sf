@@ -1,0 +1,3 @@
+let id : ∀A. A → A = λ x . x in
+
+(id 0, id True)

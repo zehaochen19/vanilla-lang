@@ -59,10 +59,10 @@ It should output the inferred type and evaluated value of this program:
 
 ```
 Type:
-TNat
+Nat
 
 Result:
-ESucc (ESucc (ESucc (ESucc (ESucc EZero))))
+S (S (S (S (S 0))))
 ```
 
 ### Mutual Recursion
@@ -72,10 +72,10 @@ Mutual recursive functions can be easily defined with the fixpoint and projectio
 Given `example/evenodd.sf`:
 
 ```
-let evenodd =
-  fix (λ eo : (Nat → Bool, Nat → Bool).
-    let e = λ n : Nat. natcase n { 0 → True, S x → eo.2 x } in
-    let o = λ n : Nat. natcase n { 0 → False, S x → eo.1 x } in
+let evenodd : (Nat → Bool, Nat → Bool) =
+  fix (λ eo  .
+    let e = λ n . natcase n { 0 → True, S x → eo.2 x } in
+    let o = λ n . natcase n { 0 → False, S x → eo.1 x } in
     (e, o))
 in
 
@@ -94,7 +94,7 @@ Type:
 (Bool, Bool)
 
 Result:
-EProd EFalse ETrue
+(False, True)
 ```
 
 ### Ill-typed Program
@@ -139,6 +139,12 @@ cannot establish subtyping with Unit <: Nat
 - [x] Fixpoint for general recursion
 - [x] Parser
 - [x] Pretty printing
+
+Maybe in Future
+
+- [ ] Declarations
+- [ ] Pattern match
+- [ ] Type operators
 
 ## References
 
