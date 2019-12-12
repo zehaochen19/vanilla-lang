@@ -2,14 +2,13 @@
 
 module TypeCheckSpec where
 
-import Data.Either
-  ( isLeft,
-    isRight,
-  )
-import Static.TypeCheck (typecheck)
-import Syntax.Type
-import SystemF.Program
-import Test.Hspec
+import           Data.Either                    ( isLeft
+                                                , isRight
+                                                )
+import           Static.TypeCheck               ( typecheck )
+import           Syntax.Type
+import           SystemF.Program
+import           Test.Hspec
 
 checksAndShouldBe e ty = do
   let res = typecheck e
@@ -39,10 +38,9 @@ typecheckSpec = describe "typeckeck" $ do
     ty `shouldBe` TAll "C" (TVar "C" --> TVar "C")
   it "infers nestedId" $ do
     let Right (ty, _) = typecheck nestedId
-    ty
-      `shouldBe` TAll
-        "B"
-        (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B"))
+    ty `shouldBe` TAll
+      "B"
+      (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B"))
   it "infers nestedIdId" $ do
     let Right (ty, _) = typecheck nestedIdId
     ty `shouldBe` TAll "A" (TVar "A" --> TVar "A")
@@ -58,23 +56,23 @@ typecheckSpec = describe "typeckeck" $ do
   it "infers letNestedIdUnit" $ do
     let Right (ty, _) = typecheck letNestedIdUnit
     ty `shouldBe` TUnit
-  it "rejects illtypedLetNestedUnit" $
-    typecheck illtypedLetNestedUnit
-      `shouldSatisfy` isLeft
+  it "rejects illtypedLetNestedUnit"
+    $               typecheck illtypedLetNestedUnit
+    `shouldSatisfy` isLeft
   it "checks unitId" $ do
     let Right (ty, _) = typecheck unitId
     ty `shouldBe` TArr TUnit TUnit
   it "infers letNestIdUnitId" $ do
     let Right (ty, _) = typecheck letNestedIdUnit
     ty `shouldBe` TUnit
-  it "rejects illtypedLetNestedIdUnitIdId" $
-    typecheck illtypedLetNestedIdUnitIdId
-      `shouldSatisfy` isLeft
-  it "checks applyToUnit" $
-    let Right (ty, _) = typecheck applyToUnit
-     in ty `shouldBe` TAll "A" (TVar "A" --> TVar "A") --> TUnit
-  it "checks applyToUnitId" $
-    let Right (ty, _) = typecheck applyToUnitId in ty `shouldBe` TUnit
+  it "rejects illtypedLetNestedIdUnitIdId"
+    $               typecheck illtypedLetNestedIdUnitIdId
+    `shouldSatisfy` isLeft
+  it "checks applyToUnit"
+    $ let Right (ty, _) = typecheck applyToUnit
+      in  ty `shouldBe` TAll "A" (TVar "A" --> TVar "A") --> TUnit
+  it "checks applyToUnitId"
+    $ let Right (ty, _) = typecheck applyToUnitId in ty `shouldBe` TUnit
   it "checks cont" $ typecheck cont `shouldSatisfy` isRight
   it "checks runCont" $ typecheck runCont `shouldSatisfy` isRight
   it "infers polyLet" $ do
@@ -88,24 +86,14 @@ typecheckSpec = describe "typeckeck" $ do
     res `shouldSatisfy` isRight
     let Right (ty, _) = res
     ty `shouldBe` TNat
-  it "checks ifElseIdNat"
-    $ checksAndShouldBe ifElseIdNat
-    $ TNat --> TNat
+  it "checks ifElseIdNat" $ checksAndShouldBe ifElseIdNat $ TNat --> TNat
   it "infers ifElseIdNatZero" $ checksAndShouldBe ifElseIdNatZero TNat
-  it "checks nonZero"
-    $ checksAndShouldBe nonZero
-    $ TNat --> TBool
+  it "checks nonZero" $ checksAndShouldBe nonZero $ TNat --> TBool
   it "infers nonZeroZero" $ checksAndShouldBe nonZeroZero TBool
   it "infers nonZeroTwo" $ checksAndShouldBe nonZeroTwo TBool
-  it "infers natAdd"
-    $ checksAndShouldBe natAdd
-    $ TNat --> TNat --> TNat
-  it "checks natAddAnno"
-    $ checksAndShouldBe natAddAnno
-    $ TNat --> TNat --> TNat
-  it "checks natMinus"
-    $ checksAndShouldBe natMinus
-    $ TNat --> TNat --> TNat
+  it "infers natAdd" $ checksAndShouldBe natAdd $ TNat --> TNat --> TNat
+  it "checks natAddAnno" $ checksAndShouldBe natAddAnno $ TNat --> TNat --> TNat
+  it "checks natMinus" $ checksAndShouldBe natMinus $ TNat --> TNat --> TNat
   it "checks fibonacci" $ checksAndShouldBe fibonacci $ TNat --> TNat
   it "infers aLetId" $ checksAndShouldBe aLetId TBool
   it "infers boolNatProd" $ checksAndShouldBe boolNatProd $ TProd TBool TNat

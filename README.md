@@ -33,7 +33,7 @@ Expressions     e         ::=   x                               -- variable
 
 ## Usage
 
-First of all, `stack` should be install in `PATH`
+First of all, `cabal` should be installed in `PATH`
 
 ### Add operator for natural numbers
 
@@ -51,8 +51,8 @@ add (S (S (S 0))) (S S (0))
 Run
 
 ```
-stack install
-systemf example/add.sf
+cabal build
+cabal run systemf example/add.sf
 ```
 
 It should output the inferred type and evaluated value of this program:
@@ -117,7 +117,7 @@ cannot establish subtyping with Unit <: Nat
 
 ### Unit tests
 
-`stack test`
+`cabal test`
 
 ## (Planned) Features
 

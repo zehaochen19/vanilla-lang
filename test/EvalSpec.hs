@@ -2,11 +2,13 @@
 
 module EvalSpec where
 
-import Dynamic.Step (eval)
-import Syntax.Expr
-import SystemF.Program
-import Test.Hspec
-import Utils (intToNat, natToInt)
+import           Dynamic.Step                   ( eval )
+import           Syntax.Expr
+import           SystemF.Program
+import           Test.Hspec
+import           Utils                          ( intToNat
+                                                , natToInt
+                                                )
 
 evalSpec = describe "eval" $ do
   it "evals id'" $ do
@@ -43,10 +45,18 @@ evalSpec = describe "eval" $ do
   it "evals ifElseIdNatZero" $ eval ifElseIdNatZero `shouldBe` EZero
   it "evals nonZeroZero" $ eval nonZeroZero `shouldBe` ETrue
   it "evals nonZeroTwo" $ eval nonZeroTwo `shouldBe` EFalse
-  it "evals 0 + 2 = 2" $ eval (natAdd $$ EZero $$ intToNat 2) `shouldBe` intToNat 2
-  it "evals 4 + 6 = 10" $ eval (natAdd $$ intToNat 4 $$ intToNat 6) `shouldBe` intToNat 10
-  it "evals 6 - 2 = 4" $ eval (natMinus $$ intToNat 6 $$ intToNat 2) `shouldBe` intToNat 4
-  it "evals fibinacci 10 = 55" $ (natToInt . eval $ (fibonacci $$ intToNat 10)) `shouldBe` 144
+  it "evals 0 + 2 = 2"
+    $          eval (natAdd $$ EZero $$ intToNat 2)
+    `shouldBe` intToNat 2
+  it "evals 4 + 6 = 10"
+    $          eval (natAdd $$ intToNat 4 $$ intToNat 6)
+    `shouldBe` intToNat 10
+  it "evals 6 - 2 = 4"
+    $          eval (natMinus $$ intToNat 6 $$ intToNat 2)
+    `shouldBe` intToNat 4
+  it "evals fibinacci 10 = 55"
+    $          (natToInt . eval $ (fibonacci $$ intToNat 10))
+    `shouldBe` 144
   it "evals aLetId" $ eval aLetId `shouldBe` ETrue
   it "evals idProd" $ eval idProd `shouldBe` EProd EFalse EZero
   it "evals boolNatProj1" $ eval boolNatProj1 `shouldBe` ETrue
