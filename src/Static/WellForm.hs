@@ -14,3 +14,4 @@ typeWellForm ctx (TAll alpha a) = typeWellForm (ctx |> CVar alpha) a
 typeWellForm ctx (TEVar ea) =
   CEVar ea `ctxElem` ctx || isJust (ctxSolve ctx ea)
 typeWellForm ctx (TProd a b) = typeWellForm ctx a && typeWellForm ctx b
+typeWellForm ctx (TSum  a b) = typeWellForm ctx a && typeWellForm ctx b

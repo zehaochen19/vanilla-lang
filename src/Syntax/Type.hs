@@ -38,6 +38,7 @@ data Type
   | TVar TVar
   | TEVar TEVar
   | TProd Type Type
+  | TSum Type Type
   | TArr Type Type
   | TAll TVar Type
   deriving (Eq)
@@ -65,6 +66,7 @@ tyFreeTEVars TNat         = S.empty
 tyFreeTEVars (TVar  _   ) = S.empty
 tyFreeTEVars (TEVar evar) = S.singleton evar
 tyFreeTEVars (TProd a b ) = tyFreeTEVars a <> tyFreeTEVars b
+tyFreeTEVars (TSum  a b ) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TArr  a b ) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TAll  _ ty) = tyFreeTEVars ty
 
@@ -75,6 +77,7 @@ tyFreeTVars TNat         = S.empty
 tyFreeTVars (TVar  a   ) = S.singleton a
 tyFreeTVars (TEVar _   ) = S.empty
 tyFreeTVars (TProd a b ) = tyFreeTVars a <> tyFreeTVars b
+tyFreeTVars (TSum  a b ) = tyFreeTVars a <> tyFreeTVars b
 tyFreeTVars (TArr  a b ) = tyFreeTVars a <> tyFreeTVars b
 tyFreeTVars (TAll  a ty) = S.delete a $ tyFreeTVars ty
 
@@ -93,6 +96,7 @@ instance Show Type where
   show (TVar  (MkTVar  x)) = T.unpack x
   show (TEVar (MkTEVar x)) = "Existential " ++ T.unpack x
   show (TProd a b        ) = "(" ++ tyParen a ++ ", " ++ tyParen b ++ ")"
+  show (TSum  a b        ) = tyParen a ++ " + " ++ tyParen b
   show (TArr  a b        ) = tyParen a ++ " → " ++ tyParen b
   show (TAll  a ty       ) = "∀" ++ show a ++ ". " ++ tyParen ty
 

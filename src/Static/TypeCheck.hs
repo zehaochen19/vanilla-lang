@@ -49,6 +49,7 @@ tySubstitue alpha ty1 ty2 = if not . null $ tyFreeTVars ty1
       if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
     TArr  a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
     TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+    TSum  a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var
@@ -63,6 +64,10 @@ subtype ctx TNat  TNat                   = pure ctx
 subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
 -- <:Product
 subtype ctx (TProd a1 b1) (TProd a2 b2)  = do
+  theta <- subtype ctx a1 a2
+  subtype ctx (applyCtx theta b1) (applyCtx theta b2)
+-- <:Sum
+subtype ctx (TSum a1 b1) (TSum a2 b2) = do
   theta <- subtype ctx a1 a2
   subtype ctx (applyCtx theta b1) (applyCtx theta b2)
 -- <:-->
@@ -280,6 +285,8 @@ check ctx (EProj2 e) ty = do
   case prod of
     TProd _ a -> subtype theta (applyCtx theta a) (applyCtx theta ty)
     _         -> throw $ "cannot do projection on type: " ++ show prod
+-- Sum
+-- TODO
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
