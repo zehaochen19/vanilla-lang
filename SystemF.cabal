@@ -1,0 +1,86 @@
+cabal-version:  3.0
+name:           SystemF
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/zehaochen19/SystemF#readme>
+homepage:       https://github.com/zehaochen19/SystemF#readme
+bug-reports:    https://github.com/zehaochen19/SystemF/issues
+author:         Zehao Chen
+maintainer:     zehaochen19@gmail.com
+copyright:      2019 Zehao Chen
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/zehaochen19/SystemF
+
+library
+  exposed-modules:
+      Dynamic.Step
+      Parser
+      Static.Context
+      Static.TypeCheck
+      Static.WellForm
+      Syntax.Expr
+      Syntax.Type
+      SystemF
+      SystemF.Program
+      Utils
+  other-modules:
+      Paths_SystemF
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , extra
+    , megaparsec
+    , parser-combinators
+    , polysemy
+    , text
+  default-language: Haskell2010
+
+executable systemf
+  main-is: Main.hs
+  other-modules:
+      Paths_SystemF
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      SystemF
+    , base >=4.7 && <5
+    , containers
+    , extra
+    , megaparsec
+    , parser-combinators
+    , polysemy
+    , text
+  default-language: Haskell2010
+
+test-suite SystemF-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      EvalSpec
+      ParserSpec
+      TypeCheckSpec
+      Paths_SystemF
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      SystemF
+    , base >=4.7 && <5
+    , containers
+    , extra
+    , hspec
+    , megaparsec
+    , parser-combinators
+    , polysemy
+    , text
+  default-language: Haskell2010

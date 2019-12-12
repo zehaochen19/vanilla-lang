@@ -1,5 +1,4 @@
-.stack-work/
-SystemF.cabal
+dist-newstyle/
 *~
 .ghci
 .ghcid
