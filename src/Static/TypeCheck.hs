@@ -195,12 +195,21 @@ synthesize ctx (EProj1 e) = do
     TProd a _ -> return (a, theta)
     _         -> throw $ "cannot do projection on type: " ++ show prod
 -- Proj2==>
--- Proj1==>
 synthesize ctx (EProj2 e) = do
   (prod, theta) <- synthesize ctx e
   case applyCtx theta prod of
     TProd _ b -> return (b, theta)
     _         -> throw $ "cannot do projection on type: " ++ show prod
+-- Inj1==>
+synthesize ctx (EInj1 e) = do
+  eb         <- freshTEVar
+  (a, theta) <- synthesize (ctx |> CEVar eb) e
+  return (TSum a (TEVar eb), theta)
+-- Inj2==>
+synthesize ctx (EInj2 e) = do
+  ea         <- freshTEVar
+  (b, theta) <- synthesize (ctx |> CEVar ea) e
+  return (TSum (TEVar ea) b, theta)
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -286,7 +295,8 @@ check ctx (EProj2 e) ty = do
     TProd _ a -> subtype theta (applyCtx theta a) (applyCtx theta ty)
     _         -> throw $ "cannot do projection on type: " ++ show prod
 -- Sum
--- TODO
+check ctx (EInj1 e) (TSum a _) = check ctx e a
+check ctx (EInj2 e) (TSum _ a) = check ctx e a
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a

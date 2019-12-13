@@ -33,6 +33,8 @@ data Expr
   | EProd Expr Expr
   | EProj1 Expr
   | EProj2 Expr
+  | EInj1 Expr
+  | EInj2 Expr
   | ELam EVar Expr
   | EALam EVar Type Expr
   | EApp Expr Expr
@@ -78,6 +80,8 @@ instance Show Expr where
   show (EProd e1 e2 ) = "(" ++ eParen e1 ++ ", " ++ eParen e2 ++ ")"
   show (EProj1 e    ) = eParen e ++ ".1"
   show (EProj2 e    ) = eParen e ++ ".2"
+  show (EInj1  e    ) = "Inj1" ++ eParen e
+  show (EInj2  e    ) = "Inj2" ++ eParen e
   show (ELam x e    ) = "λ" ++ show x ++ " . " ++ eParen e
   show (EALam x ty e) = "λ" ++ show x ++ " : " ++ show ty ++ " . " ++ eParen e
   show (EApp  e1 e2 ) = eParen e1 ++ " " ++ eParen e2

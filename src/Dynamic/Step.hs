@@ -30,6 +30,8 @@ substitute x e1 e2 =
       EProd e1 e2             -> EProd (loop e1) (loop e2)
       EProj1 e                -> EProj1 $ loop e
       EProj2 e                -> EProj2 $ loop e
+      EInj1  e                -> EInj1 $ loop e
+      EInj2  e                -> EInj2 $ loop e
       abs@( ELam y e2'    )   -> if x == y then abs else ELam y $ loop e2'
       abs@( EALam y ty e2')   -> if x == y then abs else EALam y ty $ loop e2'
       EApp  e21           e22 -> EApp (loop e21) (loop e22)
@@ -64,6 +66,9 @@ step expr = case expr of
   EProj1 (EProd e _)                 -> e
   EProj2 e | not $ value e           -> EProj2 $ step e
   EProj2 (EProd _ e)                 -> e
+  -- Sum
+  EInj1 e | not $ value e            -> EInj1 $ step e
+  EInj2 e | not $ value e            -> EInj2 $ step e
   -- Lam
   abs@(ELam _ _)                     -> abs
   abs@EALam{}                        -> abs
