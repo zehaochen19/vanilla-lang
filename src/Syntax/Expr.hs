@@ -35,6 +35,7 @@ data Expr
   | EProj2 Expr
   | EInj1 Expr
   | EInj2 Expr
+  | ESumCase Expr EVar Expr EVar Expr
   | ELam EVar Expr
   | EALam EVar Type Expr
   | EApp Expr Expr
@@ -77,11 +78,23 @@ instance Show Expr where
       ++ " -> "
       ++ eParen e2
       ++ " }"
-  show (EProd e1 e2 ) = "(" ++ eParen e1 ++ ", " ++ eParen e2 ++ ")"
-  show (EProj1 e    ) = eParen e ++ ".1"
-  show (EProj2 e    ) = eParen e ++ ".2"
-  show (EInj1  e    ) = "Inj1" ++ eParen e
-  show (EInj2  e    ) = "Inj2" ++ eParen e
+  show (EProd e1 e2) = "(" ++ eParen e1 ++ ", " ++ eParen e2 ++ ")"
+  show (EProj1 e   ) = eParen e ++ ".1"
+  show (EProj2 e   ) = eParen e ++ ".2"
+  show (EInj1  e   ) = "Inj1" ++ eParen e
+  show (EInj2  e   ) = "Inj2" ++ eParen e
+  show (ESumCase e x e1 y e2) =
+    "sumcase "
+      ++ eParen e
+      ++ " { Inj1 "
+      ++ show x
+      ++ " -> "
+      ++ eParen e1
+      ++ " , Inj2 "
+      ++ show y
+      ++ " -> "
+      ++ eParen e2
+      ++ " }"
   show (ELam x e    ) = "λ" ++ show x ++ " . " ++ eParen e
   show (EALam x ty e) = "λ" ++ show x ++ " : " ++ show ty ++ " . " ++ eParen e
   show (EApp  e1 e2 ) = eParen e1 ++ " " ++ eParen e2
