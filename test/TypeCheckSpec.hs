@@ -99,3 +99,6 @@ typecheckSpec = describe "typeckeck" $ do
   it "infers boolNatProd" $ checksAndShouldBe boolNatProd $ TProd TBool TNat
   it "infers idProd" $ checksAndShouldBe idProd $ TProd TBool TNat
   it "infers boolNatProj1" $ checksAndShouldBe boolNatProj1 TBool
+  it "checks sumUnit" $ checksAndShouldBe sumUnit $ TAll
+    "A"
+    (TSum TNat (TVar "A") --> TUnit)

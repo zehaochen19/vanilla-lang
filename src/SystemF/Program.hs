@@ -212,3 +212,6 @@ idProd = EALet "id"
 
 boolNatProj1 :: Expr
 boolNatProj1 = EProj1 boolNatProd
+
+sumUnit :: Expr
+sumUnit = ELam "s" EUnit -: TAll "A" (TSum TNat (TVar "A") --> TUnit)
