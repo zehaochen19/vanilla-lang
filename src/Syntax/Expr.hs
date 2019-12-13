@@ -81,8 +81,8 @@ instance Show Expr where
   show (EProd e1 e2) = "(" ++ eParen e1 ++ ", " ++ eParen e2 ++ ")"
   show (EProj1 e   ) = eParen e ++ ".1"
   show (EProj2 e   ) = eParen e ++ ".2"
-  show (EInj1  e   ) = "Inj1" ++ eParen e
-  show (EInj2  e   ) = "Inj2" ++ eParen e
+  show (EInj1  e   ) = "Inj1 " ++ eParen e
+  show (EInj2  e   ) = "Inj2 " ++ eParen e
   show (ESumCase e x e1 y e2) =
     "sumcase "
       ++ eParen e

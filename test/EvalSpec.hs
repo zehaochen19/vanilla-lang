@@ -60,3 +60,5 @@ evalSpec = describe "eval" $ do
   it "evals aLetId" $ eval aLetId `shouldBe` ETrue
   it "evals idProd" $ eval idProd `shouldBe` EProd EFalse EZero
   it "evals boolNatProj1" $ eval boolNatProj1 `shouldBe` ETrue
+  it "evals (isInj1 inj2Unit)" $ eval (isInj1 $$ inj2Unit) `shouldBe` EFalse
+  it "evals (isInj1 inj1Nat)" $ eval (isInj1 $$ inj1Nat) `shouldBe` ETrue

@@ -7,6 +7,7 @@ import           Data.Either                    ( isLeft
                                                 )
 import           Static.TypeCheck               ( typecheck )
 import           Syntax.Type
+import           Syntax.Expr
 import           SystemF.Program
 import           Test.Hspec
 
@@ -102,3 +103,9 @@ typecheckSpec = describe "typeckeck" $ do
   it "checks sumUnit" $ checksAndShouldBe sumUnit $ TAll
     "A"
     (TSum TNat (TVar "A") --> TUnit)
+  it "infers (sumUnit inj1Nat)" $ checksAndShouldBe (EApp sumUnit inj1Nat) TUnit
+  it "infers (sumUnit inj2Unit"
+    $ checksAndShouldBe (EApp sumUnit inj2Unit) TUnit
+  it "checks isInj1" $ typecheck isInj1 `shouldSatisfy` isRight
+  it "infers (isInj1 inj2Unit)" $ checksAndShouldBe (isInj1 $$ inj2Unit) TBool
+  it "infers (isInj1 inj1Nat)" $ checksAndShouldBe (isInj1 $$ inj1Nat) TBool

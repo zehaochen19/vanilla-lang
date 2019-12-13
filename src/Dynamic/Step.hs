@@ -9,7 +9,9 @@ value EFalse        = True
 value EZero         = True
 value (ESucc n    ) = value n
 value (EProd e1 e2) = value e1 && value e2
-value (ELam  _  _ ) = True
+value (EInj1 e    ) = value e
+value (EInj2 e    ) = value e
+value (ELam _ _   ) = True
 value EALam{}       = True
 value _             = False
 
@@ -32,7 +34,7 @@ substitute x e1 e2 =
       EProj2 e               -> EProj2 $ loop e
       EInj1  e               -> EInj1 $ loop e
       EInj2  e               -> EInj2 $ loop e
-      ESumCase e y1 e1 y2 e2 -> ESumCase e
+      ESumCase e y1 e1 y2 e2 -> ESumCase (loop e)
                                          y1
                                          (if x == y1 then e1 else loop e1)
                                          y2

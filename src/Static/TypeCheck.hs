@@ -49,7 +49,7 @@ tySubstitue alpha ty1 ty2 = if not . null $ tyFreeTVars ty1
       if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
     TArr  a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
     TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-    TSum  a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+    TSum  a b -> TSum (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var

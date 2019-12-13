@@ -215,3 +215,13 @@ boolNatProj1 = EProj1 boolNatProd
 
 sumUnit :: Expr
 sumUnit = ELam "s" EUnit -: TAll "A" (TSum TNat (TVar "A") --> TUnit)
+
+inj1Nat :: Expr
+inj1Nat = EInj1 EZero
+
+inj2Unit :: Expr
+inj2Unit = EInj2 EUnit
+
+isInj1 :: Expr
+isInj1 = ELam "s" (ESumCase (EVar "s") "x" ETrue "y" EFalse)
+  -: TAll "A" (TAll "B" $ TSum (TVar "A") (TVar "B") --> TBool)
