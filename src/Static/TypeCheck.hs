@@ -179,10 +179,11 @@ synthesize ctx (ENatCase n e1 x e2) = do
   theta      <- check ctx n TNat
   (a, delta) <- synthesize theta e1
   eb         <- freshTEVar
-  sigma      <- check (delta |> CEVar eb |> CAssump x TNat) e2 (TEVar eb)
-  psi        <- subtype sigma a (TEVar eb)
-  chi        <- subtype psi (TEVar eb) a
-  return (TEVar eb, ctxUntil (CAssump x TNat) chi)
+  sigma      <- ctxUntil (CAssump x TNat)
+    <$> check (delta |> CEVar eb |> CAssump x TNat) e2 (TEVar eb)
+  psi <- subtype sigma a (TEVar eb)
+  chi <- subtype psi (TEVar eb) a
+  return (TEVar eb, chi)
 -- Prod==>
 synthesize ctx (EProd e1 e2) = do
   (a, theta) <- synthesize ctx e1
@@ -210,6 +211,20 @@ synthesize ctx (EInj2 e) = do
   ea         <- freshTEVar
   (b, theta) <- synthesize (ctx |> CEVar ea) e
   return (TSum (TEVar ea) b, theta)
+synthesize ctx (ESumCase e x e1 y e2) = do
+  (tySum, theta) <- synthesize ctx e
+  case tySum of
+    TSum a b -> do
+      let a' = applyCtx theta a
+      (ty1, delta) <- synthesize (theta |> CAssump x a) e1
+      let delta' = ctxUntil (CAssump x a) delta
+      let b'     = applyCtx delta' b
+      (ty2, sigma) <- synthesize (theta |> CAssump y b) e2
+      let sigma' = ctxUntil (CAssump y b) sigma
+      psi <- subtype sigma (applyCtx sigma' a') (applyCtx sigma' b')
+      chi <- subtype psi (applyCtx psi b') (applyCtx psi a')
+      return (applyCtx chi ty1, chi)
+    _ -> throw $ "cannot do mattern match on: " ++ show tySum
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -295,8 +310,18 @@ check ctx (EProj2 e) ty = do
     TProd _ a -> subtype theta (applyCtx theta a) (applyCtx theta ty)
     _         -> throw $ "cannot do projection on type: " ++ show prod
 -- Sum
-check ctx (EInj1 e) (TSum a _) = check ctx e a
-check ctx (EInj2 e) (TSum _ a) = check ctx e a
+check ctx (EInj1 e             ) (TSum a _) = check ctx e a
+check ctx (EInj2 e             ) (TSum _ a) = check ctx e a
+-- SumCase
+check ctx (ESumCase e x e1 y e2) ty         = do
+  (tySum, theta) <- synthesize ctx e
+  case tySum of
+    TSum a b -> do
+      let a' = applyCtx theta a
+      delta <- ctxUntil (CAssump x a') <$> check (theta |> CAssump x a') e1 ty
+      let b' = applyCtx delta b
+      ctxUntil (CAssump y b') <$> check (delta |> CAssump y b') e2 ty
+    _ -> throw $ "cannot do mattern match on: " ++ show tySum
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
