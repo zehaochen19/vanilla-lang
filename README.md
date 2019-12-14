@@ -11,29 +11,32 @@ For simplicity, this programming language only supports type checking and evalua
 Types           A, B, C   ::= Unit | Bool | Nat | α | ∀α.A | A → B
 Monotypes       τ, σ      ::= Unit | Bool | Nat | α | τ → σ
 
-Expressions     e         ::=   x                               -- variable
-                              | ()                              -- unit
-                              | True                            -- boolean constant true
-                              | False                           -- boolean constant false
-                              | 0                               -- natural number zero
-                              | S e                             -- natural number successor
-                              | natcase n {0 → e1, S x → e2}    -- natural number elimination
-                              | (e1, e2)                        -- product
-                              | e.1                             -- projection first
-                              | e.2                             -- projection second
-                              | λx.e                            -- implicit λ
-                              | λx : A.e                        -- annotated λ
-                              | e1 e2                           -- application
-                              | e : A                           -- annotation
-                              | let x = e1 in e2                -- let binding
-                              | let x : A = e1 in e2            -- annotated let binding
-                              | if e then e1 else e2            -- if-else
-                              | fix e                           -- fixpoint
+Expressions     e         ::=   x                                     -- variable
+                              | ()                                    -- unit
+                              | True                                  -- boolean constant true
+                              | False                                 -- boolean constant false
+                              | 0                                     -- natural number zero
+                              | S e                                   -- natural number successor
+                              | natcase n {0 → e1, S x → e2}          -- natural number elimination
+                              | (e1, e2)                              -- product
+                              | e.1                                   -- projection first
+                              | e.2                                   -- projection second
+                              | Inj1 e                                -- injection1
+                              | Inj2 e1                               -- injection2
+                              | sumcase e {Inj1 x → e1, Inj2 y → e2}  -- sum elimination
+                              | λx.e                                  -- implicit λ
+                              | λx : A.e                              -- annotated λ
+                              | e1 e2                                 -- application
+                              | e : A                                 -- annotation
+                              | let x = e1 in e2                      -- let binding
+                              | let x : A = e1 in e2                  -- annotated let binding
+                              | if e then e1 else e2                  -- if-else
+                              | fix e                                 -- fixpoint
 ```
 
 ## Usage
 
-First of all, `cabal` should be installed in `PATH`
+First of all, `cabal` and `ghc` should be installed in `PATH`
 
 ### Add operator for natural numbers
 
@@ -129,12 +132,11 @@ cannot establish subtyping with Unit <: Nat
 - [x] Examples
 - [x] Unit tests
 - [x] Let Binding (not verified)
-- [ ] Extended basic types
+- [x] Extended basic types
   - [x] Bool
   - [x] Nat
   - [x] Product
-  - [ ] Sum
-  - [ ] List
+  - [x] Sum
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
 - [x] Parser
