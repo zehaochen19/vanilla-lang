@@ -110,6 +110,9 @@ expressionParseSpec = describe "exprP should" $ do
               \ in evenodd.1"
     print res
     res `shouldSatisfy` isRight
+  it "parse a sum"
+    $          runParser exprP "" "(inj1 ()) : Unit + Nat"
+    `shouldBe` Right (EInj1 EUnit -: TSum TUnit TNat)
 
 parserSpec = do
   typeParserSpec

@@ -101,7 +101,7 @@ typeTermP =
     symbol ")" $> TProd ty1 ty2
 
 typeP :: Parser Type
-typeP = makeExprParser typeTermP [[infixR "→" TArr]]
+typeP = makeExprParser typeTermP [[infixR "+" TSum], [infixR "→" TArr]]
  where
   infixR :: Text -> (Type -> Type -> Type) -> Operator Parser Type
   infixR name f = InfixR (f <$ symbol name)
@@ -116,6 +116,8 @@ exprTermP =
     <|> eZeroP
     <|> eSuccP
     <|> eNatCaseP
+    <|> eInj1P
+    <|> eInj2P
     <|> eLamP
     <|> eLetP
     <|> eIfP
@@ -143,7 +145,9 @@ exprTermP =
       e2 <- symbol "→" >> exprP
       symbol "}"
       return (e1, x, e2)
-  eLamP = do
+  eInj1P = EInj1 <$> (symbol "inj1" >> exprP)
+  eInj2P = EInj2 <$> (symbol "inj2" >> exprP)
+  eLamP  = do
     x          <- symbol "λ" >> evarP
     annotation <- optional annotationP
     body       <- dotP >> exprP
