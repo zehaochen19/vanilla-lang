@@ -118,6 +118,7 @@ exprTermP =
     <|> eNatCaseP
     <|> eInj1P
     <|> eInj2P
+    <|> eSumCaseP
     <|> eLamP
     <|> eLetP
     <|> eIfP
@@ -145,9 +146,22 @@ exprTermP =
       e2 <- symbol "→" >> exprP
       symbol "}"
       return (e1, x, e2)
-  eInj1P = EInj1 <$> (symbol "inj1" >> exprP)
-  eInj2P = EInj2 <$> (symbol "inj2" >> exprP)
-  eLamP  = do
+  eInj1P    = EInj1 <$> (symbol "Inj1" >> exprP)
+  eInj2P    = EInj2 <$> (symbol "Inj2" >> exprP)
+  eSumCaseP = do
+    symbol "sumcase"
+    e              <- exprP
+    (x, e1, y, e2) <- sumCaseBranchP
+    return $ ESumCase e x e1 y e2
+   where
+    sumCaseBranchP = do
+      x  <- symbol "{" >> symbol "Inj1" >> evarP
+      e1 <- symbol "→" >> exprP
+      y  <- symbol "," >> symbol "Inj2" >> evarP
+      e2 <- symbol "→" >> exprP
+      symbol "}"
+      return (x, e1, y, e2)
+  eLamP = do
     x          <- symbol "λ" >> evarP
     annotation <- optional annotationP
     body       <- dotP >> exprP

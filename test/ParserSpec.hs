@@ -111,8 +111,11 @@ expressionParseSpec = describe "exprP should" $ do
     print res
     res `shouldSatisfy` isRight
   it "parse a sum"
-    $          runParser exprP "" "(inj1 ()) : Unit + Nat"
+    $          runParser exprP "" "(Inj1 ()) : Unit + Nat"
     `shouldBe` Right (EInj1 EUnit -: TSum TUnit TNat)
+  it "parse a sumcase"
+    $ runParser exprP "" "sumcase (Inj1 ()) { Inj1 x → True, Inj2 y → False }"
+    `shouldBe` Right (ESumCase (EInj1 EUnit) "x" ETrue "y" EFalse)
 
 parserSpec = do
   typeParserSpec
