@@ -1,18 +1,18 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Syntax.Expr
-  ( EVar(..)
-  , Expr(..)
-  , evar
-  , ($$)
-  , (-:)
-  , isELam
+  ( EVar (..),
+    Expr (..),
+    evar,
+    ($$),
+    (-:),
+    isELam,
   )
 where
 
-import           Data.String                    ( IsString )
-import           Data.Text                     as T
-import           Syntax.Type                    ( Type )
+import Data.String (IsString)
+import Data.Text as T
+import Syntax.Type (Type)
 
 newtype EVar = MkEVar Text deriving (Eq, Ord, IsString)
 
@@ -48,8 +48,8 @@ data Expr
 
 isELam :: Expr -> Bool
 isELam (ELam _ _) = True
-isELam EALam{}    = True
-isELam _          = False
+isELam EALam {} = True
+isELam _ = False
 
 infixl 2 $$
 
@@ -62,12 +62,12 @@ infixl 1 -:
 (-:) = EAnno
 
 instance Show Expr where
-  show EUnit     = "()"
-  show (EVar v)  = show v
-  show ETrue     = "True"
-  show EFalse    = "False"
+  show EUnit = "()"
+  show (EVar v) = show v
+  show ETrue = "True"
+  show EFalse = "False"
   show (ESucc n) = "S " ++ eParen n
-  show EZero     = "0"
+  show EZero = "0"
   show (ENatCase n e1 x e2) =
     "natcase "
       ++ eParen n
@@ -79,10 +79,10 @@ instance Show Expr where
       ++ eParen e2
       ++ " }"
   show (EProd e1 e2) = "(" ++ eParen e1 ++ ", " ++ eParen e2 ++ ")"
-  show (EProj1 e   ) = eParen e ++ ".1"
-  show (EProj2 e   ) = eParen e ++ ".2"
-  show (EInj1  e   ) = "Inj1 " ++ eParen e
-  show (EInj2  e   ) = "Inj2 " ++ eParen e
+  show (EProj1 e) = eParen e ++ ".1"
+  show (EProj2 e) = eParen e ++ ".2"
+  show (EInj1 e) = "Inj1 " ++ eParen e
+  show (EInj2 e) = "Inj2 " ++ eParen e
   show (ESumCase e x e1 y e2) =
     "sumcase "
       ++ eParen e
@@ -95,10 +95,10 @@ instance Show Expr where
       ++ " -> "
       ++ eParen e2
       ++ " }"
-  show (ELam x e    ) = "λ" ++ show x ++ " . " ++ eParen e
+  show (ELam x e) = "λ" ++ show x ++ " . " ++ eParen e
   show (EALam x ty e) = "λ" ++ show x ++ " : " ++ show ty ++ " . " ++ eParen e
-  show (EApp  e1 e2 ) = eParen e1 ++ " " ++ eParen e2
-  show (EAnno e  ty ) = eParen e ++ " : " ++ show ty
+  show (EApp e1 e2) = eParen e1 ++ " " ++ eParen e2
+  show (EAnno e ty) = eParen e ++ " : " ++ show ty
   show (ELet x e1 e2) =
     "let " ++ show x ++ " = " ++ eParen e1 ++ " in " ++ eParen e2
   show (EALet x ty e1 e2) =
@@ -116,9 +116,9 @@ instance Show Expr where
 
 eParen :: Expr -> String
 eParen ty = case ty of
-  EUnit  -> show ty
+  EUnit -> show ty
   EVar _ -> show ty
-  ETrue  -> show ty
+  ETrue -> show ty
   EFalse -> show ty
-  EZero  -> show ty
-  _      -> "(" ++ show ty ++ ")"
+  EZero -> show ty
+  _ -> "(" ++ show ty ++ ")"

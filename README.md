@@ -36,7 +36,7 @@ Expressions     e         ::=   x                                     -- variabl
 
 ## Usage
 
-First of all, `cabal` and `ghc` should be installed in `PATH`
+First of all, `stack` should be installed in `PATH`
 
 ### Add operator for natural numbers
 
@@ -54,8 +54,7 @@ add (S (S (S 0))) (S S (0))
 Run
 
 ```
-cabal build
-cabal run systemf example/add.sf
+$ stack run example/add.sf
 ```
 
 It should output the inferred type and evaluated value of this program:
@@ -120,7 +119,7 @@ cannot establish subtyping with Unit <: Nat
 
 ### Unit tests
 
-`cabal test`
+`$ stack test`
 
 ## (Planned) Features
 

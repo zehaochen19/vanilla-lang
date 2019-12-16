@@ -5,21 +5,22 @@
 
 module Static.TypeCheck where
 
-import           Data.Text                      ( Text )
-import           Polysemy
-import           Polysemy.Error
-import           Polysemy.State
-import           Static.Context
-import           Static.WellForm
-import           Syntax.Expr                    ( Expr(..) )
-import           Syntax.Type                    ( TEVar(..)
-                                                , TVar
-                                                , Type(..)
-                                                , isMono
-                                                , tyFreeTEVars
-                                                , tyFreeTVars
-                                                )
-import           Utils                          ( freshVarStream )
+import Data.Text (Text)
+import Polysemy
+import Polysemy.Error
+import Polysemy.State
+import Static.Context
+import Static.WellForm
+import Syntax.Expr (Expr (..))
+import Syntax.Type
+  ( TEVar (..),
+    TVar,
+    Type (..),
+    isMono,
+    tyFreeTEVars,
+    tyFreeTVars,
+  )
+import Utils (freshVarStream)
 
 -- | Apply bidirectional typechecking
 newtype CheckState = CheckState {freshTypeVars :: [Text]}
@@ -37,33 +38,34 @@ freshTEVar = do
 
 -- | [ty1/alpha]ty2
 tySubstitue :: TVar -> Type -> Type -> Type
-tySubstitue alpha ty1 ty2 = if not . null $ tyFreeTVars ty1
-  then error $ "Non-closed type: " ++ show ty1
-  else case ty2 of
-    TUnit        -> TUnit
-    TBool        -> TBool
-    TNat         -> TNat
-    TVar  alpha' -> if alpha == alpha' then ty1 else ty2
-    TEVar _      -> ty2
-    TAll beta a ->
-      if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
-    TArr  a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-    TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-    TSum  a b -> TSum (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+tySubstitue alpha ty1 ty2 =
+  if not . null $ tyFreeTVars ty1
+    then error $ "Non-closed type: " ++ show ty1
+    else case ty2 of
+      TUnit -> TUnit
+      TBool -> TBool
+      TNat -> TNat
+      TVar alpha' -> if alpha == alpha' then ty1 else ty2
+      TEVar _ -> ty2
+      TAll beta a ->
+        if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
+      TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+      TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+      TSum a b -> TSum (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var
 subtype ctx (TVar a) (TVar a') | a == a' = pure ctx
 -- <:Unit
-subtype ctx TUnit TUnit                  = pure ctx
+subtype ctx TUnit TUnit = pure ctx
 -- <:Bool
-subtype ctx TBool TBool                  = pure ctx
+subtype ctx TBool TBool = pure ctx
 -- <:Nat
-subtype ctx TNat  TNat                   = pure ctx
+subtype ctx TNat TNat = pure ctx
 -- <:ExVar
 subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
 -- <:Product
-subtype ctx (TProd a1 b1) (TProd a2 b2)  = do
+subtype ctx (TProd a1 b1) (TProd a2 b2) = do
   theta <- subtype ctx a1 a2
   subtype ctx (applyCtx theta b1) (applyCtx theta b2)
 -- <:Sum
@@ -78,44 +80,47 @@ subtype ctx (TArr a1 a2) (TArr b1 b2) = do
 subtype ctx (TAll alpha a) b = do
   alphaHat <- freshTEVar
   let ctx' = ctx |> CMarker alphaHat |> CEVar alphaHat
-      a'   = tySubstitue alpha (TEVar alphaHat) a
+      a' = tySubstitue alpha (TEVar alphaHat) a
   ctxUntil (CMarker alphaHat) <$> subtype ctx' a' b
 -- <:forallR
 subtype ctx a (TAll alpha b) =
   ctxUntil (CVar alpha) <$> subtype (ctx |> CVar alpha) a b
 -- <:InstantiateL
-subtype ctx (TEVar alphaHat) a | alphaHat `notElem` tyFreeTEVars a =
-  instantiateL ctx alphaHat a
+subtype ctx (TEVar alphaHat) a
+  | alphaHat `notElem` tyFreeTEVars a =
+    instantiateL ctx alphaHat a
 -- <:InstantiateR
-subtype ctx a (TEVar alphaHat) | alphaHat `notElem` tyFreeTEVars a =
-  instantiateR ctx a alphaHat
+subtype ctx a (TEVar alphaHat)
+  | alphaHat `notElem` tyFreeTEVars a =
+    instantiateR ctx a alphaHat
 subtype _ a b =
   throw $ "cannot establish subtyping with " ++ show a ++ " <: " ++ show b
 
 instantiateL :: TypeCheck r => Context -> TEVar -> Type -> Sem r Context
 -- InstLSolve
 instantiateL ctx ea ty
-  | isMono ty
-  , Just (gamma, gamma') <- ctxHole (CEVar ea) ctx
-  , typeWellForm gamma ty
-  = pure $ gamma |> CSolve ea ty <> gamma'
+  | isMono ty,
+    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx,
+    typeWellForm gamma ty =
+    pure $ gamma |> CSolve ea ty <> gamma'
 -- InstLReach
 instantiateL ctx ea (TEVar eb)
-  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx
-  = pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
+  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx =
+    pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
 -- InstLArr
 instantiateL ctx ea (TArr a1 a2) | Just (l, r) <- ctxHole (CEVar ea) ctx = do
-  ea1   <- freshTEVar
-  ea2   <- freshTEVar
-  theta <- instantiateR
-    (  l
-    |> CEVar ea2
-    |> CEVar ea1
-    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-    <> r
-    )
-    a1
-    ea1
+  ea1 <- freshTEVar
+  ea2 <- freshTEVar
+  theta <-
+    instantiateR
+      ( l
+          |> CEVar ea2
+          |> CEVar ea1
+          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+          <> r
+      )
+      a1
+      ea1
   instantiateL theta ea2 (applyCtx theta a2)
 -- InstLAllR
 instantiateL ctx ea (TAll beta b) =
@@ -127,27 +132,28 @@ instantiateL ctx ea ty =
 instantiateR :: TypeCheck r => Context -> Type -> TEVar -> Sem r Context
 -- InstRSolve
 instantiateR ctx ty ea
-  | isMono ty
-  , Just (gamma, gamma') <- ctxHole (CEVar ea) ctx
-  , typeWellForm gamma ty
-  = pure $ gamma |> CSolve ea ty <> gamma'
+  | isMono ty,
+    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx,
+    typeWellForm gamma ty =
+    pure $ gamma |> CSolve ea ty <> gamma'
 -- InstRReach
 instantiateR ctx (TEVar eb) ea
-  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx
-  = pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
+  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx =
+    pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
 -- InstRArr
 instantiateR ctx (TArr a1 a2) ea | Just (l, r) <- ctxHole (CEVar ea) ctx = do
-  ea1   <- freshTEVar
-  ea2   <- freshTEVar
-  theta <- instantiateL
-    (  l
-    |> CEVar ea2
-    |> CEVar ea1
-    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-    <> r
-    )
-    ea1
-    a1
+  ea1 <- freshTEVar
+  ea2 <- freshTEVar
+  theta <-
+    instantiateL
+      ( l
+          |> CEVar ea2
+          |> CEVar ea1
+          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+          <> r
+      )
+      ea1
+      a1
   instantiateR theta (applyCtx theta a2) ea2
 -- InstRAllL
 instantiateR ctx (TAll beta b) ea = do
@@ -161,26 +167,27 @@ synthesize :: TypeCheck r => Context -> Expr -> Sem r (Type, Context)
 -- Var
 synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
 -- Anno
-synthesize ctx (EAnno e ty) | typeWellForm ctx ty    = (,) ty <$> check ctx e ty
+synthesize ctx (EAnno e ty) | typeWellForm ctx ty = (,) ty <$> check ctx e ty
 -- 1I ==>
-synthesize ctx EUnit                                 = pure (TUnit, ctx)
+synthesize ctx EUnit = pure (TUnit, ctx)
 -- True ==>
-synthesize ctx ETrue                                 = pure (TBool, ctx)
+synthesize ctx ETrue = pure (TBool, ctx)
 -- False ==>
-synthesize ctx EFalse                                = pure (TBool, ctx)
+synthesize ctx EFalse = pure (TBool, ctx)
 -- ZeroI ==>
-synthesize ctx EZero                                 = pure (TNat, ctx)
+synthesize ctx EZero = pure (TNat, ctx)
 -- Succ =>
-synthesize ctx (ESucc n)                             = do
+synthesize ctx (ESucc n) = do
   theta <- check ctx n TNat
   return (TNat, theta)
 -- NatCase ==>
 synthesize ctx (ENatCase n e1 x e2) = do
-  theta      <- check ctx n TNat
+  theta <- check ctx n TNat
   (a, delta) <- synthesize theta e1
-  eb         <- freshTEVar
-  sigma      <- ctxUntil (CAssump x TNat)
-    <$> check (delta |> CEVar eb |> CAssump x TNat) e2 (TEVar eb)
+  eb <- freshTEVar
+  sigma <-
+    ctxUntil (CAssump x TNat)
+      <$> check (delta |> CEVar eb |> CAssump x TNat) e2 (TEVar eb)
   psi <- subtype sigma a (TEVar eb)
   chi <- subtype psi (TEVar eb) a
   return (TEVar eb, chi)
@@ -194,21 +201,21 @@ synthesize ctx (EProj1 e) = do
   (prod, theta) <- synthesize ctx e
   case applyCtx theta prod of
     TProd a _ -> return (a, theta)
-    _         -> throw $ "cannot do projection on type: " ++ show prod
+    _ -> throw $ "cannot do projection on type: " ++ show prod
 -- Proj2==>
 synthesize ctx (EProj2 e) = do
   (prod, theta) <- synthesize ctx e
   case applyCtx theta prod of
     TProd _ b -> return (b, theta)
-    _         -> throw $ "cannot do projection on type: " ++ show prod
+    _ -> throw $ "cannot do projection on type: " ++ show prod
 -- Inj1==>
 synthesize ctx (EInj1 e) = do
-  eb         <- freshTEVar
+  eb <- freshTEVar
   (a, theta) <- synthesize (ctx |> CEVar eb) e
   return (TSum a (TEVar eb), theta)
 -- Inj2==>
 synthesize ctx (EInj2 e) = do
-  ea         <- freshTEVar
+  ea <- freshTEVar
   (b, theta) <- synthesize (ctx |> CEVar ea) e
   return (TSum (TEVar ea) b, theta)
 synthesize ctx (ESumCase e x e1 y e2) = do
@@ -218,7 +225,7 @@ synthesize ctx (ESumCase e x e1 y e2) = do
       let a' = applyCtx theta a
       (ty1, delta) <- synthesize (theta |> CAssump x a) e1
       let delta' = ctxUntil (CAssump x a) delta
-      let b'     = applyCtx delta' b
+      let b' = applyCtx delta' b
       (ty2, sigma) <- synthesize (theta |> CAssump y b) e2
       let sigma' = ctxUntil (CAssump y b) sigma
       psi <- subtype sigma (applyCtx sigma' a') (applyCtx sigma' b')
@@ -252,19 +259,19 @@ synthesize ctx (ELet x e1 e2) = do
   return (TEVar eb, ctxUntil (CAssump x a') delta)
 -- ALet==>
 synthesize ctx (EALet x ty e1 e2) = do
-  eb    <- freshTEVar
+  eb <- freshTEVar
   theta <- check (ctx |> CEVar eb) e1 ty
   let xAssump = CAssump x (applyCtx theta ty)
   delta <- check (theta |> xAssump) e2 (TEVar eb)
   return (TEVar eb, ctxUntil xAssump delta)
 -- If==>
 synthesize ctx (EIf b e1 e2) = do
-  theta      <- check ctx b TBool
+  theta <- check ctx b TBool
   (a, delta) <- synthesize theta e1
   (b, sigma) <- synthesize delta e2
   -- inferred types should be subtype to each other
-  psi        <- subtype sigma a b
-  chi        <- subtype psi b a
+  psi <- subtype sigma a b
+  chi <- subtype psi b a
   return (applyCtx chi a, chi)
 synthesize ctx (EFix e) = do
   (ty, theta) <- synthesize ctx e
@@ -278,17 +285,17 @@ synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
 -- 1I
-check ctx EUnit                TUnit = pure ctx
+check ctx EUnit TUnit = pure ctx
 -- TrueI
-check ctx ETrue                TBool = pure ctx
+check ctx ETrue TBool = pure ctx
 -- FalseI
-check ctx EFalse               TBool = pure ctx
+check ctx EFalse TBool = pure ctx
 -- ZeroI
-check ctx EZero                TNat  = pure ctx
+check ctx EZero TNat = pure ctx
 -- Succ
-check ctx (ESucc n           ) TNat  = check ctx n TNat
+check ctx (ESucc n) TNat = check ctx n TNat
 -- NatCase
-check ctx (ENatCase n e1 x e2) ty    = do
+check ctx (ENatCase n e1 x e2) ty = do
   theta <- check ctx n TNat
   delta <- check theta e1 (applyCtx theta ty)
   ctxUntil (CAssump x TNat)
@@ -302,18 +309,18 @@ check ctx (EProj1 e) ty = do
   (prod, theta) <- synthesize ctx e
   case prod of
     TProd a _ -> subtype theta (applyCtx theta a) (applyCtx theta ty)
-    _         -> throw $ "cannot do projection on type: " ++ show prod
+    _ -> throw $ "cannot do projection on type: " ++ show prod
 -- Proj2
 check ctx (EProj2 e) ty = do
   (prod, theta) <- synthesize ctx e
   case prod of
     TProd _ a -> subtype theta (applyCtx theta a) (applyCtx theta ty)
-    _         -> throw $ "cannot do projection on type: " ++ show prod
+    _ -> throw $ "cannot do projection on type: " ++ show prod
 -- Sum
-check ctx (EInj1 e             ) (TSum a _) = check ctx e a
-check ctx (EInj2 e             ) (TSum _ a) = check ctx e a
+check ctx (EInj1 e) (TSum a _) = check ctx e a
+check ctx (EInj2 e) (TSum _ a) = check ctx e a
 -- SumCase
-check ctx (ESumCase e x e1 y e2) ty         = do
+check ctx (ESumCase e x e1 y e2) ty = do
   (tySum, theta) <- synthesize ctx e
   case tySum of
     TSum a b -> do
@@ -351,7 +358,7 @@ check ctx (EIf b e1 e2) ty = do
 -- Fix
 check ctx (EFix e) ty = check ctx e $ TArr ty ty
 -- Sub
-check ctx e        b  = do
+check ctx e b = do
   (a, theta) <- synthesize ctx e
   subtype theta (applyCtx theta a) (applyCtx theta b)
 
@@ -362,17 +369,18 @@ apply ctx (TAll alpha a) e = do
   apply (ctx |> CEVar ea) (tySubstitue alpha (TEVar ea) a) e
 -- eaApp
 apply ctx (TEVar ea) e | Just (l, r) <- ctxHole (CEVar ea) ctx = do
-  ea1   <- freshTEVar
-  ea2   <- freshTEVar
-  delta <- check
-    (  l
-    |> CEVar ea2
-    |> CEVar ea1
-    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-    <> r
-    )
-    e
-    (TEVar ea1)
+  ea1 <- freshTEVar
+  ea2 <- freshTEVar
+  delta <-
+    check
+      ( l
+          |> CEVar ea2
+          |> CEVar ea1
+          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+          <> r
+      )
+      e
+      (TEVar ea1)
   return (TEVar ea2, delta)
 -- -->App
 apply ctx (TArr a c) e = do
@@ -383,6 +391,9 @@ apply ctx e1 e2 =
 
 typecheck :: Expr -> Either String (Type, Context)
 typecheck expr = do
-  (ty, ctx) <- run . runError . evalState initCheckState $ synthesize mempty
-                                                                      expr
+  (ty, ctx) <-
+    run . runError . evalState initCheckState $
+      synthesize
+        mempty
+        expr
   return (applyCtx ctx ty, ctx)

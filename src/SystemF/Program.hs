@@ -2,8 +2,8 @@
 
 module SystemF.Program where
 
-import           Syntax.Expr
-import           Syntax.Type
+import Syntax.Expr
+import Syntax.Type
 
 id' :: Expr
 id' = ELam "x" (EVar "x") -: TAll "A" (TVar "A" --> TVar "A")
@@ -23,8 +23,9 @@ idIdAnno :: Expr
 idIdAnno = idId -: TAll "C" (TVar "C" --> TVar "C")
 
 nestedId :: Expr
-nestedId = ELam "f" (ELam "x" (EVar "f" $$ EVar "x"))
-  -: TAll "B" (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B"))
+nestedId =
+  ELam "f" (ELam "x" (EVar "f" $$ EVar "x"))
+    -: TAll "B" (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B"))
 
 nestedIdId :: Expr
 nestedIdId = nestedId $$ id' -: TAll "A" (TVar "A" --> TVar "A")
@@ -45,8 +46,9 @@ letNestedIdId :: Expr
 letNestedIdId = ELet "myNestedId" nestedId (EVar "myNestedId" $$ id')
 
 letNestedIdUnit :: Expr
-letNestedIdUnit = ELet "myNestedId" nestedId
-  $ ELet "myid" id' (EVar "myNestedId" $$ EVar "myid" $$ EUnit)
+letNestedIdUnit =
+  ELet "myNestedId" nestedId $
+    ELet "myid" id' (EVar "myNestedId" $$ EVar "myid" $$ EUnit)
 
 illtypedLetNestedUnit :: Expr
 illtypedLetNestedUnit =
@@ -56,17 +58,17 @@ unitId = ELam "x" (EVar "x") -: TArr TUnit TUnit
 
 letNestIdUnitId =
   ELet "nestedId" nestedId
-    $  ELet "unitId" unitId
-    $  EVar "nestedId"
-    $$ EVar "unitId"
-    $$ EUnit
+    $ ELet "unitId" unitId
+    $ EVar "nestedId"
+      $$ EVar "unitId"
+      $$ EUnit
 
 illtypedLetNestedIdUnitIdId =
   ELet "nestedId" nestedId
-    $  ELet "unitId" unitId
-    $  EVar "nestedId"
-    $$ EVar "unitId"
-    $$ id'
+    $ ELet "unitId" unitId
+    $ EVar "nestedId"
+      $$ EVar "unitId"
+      $$ id'
 
 lambdaIdIdUnit = ELam "f" (ELam "x" $ EVar "f" $$ EVar "x") $$ id' $$ EUnit
 
@@ -77,8 +79,9 @@ applyToUnitId = applyToUnit $$ id'
 
 -- The continuation monad
 cont :: Expr
-cont = ELam "a" (ELam "callback" (EVar "callback" $$ EVar "a"))
-  -: TAll "A" (TVar "A" --> TAll "R" ((TVar "A" --> TVar "R") --> TVar "R"))
+cont =
+  ELam "a" (ELam "callback" (EVar "callback" $$ EVar "a"))
+    -: TAll "A" (TVar "A" --> TAll "R" ((TVar "A" --> TVar "R") --> TVar "R"))
 
 runCont :: Expr
 runCont =
@@ -88,15 +91,15 @@ runCont =
 -- polymorphic let
 polyLet =
   ELet "id" id'
-    $  ELet "myId"   (EVar "id" $$ id')
-    $  ELet "myUnit" (EVar "id" $$ EUnit)
-    $  EVar "myId"
-    $$ EVar "myUnit"
+    $ ELet "myId" (EVar "id" $$ id')
+    $ ELet "myUnit" (EVar "id" $$ EUnit)
+    $ EVar "myId"
+      $$ EVar "myUnit"
 
 polyLetNat =
   ELet "id" id'
     $ ELet "myId" (EVar "id" $$ id'')
-    $ ELet "my0"  (EVar "id" $$ EZero)
+    $ ELet "my0" (EVar "id" $$ EZero)
     $ ESucc (EVar "myId" $$ EVar "my0")
 
 annotedIdSZero :: Expr
@@ -121,23 +124,25 @@ nonZeroZero = nonZero $$ EZero
 nonZeroTwo = nonZero $$ ESucc (ESucc EZero)
 
 natAdd :: Expr
-natAdd = EFix
-  (ELam
-    "f"
-    (EALam
-      "x"
-      TNat
-      (EALam
-        "y"
-        TNat
-        (ENatCase (EVar "x")
-                  (EVar "y")
-                  "x'"
-                  (ESucc (EVar "f" $$ EVar "x'" $$ EVar "y"))
+natAdd =
+  EFix
+    ( ELam
+        "f"
+        ( EALam
+            "x"
+            TNat
+            ( EALam
+                "y"
+                TNat
+                ( ENatCase
+                    (EVar "x")
+                    (EVar "y")
+                    "x'"
+                    (ESucc (EVar "f" $$ EVar "x'" $$ EVar "y"))
+                )
+            )
         )
-      )
     )
-  )
 
 natAddAnno = natAdd -: TNat --> TNat --> TNat
 
@@ -148,67 +153,72 @@ natPred =
 natMinus :: Expr
 natMinus =
   EFix
-      (ELam
+    ( ELam
         "f"
-        (EALam
-          "x"
-          TNat
-          (EALam
-            "y"
+        ( EALam
+            "x"
             TNat
-            (ENatCase
-              (EVar "y")
-              (EVar "x")
-              "y'"
-              (ENatCase (EVar "x")
+            ( EALam
+                "y"
+                TNat
+                ( ENatCase
+                    (EVar "y")
+                    (EVar "x")
+                    "y'"
+                    ( ENatCase
+                        (EVar "x")
                         EZero
                         "x'"
                         (EVar "f" $$ EVar "x'" $$ EVar "y'")
-              )
+                    )
+                )
             )
-          )
         )
-      )
-    -:  TNat
+    )
+    -: TNat
     --> TNat
     --> TNat
 
 fibonacci :: Expr
 fibonacci =
   EFix
-      (ELam
+    ( ELam
         "fib"
-        (EALam
-          "n"
-          TNat
-          (ENatCase
-            (EVar "n")
-            (ESucc EZero)
-            "n'"
-            (  natAdd
-            $$ (EVar "fib" $$ EVar "n'")
-            $$ (EVar "fib" $$ (natPred $$ EVar "n'"))
+        ( EALam
+            "n"
+            TNat
+            ( ENatCase
+                (EVar "n")
+                (ESucc EZero)
+                "n'"
+                ( natAdd
+                    $$ (EVar "fib" $$ EVar "n'")
+                    $$ (EVar "fib" $$ (natPred $$ EVar "n'"))
+                )
             )
-          )
         )
-      )
-    -:  TNat
+    )
+    -: TNat
     --> TNat
 
 aLetId :: Expr
-aLetId = EALet "id"
-               (TAll "A" (TVar "A" --> TVar "A"))
-               (ELam "x" $ EVar "x")
-               (EVar "id" $$ ETrue)
+aLetId =
+  EALet
+    "id"
+    (TAll "A" (TVar "A" --> TVar "A"))
+    (ELam "x" $ EVar "x")
+    (EVar "id" $$ ETrue)
 
 boolNatProd :: Expr
 boolNatProd = EProd ETrue (ESucc EZero)
 
 idProd :: Expr
-idProd = EALet "id"
-               (TAll "A" (TVar "A" --> TVar "A"))
-               (ELam "x" $ EVar "x")
-               (EProd (EVar "id" $$ EFalse) (EVar "id" $$ EZero))
+idProd =
+  EALet
+    "id"
+    (TAll "A" (TVar "A" --> TVar "A"))
+    (ELam "x" $ EVar "x")
+    (EProd (EVar "id" $$ EFalse) (EVar "id" $$ EZero))
 
 boolNatProj1 :: Expr
 boolNatProj1 = EProj1 boolNatProd
@@ -223,5 +233,6 @@ inj2Unit :: Expr
 inj2Unit = EInj2 EUnit
 
 isInj1 :: Expr
-isInj1 = ELam "s" (ESumCase (EVar "s") "x" ETrue "y" EFalse)
-  -: TAll "A" (TAll "B" $ TSum (TVar "A") (TVar "B") --> TBool)
+isInj1 =
+  ELam "s" (ESumCase (EVar "s") "x" ETrue "y" EFalse)
+    -: TAll "A" (TAll "B" $ TSum (TVar "A") (TVar "B") --> TBool)
