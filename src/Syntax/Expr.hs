@@ -115,10 +115,12 @@ instance Show Expr where
   show (EFix e) = "fix " ++ eParen e
 
 eParen :: Expr -> String
-eParen ty = case ty of
-  EUnit -> show ty
-  EVar _ -> show ty
-  ETrue -> show ty
-  EFalse -> show ty
-  EZero -> show ty
-  _ -> "(" ++ show ty ++ ")"
+eParen e = case e of
+  EUnit -> show e
+  EVar _ -> show e
+  ETrue -> show e
+  EFalse -> show e
+  EZero -> show e
+  EProj1 _ -> show e
+  EProj2 _ -> show e
+  _ -> "(" ++ show e ++ ")"
