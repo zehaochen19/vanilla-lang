@@ -76,3 +76,4 @@ applyCtx gamma ty = case ty of
   TSum a b -> TSum (applyCtx gamma a) (applyCtx gamma b)
   TArr a b -> TArr (applyCtx gamma a) (applyCtx gamma b)
   TAll alpha a -> TAll alpha $ applyCtx gamma a
+  TData d pat -> TData d (applyCtx gamma <$> pat)

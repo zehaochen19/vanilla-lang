@@ -41,6 +41,7 @@ data Type
   | TSum Type Type
   | TArr Type Type
   | TAll TVar Type
+  | TData Text [Type]
   deriving (Eq)
 
 infixr 2 -->
@@ -57,6 +58,7 @@ isMono (TVar _) = True
 isMono (TEVar _) = True
 isMono (TProd a b) = isMono a && isMono b
 isMono (TArr a b) = isMono a && isMono b
+isMono (TData _ pat) = all isMono pat
 isMono _ = False
 
 tyFreeTEVars :: Type -> Set TEVar
@@ -69,6 +71,7 @@ tyFreeTEVars (TProd a b) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TSum a b) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TArr a b) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TAll _ ty) = tyFreeTEVars ty
+tyFreeTEVars (TData _ pat) = mconcat $ fmap tyFreeTEVars pat
 
 tyFreeTVars :: Type -> Set TVar
 tyFreeTVars TUnit = S.empty
@@ -80,6 +83,7 @@ tyFreeTVars (TProd a b) = tyFreeTVars a <> tyFreeTVars b
 tyFreeTVars (TSum a b) = tyFreeTVars a <> tyFreeTVars b
 tyFreeTVars (TArr a b) = tyFreeTVars a <> tyFreeTVars b
 tyFreeTVars (TAll a ty) = S.delete a $ tyFreeTVars ty
+tyFreeTVars (TData _ pat) = mconcat $ fmap tyFreeTVars pat
 
 isTArr :: Type -> Bool
 isTArr (TArr _ _) = True
@@ -99,6 +103,7 @@ instance Show Type where
   show (TSum a b) = tyParen a ++ " + " ++ tyParen b
   show (TArr a b) = tyParen a ++ " → " ++ tyParen b
   show (TAll a ty) = "∀" ++ show a ++ ". " ++ tyParen ty
+  show (TData name pat) = T.unpack name ++ unwords (show <$> pat)
 
 tyParen :: Type -> String
 tyParen ty = case ty of

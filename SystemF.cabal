@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d74deac8a94e631be26aa3c9e496ab88f2747862a0ba0f847332f3be0b6927e7
+-- hash: 4d045f272fb456466ced8d4080dafa9c647a37439a44b40cb6705a3f67e687ba
 
 name:           SystemF
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       Static.Context
       Static.TypeCheck
       Static.WellForm
+      Syntax.Decl
       Syntax.Expr
       Syntax.Type
       SystemF

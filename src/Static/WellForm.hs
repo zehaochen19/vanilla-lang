@@ -1,17 +1,24 @@
 module Static.WellForm where
 
+import Data.Map as M
 import Data.Maybe (isJust)
+import Data.Text (Text)
 import Static.Context
+import Syntax.Decl
 import Syntax.Type
 
-typeWellForm :: Context -> Type -> Bool
-typeWellForm ctx (TVar alpha) = CVar alpha `ctxElem` ctx
-typeWellForm ctx TUnit = True
-typeWellForm ctx TBool = True
-typeWellForm ctx TNat = True
-typeWellForm ctx (TArr a b) = typeWellForm ctx a && typeWellForm ctx b
-typeWellForm ctx (TAll alpha a) = typeWellForm (ctx |> CVar alpha) a
-typeWellForm ctx (TEVar ea) =
-  CEVar ea `ctxElem` ctx || isJust (ctxSolve ctx ea)
-typeWellForm ctx (TProd a b) = typeWellForm ctx a && typeWellForm ctx b
-typeWellForm ctx (TSum a b) = typeWellForm ctx a && typeWellForm ctx b
+typeWellForm :: Map Text Declaration -> Context -> Type -> Bool
+typeWellForm decls ctx ty = case ty of
+  TVar alpha -> CVar alpha `ctxElem` ctx
+  TUnit -> True
+  TBool -> True
+  TNat -> True
+  TArr a b -> typeWellForm decls ctx a && typeWellForm decls ctx b
+  TAll alpha a -> typeWellForm decls (ctx |> CVar alpha) a
+  TEVar ea -> CEVar ea `ctxElem` ctx || isJust (ctxSolve ctx ea)
+  TProd a b -> typeWellForm decls ctx a && typeWellForm decls ctx b
+  TSum a b -> typeWellForm decls ctx a && typeWellForm decls ctx b
+  TData name pat -> case M.lookup name decls of
+    Nothing -> False
+    Just dec -> length pat == length (tvars dec) && all (typeWellForm decls ctx) pat
+-- TODO: data types

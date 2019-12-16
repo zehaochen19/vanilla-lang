@@ -52,6 +52,7 @@ tySubstitue alpha ty1 ty2 =
       TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
       TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
       TSum a b -> TSum (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+      TData d pat -> TData d (tySubstitue alpha ty1 <$> pat)
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var
