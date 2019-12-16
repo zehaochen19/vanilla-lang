@@ -142,12 +142,6 @@ cannot establish subtyping with Unit <: Nat
 - [x] Parser
 - [x] Pretty printing
 
-Maybe in Future
-
-- [ ] Declarations
-- [ ] Pattern match
-- [ ] Type operators
-
 ## References
 
 - [Complete and Easy Bidirectional Typechecking for Higher-Rank Polymorphism](https://arxiv.org/abs/1306.6032)
