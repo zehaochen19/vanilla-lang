@@ -2,8 +2,10 @@
 
 module EvalSpec where
 
+import Data.Sequence as S
 import Dynamic.Step (eval)
 import Syntax.Expr
+import Syntax.Program
 import SystemF.Examples
 import Test.Hspec
 import Utils
@@ -63,3 +65,8 @@ evalSpec = describe "eval" $ do
   it "evals boolNatProj1" $ eval boolNatProj1 `shouldBe` ETrue
   it "evals (isInj1 inj2Unit)" $ eval (isInj1 $$ inj2Unit) `shouldBe` EFalse
   it "evals (isInj1 inj1Nat)" $ eval (isInj1 $$ inj1Nat) `shouldBe` ETrue
+  it "evals listEmptyProg" $ eval (mainExpr listEmptyProg) `shouldBe` ETrue
+  it "evals listNonEmptyProg" $ eval (mainExpr listNonEmptyProg) `shouldBe` EFalse
+  it "evals nonzeroSingletonList" $
+    eval (mainExpr nonzeroSingletonList)
+      `shouldBe` ECons "Cons" (fromList [ECons "Succ" $ fromList [cons "Zero"], cons "Nil"])
