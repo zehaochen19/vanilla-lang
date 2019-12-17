@@ -8,7 +8,6 @@ module Syntax.Expr
     (-:),
     isELam,
     cons,
-    ConsVar (..),
     Branch (..),
   )
 where
@@ -19,6 +18,7 @@ import Data.Sequence (Seq)
 import Data.String (IsString)
 import Data.Text (Text)
 import qualified Data.Text as T
+import Syntax.Cons (ConsVar (..))
 import Syntax.Type (Type)
 
 newtype EVar = MkEVar Text deriving (Eq, Ord, IsString)
@@ -28,11 +28,6 @@ instance Show EVar where
 
 evar :: Text -> EVar
 evar = MkEVar
-
-newtype ConsVar = MkConsVar Text deriving (Eq, Ord, IsString)
-
-instance Show ConsVar where
-  show (MkConsVar v) = T.unpack v
 
 data Branch = Branch ConsVar [EVar] Expr deriving (Eq)
 
@@ -143,9 +138,6 @@ instance Show Expr where
   show (EIf b e1 e2) =
     "if " ++ eParen b ++ " then " ++ eParen e1 ++ " else " ++ show e2
   show (EFix e) = "fix " ++ eParen e
-
-showPatternMatch :: EVar -> Expr -> String
-showPatternMatch x e = show x ++ " -> " ++ eParen e
 
 eParen :: Expr -> String
 eParen e = case e of

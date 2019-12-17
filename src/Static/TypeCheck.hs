@@ -14,7 +14,7 @@ import Polysemy.State
 import Static.Context
 import Static.WellForm
 import Syntax.Decl
-import Syntax.Expr (Expr (..))
+import Syntax.Expr (Branch (..), Expr (..))
 import Syntax.Program
 import Syntax.Type
   ( TEVar (..),
@@ -312,6 +312,13 @@ synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
 -- 1I
 check ctx EUnit TUnit = pure ctx
+-- Case
+check ctx (ECase e branches) ty = do
+  (ty, theta) <- synthesize ctx e
+  let ty' = applyCtx theta ty
+  case ty' of
+    TData cName types -> checkBranch ctx types branches ty
+    _ -> throw $ "cannot use pattern match on: " ++ show ty'
 -- TrueI
 check ctx ETrue TBool = pure ctx
 -- FalseI
@@ -414,6 +421,20 @@ apply ctx (TArr a c) e = do
   return (c, delta)
 apply ctx e1 e2 =
   throw $ "cannot infer type after applying " ++ show e1 ++ " with " ++ show e2
+
+checkBranch :: TypeCheck r => Context -> [Type] -> [Branch] -> Type -> Sem r Context
+checkBranch ctx tys [] target = pure ctx
+checkBranch ctx tys (Branch cons evars e : bs) target =
+  case ctxCons ctx cons of
+    Nothing -> throw $ "undefined constructor: " ++ show cons
+    Just consTy -> do
+      eTy <- freshTEVar
+      let ctx' = ctx |> CMarker eTy <> typings
+      theta <- check ctx' e target
+      ctxUntil (CMarker eTy) <$> checkBranch theta tys bs target
+      where
+        instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
+        (_, typings) = foldl (\(TArr a b, c) x -> (b, c |> CAssump x a)) (instTy, mempty) evars
 
 typecheck :: Expr -> Either String (Type, Context)
 typecheck expr = do

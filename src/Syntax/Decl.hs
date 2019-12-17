@@ -4,7 +4,7 @@ import qualified Data.Map as M
 import qualified Data.Sequence as S
 import Data.Text (Text)
 import Static.Context
-import Syntax.Expr (ConsVar (..))
+import Syntax.Cons (ConsVar (..))
 import Syntax.Type
 
 -- | user defined data type declaration

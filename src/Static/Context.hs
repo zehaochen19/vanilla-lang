@@ -3,7 +3,8 @@
 module Static.Context where
 
 import qualified Data.Sequence as S
-import Syntax.Expr (ConsVar, EVar)
+import Syntax.Cons (ConsVar)
+import Syntax.Expr (EVar)
 import Syntax.Type
   ( TEVar,
     TVar,
