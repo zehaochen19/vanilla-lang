@@ -4,6 +4,7 @@ module SystemF.Examples where
 
 import Syntax.Decl
 import Syntax.Expr
+import Syntax.Program
 import Syntax.Type
 
 id' :: Expr
@@ -256,3 +257,6 @@ natDec =
     "Nat"
     []
     [Constructor "Zero" [], Constructor "Succ" [TData "Nat" []]]
+
+listDummyProg :: Program
+listDummyProg = Program [listDec] (EVar "Cons" $$ EUnit $$ EVar "Nil" -: TData "List" [TUnit])

@@ -6,11 +6,18 @@ import Data.Either
   ( isLeft,
     isRight,
   )
-import Static.TypeCheck (typecheck)
+import Polysemy
+import Polysemy.Error
+import Static.Context (Context)
+import Static.TypeCheck (typecheck, typecheckProg)
 import Syntax.Expr
+import Syntax.Program (Program)
 import Syntax.Type
 import SystemF.Examples
 import Test.Hspec
+
+runTypecheck' :: Program -> Either String (Type, Context)
+runTypecheck' p = run . runError $ typecheckProg p
 
 checksAndShouldBe e ty = do
   let res = typecheck e
@@ -112,3 +119,8 @@ typecheckSpec = describe "typeckeck" $ do
   it "checks isInj1" $ typecheck isInj1 `shouldSatisfy` isRight
   it "infers (isInj1 inj2Unit)" $ checksAndShouldBe (isInj1 $$ inj2Unit) TBool
   it "infers (isInj1 inj1Nat)" $ checksAndShouldBe (isInj1 $$ inj1Nat) TBool
+  it "checks listDummyProg" $ do
+    let res = runTypecheck' listDummyProg
+    res `shouldSatisfy` isRight
+    let Right (ty, _) = res
+    ty `shouldBe` TData "List" [TUnit]

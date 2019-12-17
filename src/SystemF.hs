@@ -31,7 +31,7 @@ interpretF expr = do
 
 interpretF' :: Member (Error String) r => Program -> Sem r (Expr, Type)
 interpretF' prog = do
-  (ty, ctx) <- typecheck' prog `catch` (\e -> throw $ "Typecheck error:\n" ++ e)
+  (ty, ctx) <- typecheckProg prog `catch` (\e -> throw $ "Typecheck error:\n" ++ e)
   return (eval . mainExpr $ prog, applyCtx ctx ty)
 
 systemF :: Member (Error String) r => FilePath -> Text -> Sem r (Expr, Type)
