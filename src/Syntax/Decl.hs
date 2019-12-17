@@ -14,8 +14,9 @@ data Declaration
         tvars :: [TVar],
         constructors :: [Constructor]
       }
+  deriving (Eq, Show)
 
-data Constructor = Constructor Text [Type]
+data Constructor = Constructor Text [Type] deriving (Eq, Show)
 
 type DeclarationMap = M.Map Text Declaration
 
@@ -29,8 +30,8 @@ consCtxMember dec (Constructor conName pat) = CAssump (MkEVar conName) genTy
     genTy = foldr TAll monoTy (tvars dec)
 
 -- | initialize typing context for constructors
-initCtx :: [Declaration] -> Context
-initCtx decls = Context . S.fromList $
+initDeclCtx :: [Declaration] -> Context
+initDeclCtx decls = Context . S.fromList $
   decls
     >>= \dec -> consCtxMember dec <$> constructors dec
 

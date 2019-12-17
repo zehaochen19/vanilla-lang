@@ -103,7 +103,7 @@ instance Show Type where
   show (TSum a b) = tyParen a ++ " + " ++ tyParen b
   show (TArr a b) = tyParen a ++ " → " ++ tyParen b
   show (TAll a ty) = "∀" ++ show a ++ ". " ++ tyParen ty
-  show (TData name pat) = T.unpack name ++ unwords (show <$> pat)
+  show (TData name pat) = T.unpack name ++ " " ++ unwords (show <$> pat)
 
 tyParen :: Type -> String
 tyParen ty = case ty of

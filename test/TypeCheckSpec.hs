@@ -9,7 +9,7 @@ import Data.Either
 import Static.TypeCheck (typecheck)
 import Syntax.Expr
 import Syntax.Type
-import SystemF.Program
+import SystemF.Examples
 import Test.Hspec
 
 checksAndShouldBe e ty = do

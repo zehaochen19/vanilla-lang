@@ -1,3 +1,4 @@
+import DeclSpec
 import EvalSpec
 import ParserSpec
 import Test.Hspec
@@ -8,3 +9,4 @@ main = hspec $ do
   typecheckSpec
   evalSpec
   parserSpec
+  declSpec

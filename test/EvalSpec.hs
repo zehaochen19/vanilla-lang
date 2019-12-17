@@ -4,7 +4,7 @@ module EvalSpec where
 
 import Dynamic.Step (eval)
 import Syntax.Expr
-import SystemF.Program
+import SystemF.Examples
 import Test.Hspec
 import Utils
   ( intToNat,

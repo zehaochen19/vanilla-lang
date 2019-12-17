@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SystemF.Program where
+module SystemF.Examples where
 
+import Syntax.Decl
 import Syntax.Expr
 import Syntax.Type
 
@@ -236,3 +237,22 @@ isInj1 :: Expr
 isInj1 =
   ELam "s" (ESumCase (EVar "s") "x" ETrue "y" EFalse)
     -: TAll "A" (TAll "B" $ TSum (TVar "A") (TVar "B") --> TBool)
+
+-- | Data types
+
+-- | List declaration
+listDec :: Declaration
+listDec =
+  Declaration
+    "List"
+    ["A"]
+    [ Constructor "Nil" [],
+      Constructor "Cons" [TVar "A", TData "List" [TVar "A"]]
+    ]
+
+-- | Nat declaration
+natDec =
+  Declaration
+    "Nat"
+    []
+    [Constructor "Zero" [], Constructor "Succ" [TData "Nat" []]]

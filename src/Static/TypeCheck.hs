@@ -423,7 +423,7 @@ typecheck' :: Member (Error String) r => Program -> Sem r (Type, Context)
 typecheck' prog = do
   (ty, ctx) <-
     runReader decls . evalState initCheckState $
-      synthesize (initCtx . declarations $ prog) expr
+      synthesize (initDeclCtx . declarations $ prog) expr
   return (applyCtx ctx ty, ctx)
   where
     decls :: DeclarationMap
