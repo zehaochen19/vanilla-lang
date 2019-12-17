@@ -1,9 +1,12 @@
 module Dynamic.Step where
 
+import Data.Sequence ((|>))
 import Syntax.Expr
 
 value :: Expr -> Bool
 value EUnit = True
+value (EVar _) = True
+value (ECons _ _) = True
 value ETrue = True
 value EFalse = True
 value EZero = True
@@ -21,6 +24,7 @@ substitute x e1 e2 =
   let loop = substitute x e1
    in case e2 of
         EVar y -> if x == y then e1 else EVar y
+        ECons cName pat -> ECons cName (loop <$> pat)
         EUnit -> EUnit
         ETrue -> ETrue
         EFalse -> EFalse
@@ -87,6 +91,7 @@ step expr = case expr of
   EApp e1 e2 | not $ value e2 -> EApp e1 (step e2)
   EApp (ELam x e1) e2 -> substitute x e2 e1
   EApp (EALam x _ e1) e2 -> substitute x e2 e1
+  EApp (ECons name pat) e -> ECons name (pat |> e)
   -- Anno
   EAnno e _ -> e
   -- Let

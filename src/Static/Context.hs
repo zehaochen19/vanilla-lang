@@ -3,7 +3,7 @@
 module Static.Context where
 
 import qualified Data.Sequence as S
-import Syntax.Expr (EVar)
+import Syntax.Expr (ConsVar, EVar)
 import Syntax.Type
   ( TEVar,
     TVar,
@@ -13,6 +13,7 @@ import Syntax.Type
 data CtxMember
   = CVar TVar
   | CAssump EVar Type
+  | CCons ConsVar Type
   | CEVar TEVar
   | CSolve TEVar Type
   | CMarker TEVar
@@ -62,6 +63,13 @@ ctxAssump (Context gamma) x = loop gamma
   where
     loop S.Empty = Nothing
     loop (_ S.:|> CAssump x' ty) | x == x' = Just ty
+    loop (ctx' S.:|> _) = loop ctx'
+
+ctxCons :: Context -> ConsVar -> Maybe Type
+ctxCons (Context gamma) c = loop gamma
+  where
+    loop S.Empty = Nothing
+    loop (_ S.:|> CCons c' ty) | c == c' = Just ty
     loop (ctx' S.:|> _) = loop ctx'
 
 -- | Applying a context, as a substitution, to a type

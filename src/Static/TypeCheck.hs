@@ -184,6 +184,8 @@ instantiateR ctx ty eb =
 synthesize :: TypeCheck r => Context -> Expr -> Sem r (Type, Context)
 -- Var
 synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
+-- Cons
+synthesize ctx (ECons name mempty) | Just ty <- ctxCons ctx name = pure (ty, ctx)
 -- Anno
 synthesize ctx (EAnno e ty) = do
   decls <- ask

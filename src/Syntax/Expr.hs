@@ -7,11 +7,16 @@ module Syntax.Expr
     ($$),
     (-:),
     isELam,
+    cons,
+    ConsVar (..),
   )
 where
 
+import Data.Foldable (toList)
+import Data.Sequence (Seq)
 import Data.String (IsString)
-import Data.Text as T
+import Data.Text (Text)
+import qualified Data.Text as T
 import Syntax.Type (Type)
 
 newtype EVar = MkEVar Text deriving (Eq, Ord, IsString)
@@ -22,8 +27,14 @@ instance Show EVar where
 evar :: Text -> EVar
 evar = MkEVar
 
+newtype ConsVar = MkConsVar Text deriving (Eq, Ord, IsString)
+
+instance Show ConsVar where
+  show (MkConsVar v) = T.unpack v
+
 data Expr
   = EVar EVar
+  | ECons ConsVar (Seq Expr)
   | EUnit
   | ETrue
   | EFalse
@@ -61,9 +72,13 @@ infixl 1 -:
 (-:) :: Expr -> Type -> Expr
 (-:) = EAnno
 
+cons :: Text -> Expr
+cons name = ECons (MkConsVar name) mempty
+
 instance Show Expr where
   show EUnit = "()"
   show (EVar v) = show v
+  show (ECons name pat) = show name ++ " " ++ (unwords . toList . fmap show $ pat)
   show ETrue = "True"
   show EFalse = "False"
   show (ESucc n) = "S " ++ eParen n
@@ -123,4 +138,5 @@ eParen e = case e of
   EZero -> show e
   EProj1 _ -> show e
   EProj2 _ -> show e
+  ECons _ _ -> show e
   _ -> "(" ++ show e ++ ")"

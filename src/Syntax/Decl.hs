@@ -4,7 +4,7 @@ import qualified Data.Map as M
 import qualified Data.Sequence as S
 import Data.Text (Text)
 import Static.Context
-import Syntax.Expr (EVar (..))
+import Syntax.Expr (ConsVar (..))
 import Syntax.Type
 
 -- | user defined data type declaration
@@ -24,7 +24,7 @@ emptyDecls :: DeclarationMap
 emptyDecls = mempty
 
 consCtxMember :: Declaration -> Constructor -> CtxMember
-consCtxMember dec (Constructor conName pat) = CAssump (MkEVar conName) genTy
+consCtxMember dec (Constructor conName pat) = CCons (MkConsVar conName) genTy
   where
     monoTy = foldr TArr (TData (name dec) (TVar <$> tvars dec)) pat
     genTy = foldr TAll monoTy (tvars dec)

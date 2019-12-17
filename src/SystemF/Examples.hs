@@ -259,4 +259,4 @@ natDec =
     [Constructor "Zero" [], Constructor "Succ" [TData "Nat" []]]
 
 listDummyProg :: Program
-listDummyProg = Program [listDec] (EVar "Cons" $$ EUnit $$ EVar "Nil" -: TData "List" [TUnit])
+listDummyProg = Program [listDec] (cons "Cons" $$ EUnit $$ cons "Nil")
