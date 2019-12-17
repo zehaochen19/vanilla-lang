@@ -5,6 +5,7 @@
 
 module Static.TypeCheck where
 
+import Data.Foldable (foldlM)
 import Data.Text (Text)
 import Polysemy
 import Polysemy.Error
@@ -88,6 +89,14 @@ subtype ctx (TAll alpha a) b = do
 -- <:forallR
 subtype ctx a (TAll alpha b) =
   ctxUntil (CVar alpha) <$> subtype (ctx |> CVar alpha) a b
+-- <:DataType
+-- For data types, the instantiated type pair should be equivalent
+subtype ctx (TData t1 pat1) (TData t2 pat2)
+  | t1 == t2 = do
+    ctx' <- foldlM subtypePair ctx $ zip pat1 pat2
+    foldlM subtypePair ctx' $ zip pat2 pat1
+  where
+    subtypePair = uncurry . subtype
 -- <:InstantiateL
 subtype ctx (TEVar alphaHat) a
   | alphaHat `notElem` tyFreeTEVars a =
