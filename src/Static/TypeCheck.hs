@@ -8,9 +8,11 @@ module Static.TypeCheck where
 import Data.Text (Text)
 import Polysemy
 import Polysemy.Error
+import Polysemy.Reader
 import Polysemy.State
 import Static.Context
 import Static.WellForm
+import Syntax.Decl
 import Syntax.Expr (Expr (..))
 import Syntax.Type
   ( TEVar (..),
@@ -28,7 +30,7 @@ newtype CheckState = CheckState {freshTypeVars :: [Text]}
 initCheckState :: CheckState
 initCheckState = CheckState freshVarStream
 
-type TypeCheck r = Members '[Error String, State CheckState] r
+type TypeCheck r = Members '[Error String, Reader DeclarationMap, State CheckState] r
 
 freshTEVar :: Member (State CheckState) r => Sem r TEVar
 freshTEVar = do
@@ -101,9 +103,11 @@ instantiateL :: TypeCheck r => Context -> TEVar -> Type -> Sem r Context
 -- InstLSolve
 instantiateL ctx ea ty
   | isMono ty,
-    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx,
-    typeWellForm gamma ty =
-    pure $ gamma |> CSolve ea ty <> gamma'
+    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
+    decls <- ask
+    if typeWellForm decls gamma ty
+      then pure $ gamma |> CSolve ea ty <> gamma'
+      else throw $ "ill-formed type: " ++ show ty
 -- InstLReach
 instantiateL ctx ea (TEVar eb)
   | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx =
@@ -134,9 +138,11 @@ instantiateR :: TypeCheck r => Context -> Type -> TEVar -> Sem r Context
 -- InstRSolve
 instantiateR ctx ty ea
   | isMono ty,
-    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx,
-    typeWellForm gamma ty =
-    pure $ gamma |> CSolve ea ty <> gamma'
+    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
+    decls <- ask
+    if typeWellForm decls gamma ty
+      then pure $ gamma |> CSolve ea ty <> gamma'
+      else throw $ "ill-formed type " ++ show ty
 -- InstRReach
 instantiateR ctx (TEVar eb) ea
   | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx =
@@ -168,7 +174,11 @@ synthesize :: TypeCheck r => Context -> Expr -> Sem r (Type, Context)
 -- Var
 synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
 -- Anno
-synthesize ctx (EAnno e ty) | typeWellForm ctx ty = (,) ty <$> check ctx e ty
+synthesize ctx (EAnno e ty) = do
+  decls <- ask
+  if typeWellForm decls ctx ty
+    then (,) ty <$> check ctx e ty
+    else throw $ "ill-formed type " ++ show ty
 -- 1I ==>
 synthesize ctx EUnit = pure (TUnit, ctx)
 -- True ==>
@@ -393,7 +403,7 @@ apply ctx e1 e2 =
 typecheck :: Expr -> Either String (Type, Context)
 typecheck expr = do
   (ty, ctx) <-
-    run . runError . evalState initCheckState $
+    run . runReader emptyDecls . runError . evalState initCheckState $
       synthesize
         mempty
         expr

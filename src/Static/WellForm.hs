@@ -21,4 +21,3 @@ typeWellForm decls ctx ty = case ty of
   TData name pat -> case M.lookup name decls of
     Nothing -> False
     Just dec -> length pat == length (tvars dec) && all (typeWellForm decls ctx) pat
--- TODO: data types

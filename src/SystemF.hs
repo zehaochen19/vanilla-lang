@@ -9,9 +9,11 @@ import Dynamic.Step (eval)
 import Parser (runProgramP)
 import Polysemy
 import Polysemy.Error
+import Polysemy.Reader
 import Polysemy.State
 import Static.Context (applyCtx)
 import Static.TypeCheck
+import Syntax.Decl
 import Syntax.Expr
 import Syntax.Type
 
@@ -19,7 +21,7 @@ import Syntax.Type
 interpretF :: Member (Error String) r => Expr -> Sem r (Expr, Type)
 interpretF expr = do
   (ty, ctx) <-
-    evalState initCheckState $
+    runReader emptyDecls . evalState initCheckState $
       synthesize mempty expr
         `catch` (\e -> throw $ "Typecheck error:\n" ++ e)
   return (eval expr, applyCtx ctx ty)
