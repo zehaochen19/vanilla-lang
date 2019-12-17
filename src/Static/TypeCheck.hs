@@ -92,12 +92,13 @@ subtype ctx a (TAll alpha b) =
   ctxUntil (CVar alpha) <$> subtype (ctx |> CVar alpha) a b
 -- <:DataType
 -- For data types, the instantiated type pair should be equivalent
+-- TODO: consider variances in data types
 subtype ctx (TData t1 pat1) (TData t2 pat2)
   | t1 == t2 = do
     ctx' <- foldlM subtypePair ctx $ zip pat1 pat2
     foldlM subtypePair ctx' $ zip pat2 pat1
   where
-    subtypePair = uncurry . subtype
+    subtypePair c (ty1, ty2) = subtype c (applyCtx c ty1) (applyCtx c ty2)
 -- <:InstantiateL
 subtype ctx (TEVar alphaHat) a
   | alphaHat `notElem` tyFreeTEVars a =
@@ -419,8 +420,8 @@ typecheck expr = do
         expr
   return (applyCtx ctx ty, ctx)
 
-typecheck' :: Member (Error String) r => Program -> Sem r (Type, Context)
-typecheck' prog = do
+typecheckProg :: Member (Error String) r => Program -> Sem r (Type, Context)
+typecheckProg prog = do
   (ty, ctx) <-
     runReader decls . evalState initCheckState $
       synthesize (initDeclCtx . declarations $ prog) expr
