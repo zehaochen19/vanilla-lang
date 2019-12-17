@@ -15,6 +15,7 @@ import Static.Context
 import Static.WellForm
 import Syntax.Decl
 import Syntax.Expr (Expr (..))
+import Syntax.Program
 import Syntax.Type
   ( TEVar (..),
     TVar,
@@ -109,14 +110,6 @@ subtype _ a b =
   throw $ "cannot establish subtyping with " ++ show a ++ " <: " ++ show b
 
 instantiateL :: TypeCheck r => Context -> TEVar -> Type -> Sem r Context
--- InstLSolve
-instantiateL ctx ea ty
-  | isMono ty,
-    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
-    decls <- ask
-    if typeWellForm decls gamma ty
-      then pure $ gamma |> CSolve ea ty <> gamma'
-      else throw $ "ill-formed type: " ++ show ty
 -- InstLReach
 instantiateL ctx ea (TEVar eb)
   | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx =
@@ -139,19 +132,19 @@ instantiateL ctx ea (TArr a1 a2) | Just (l, r) <- ctxHole (CEVar ea) ctx = do
 -- InstLAllR
 instantiateL ctx ea (TAll beta b) =
   ctxUntil (CVar beta) <$> instantiateL (ctx |> CVar beta) ea b
-instantiateL ctx ea ty =
-  throw $ "cannot instantiate " ++ show ea ++ " with " ++ show ty
-
--- | Under input context gamma, instantiate ea such that A <: ea, with output context delta
-instantiateR :: TypeCheck r => Context -> Type -> TEVar -> Sem r Context
--- InstRSolve
-instantiateR ctx ty ea
+-- InstLSolve
+instantiateL ctx ea ty
   | isMono ty,
     Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
     decls <- ask
     if typeWellForm decls gamma ty
       then pure $ gamma |> CSolve ea ty <> gamma'
-      else throw $ "ill-formed type " ++ show ty
+      else throw $ "ill-formed type: " ++ show ty
+instantiateL ctx ea ty =
+  throw $ "cannot instantiate " ++ show ea ++ " with " ++ show ty
+
+-- | Under input context gamma, instantiate ea such that A <: ea, with output context delta
+instantiateR :: TypeCheck r => Context -> Type -> TEVar -> Sem r Context
 -- InstRReach
 instantiateR ctx (TEVar eb) ea
   | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx =
@@ -176,6 +169,14 @@ instantiateR ctx (TAll beta b) ea = do
   eb <- freshTEVar
   let ctx' = ctx |> CMarker eb |> CEVar eb
   ctxUntil (CMarker eb) <$> instantiateR ctx' (tySubstitue beta (TEVar eb) b) ea
+-- InstRSolve
+instantiateR ctx ty ea
+  | isMono ty,
+    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
+    decls <- ask
+    if typeWellForm decls gamma ty
+      then pure $ gamma |> CSolve ea ty <> gamma'
+      else throw $ "ill-formed type " ++ show ty
 instantiateR ctx ty eb =
   throw $ "cannot instantiate " ++ show ty ++ " with " ++ show eb
 
@@ -417,3 +418,14 @@ typecheck expr = do
         mempty
         expr
   return (applyCtx ctx ty, ctx)
+
+typecheck' :: Member (Error String) r => Program -> Sem r (Type, Context)
+typecheck' prog = do
+  (ty, ctx) <-
+    runReader decls . evalState initCheckState $
+      synthesize (initCtx . declarations $ prog) expr
+  return (applyCtx ctx ty, ctx)
+  where
+    decls :: DeclarationMap
+    decls = declMap (declarations prog)
+    expr = mainExpr prog

@@ -24,8 +24,8 @@ type Parser = Parsec Void Text
 programP :: Parser Expr
 programP = exprP <* eof
 
-runProgramP :: String -> Text -> Either String Expr
-runProgramP path prog = mapLeft show $ runParser programP path prog
+runProgramP :: String -> Text -> Either (ParseErrorBundle Text Void) Expr
+runProgramP path prog = mapLeft id $ runParser programP path prog
 
 sc :: Parser ()
 sc = L.space space1 lineComment blockComment
