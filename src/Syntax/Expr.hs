@@ -34,7 +34,6 @@ instance Show ConsVar where
 
 data Expr
   = EVar EVar
-  | ECons ConsVar (Seq Expr)
   | EUnit
   | ETrue
   | EFalse
@@ -55,6 +54,8 @@ data Expr
   | EALet EVar Type Expr Expr
   | EIf Expr Expr Expr
   | EFix Expr
+  | ECons ConsVar (Seq Expr)
+  -- TODO: ECase Expr [(EVar, Expr)]
   deriving (Eq)
 
 isELam :: Expr -> Bool

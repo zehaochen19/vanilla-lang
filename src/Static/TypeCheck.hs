@@ -246,15 +246,17 @@ synthesize ctx (ESumCase e x e1 y e2) = do
   (tySum, theta) <- synthesize ctx e
   case tySum of
     TSum a b -> do
+      eRes <- freshTEVar
       let a' = applyCtx theta a
       (ty1, delta) <- synthesize (theta |> CAssump x a) e1
       let delta' = ctxUntil (CAssump x a) delta
       let b' = applyCtx delta' b
       (ty2, sigma) <- synthesize (theta |> CAssump y b) e2
-      let sigma' = ctxUntil (CAssump y b) sigma
-      psi <- subtype sigma (applyCtx sigma' a') (applyCtx sigma' b')
-      chi <- subtype psi (applyCtx psi b') (applyCtx psi a')
-      return (applyCtx chi ty1, chi)
+      eRes <- freshTEVar
+      let sigma' = ctxUntil (CAssump y b) sigma |> CEVar eRes
+      psi <- subtype sigma' (TEVar eRes) (applyCtx sigma' a')
+      chi <- subtype psi (TEVar eRes) (applyCtx psi b')
+      return (TEVar eRes, chi)
     _ -> throw $ "cannot do mattern match on: " ++ show tySum
 -- -->I==>
 synthesize ctx (ELam x e) = do
@@ -291,12 +293,12 @@ synthesize ctx (EALet x ty e1 e2) = do
 -- If==>
 synthesize ctx (EIf b e1 e2) = do
   theta <- check ctx b TBool
-  (a, delta) <- synthesize theta e1
+  eRes <- freshTEVar
+  (a, delta) <- synthesize (theta |> CEVar eRes) e1
   (b, sigma) <- synthesize delta e2
-  -- inferred types should be subtype to each other
-  psi <- subtype sigma a b
-  chi <- subtype psi b a
-  return (applyCtx chi a, chi)
+  psi <- subtype sigma (TEVar eRes) (applyCtx sigma a)
+  chi <- subtype psi (TEVar eRes) (applyCtx psi b)
+  return (TEVar eRes, chi)
 synthesize ctx (EFix e) = do
   (ty, theta) <- synthesize ctx e
   case applyCtx theta ty of
