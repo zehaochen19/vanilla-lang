@@ -1,5 +1,6 @@
 module Dynamic.Step where
 
+import Data.Foldable (toList)
 import Data.Sequence ((|>))
 import Syntax.Expr
 
@@ -25,6 +26,16 @@ substitute x e1 e2 =
    in case e2 of
         EVar y -> if x == y then e1 else EVar y
         ECons cName pat -> ECons cName (loop <$> pat)
+        ECase e branch ->
+          ECase
+            (loop e)
+            ( ( \(Branch cons vars e) ->
+                  if x `elem` vars
+                    then Branch cons vars e
+                    else Branch cons vars $ loop e
+              )
+                <$> branch
+            )
         EUnit -> EUnit
         ETrue -> ETrue
         EFalse -> EFalse
@@ -91,7 +102,16 @@ step expr = case expr of
   EApp e1 e2 | not $ value e2 -> EApp e1 (step e2)
   EApp (ELam x e1) e2 -> substitute x e2 e1
   EApp (EALam x _ e1) e2 -> substitute x e2 e1
+  -- Data types
   EApp (ECons name pat) e -> ECons name (pat |> e)
+  ECase e branch | not . value $ e -> ECase (step e) branch
+  ECase (ECons name pat) branches -> loop branches
+    where
+      loop [] = expr -- stuck
+      loop (Branch name' vars e : _)
+        | name == name' =
+          foldl (\e2 (x, e1) -> substitute x e1 e2) e (zip vars $ toList pat)
+      loop (_ : bs) = loop bs
   -- Anno
   EAnno e _ -> e
   -- Let

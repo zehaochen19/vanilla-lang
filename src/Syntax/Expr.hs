@@ -9,10 +9,12 @@ module Syntax.Expr
     isELam,
     cons,
     ConsVar (..),
+    Branch (..),
   )
 where
 
 import Data.Foldable (toList)
+import Data.List (intercalate)
 import Data.Sequence (Seq)
 import Data.String (IsString)
 import Data.Text (Text)
@@ -31,6 +33,12 @@ newtype ConsVar = MkConsVar Text deriving (Eq, Ord, IsString)
 
 instance Show ConsVar where
   show (MkConsVar v) = T.unpack v
+
+data Branch = Branch ConsVar [EVar] Expr deriving (Eq)
+
+instance Show Branch where
+  show (Branch cons vars e) =
+    show cons ++ " " ++ unwords (show <$> vars) ++ " -> " ++ eParen e
 
 data Expr
   = EVar EVar
@@ -55,7 +63,7 @@ data Expr
   | EIf Expr Expr Expr
   | EFix Expr
   | ECons ConsVar (Seq Expr)
-  -- TODO: ECase Expr [(EVar, Expr)]
+  | ECase Expr [Branch]
   deriving (Eq)
 
 isELam :: Expr -> Bool
@@ -80,6 +88,12 @@ instance Show Expr where
   show EUnit = "()"
   show (EVar v) = show v
   show (ECons name pat) = show name ++ " " ++ (unwords . toList . fmap show $ pat)
+  show (ECase e branch) =
+    "case " ++ eParen e ++ "{ "
+      ++ intercalate
+        ", "
+        (show <$> branch)
+      ++ " }"
   show ETrue = "True"
   show EFalse = "False"
   show (ESucc n) = "S " ++ eParen n
@@ -129,6 +143,9 @@ instance Show Expr where
   show (EIf b e1 e2) =
     "if " ++ eParen b ++ " then " ++ eParen e1 ++ " else " ++ show e2
   show (EFix e) = "fix " ++ eParen e
+
+showPatternMatch :: EVar -> Expr -> String
+showPatternMatch x e = show x ++ " -> " ++ eParen e
 
 eParen :: Expr -> String
 eParen e = case e of
