@@ -313,11 +313,11 @@ check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
 -- 1I
 check ctx EUnit TUnit = pure ctx
 -- Case
-check ctx (ECase e branches) ty = do
+check ctx (ECase e branches) target = do
   (ty, theta) <- synthesize ctx e
   let ty' = applyCtx theta ty
   case ty' of
-    TData cName types -> checkBranch ctx types branches ty
+    TData cName types -> checkBranch ctx types branches target
     _ -> throw $ "cannot use pattern match on: " ++ show ty'
 -- TrueI
 check ctx ETrue TBool = pure ctx
@@ -422,6 +422,8 @@ apply ctx (TArr a c) e = do
 apply ctx e1 e2 =
   throw $ "cannot infer type after applying " ++ show e1 ++ " with " ++ show e2
 
+-- | Given context and type variables, checking
+--   pattern match branches will be evaluated to a target type
 checkBranch :: TypeCheck r => Context -> [Type] -> [Branch] -> Type -> Sem r Context
 checkBranch ctx tys [] target = pure ctx
 checkBranch ctx tys (Branch cons evars e : bs) target =
@@ -430,8 +432,8 @@ checkBranch ctx tys (Branch cons evars e : bs) target =
     Just consTy -> do
       eTy <- freshTEVar
       let ctx' = ctx |> CMarker eTy <> typings
-      theta <- check ctx' e target
-      ctxUntil (CMarker eTy) <$> checkBranch theta tys bs target
+      theta <- ctxUntil (CMarker eTy) <$> check ctx' e target
+      checkBranch theta tys bs target
       where
         instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
         (_, typings) = foldl (\(TArr a b, c) x -> (b, c |> CAssump x a)) (instTy, mempty) evars

@@ -260,3 +260,19 @@ natDec =
 
 listDummyProg :: Program
 listDummyProg = Program [listDec] (cons "Cons" $$ EUnit $$ cons "Nil")
+
+listEmptyProg :: Program
+listEmptyProg =
+  Program [listDec] $
+    ECase
+      (cons "Nil" -: TData "List" [TUnit])
+      [Branch "Nil" [] ETrue, Branch "Cons" ["x"] EFalse]
+      -: TBool
+
+listNonEmptyProg :: Program
+listNonEmptyProg =
+  Program [listDec] $
+    ECase
+      (cons "Cons" $$ EUnit $$ (cons "Cons" $$ EUnit $$ cons "Nil"))
+      [Branch "Nil" [] ETrue, Branch "Cons" ["x"] EFalse]
+      -: TBool
