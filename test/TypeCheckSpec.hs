@@ -16,14 +16,21 @@ import Syntax.Type
 import SystemF.Examples
 import Test.Hspec
 
-runTypecheck' :: Program -> Either String (Type, Context)
-runTypecheck' p = run . runError $ typecheckProg p
+runTypecheckProg :: Program -> Either String (Type, Context)
+runTypecheckProg p = run . runError $ typecheckProg p
+
+resShouldBe res ty = do
+  res `shouldSatisfy` isRight
+  let Right (ty', _) = res
+  ty' `shouldBe` ty
 
 checksAndShouldBe e ty = do
   let res = typecheck e
-  res `shouldSatisfy` isRight
-  let Right (ty', _) = res
-  ty `shouldBe` ty'
+  resShouldBe res ty
+
+checksProgAndShouldBe p ty = do
+  let res = runTypecheckProg p
+  resShouldBe res ty
 
 typecheckSpec = describe "typeckeck" $ do
   it "infers id'" $ do
@@ -119,8 +126,6 @@ typecheckSpec = describe "typeckeck" $ do
   it "checks isInj1" $ typecheck isInj1 `shouldSatisfy` isRight
   it "infers (isInj1 inj2Unit)" $ checksAndShouldBe (isInj1 $$ inj2Unit) TBool
   it "infers (isInj1 inj1Nat)" $ checksAndShouldBe (isInj1 $$ inj1Nat) TBool
-  it "checks listDummyProg" $ do
-    let res = runTypecheck' listDummyProg
-    res `shouldSatisfy` isRight
-    let Right (ty, _) = res
-    ty `shouldBe` TData "List" [TUnit]
+  it "checks listDummyProg"
+    $ checksProgAndShouldBe listDummyProg
+    $ TData "List" [TUnit]
