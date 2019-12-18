@@ -57,6 +57,7 @@ data Expr
   | EAnno Expr Type
   | ELet EVar Expr Expr
   | EALet EVar Type Expr Expr
+  | EALetRec EVar Type Expr Expr
   | EIf Expr Expr Expr
   | EFix Expr
   | ECons ConsVar (Seq Expr)
@@ -141,17 +142,21 @@ instance Show Expr where
   show (ELet x e1 e2) =
     "let " ++ show x ++ " = " ++ eParen e1 ++ " in " ++ eParen e2
   show (EALet x ty e1 e2) =
-    "let "
-      ++ show x
-      ++ " : "
-      ++ show ty
-      ++ " = "
-      ++ eParen e1
-      ++ " in "
-      ++ eParen e2
+    "let " ++ annottatedLet x ty e1 e2
+  show (EALetRec x ty e1 e2) =
+    "let rec" ++ annottatedLet x ty e1 e2
   show (EIf b e1 e2) =
     "if " ++ eParen b ++ " then " ++ eParen e1 ++ " else " ++ show e2
   show (EFix e) = "fix " ++ eParen e
+
+annottatedLet x ty e1 e2 =
+  show x
+    ++ " : "
+    ++ show ty
+    ++ " = "
+    ++ eParen e1
+    ++ " in "
+    ++ eParen e2
 
 eParen :: Expr -> String
 eParen e = case e of

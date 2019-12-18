@@ -63,6 +63,7 @@ substitute x e1 e2 =
         ELet y e1' e2' -> ELet y (loop e1') (if x == y then e2' else loop e2')
         EALet y ty e1' e2' ->
           EALet y ty (loop e1') (if x == y then e2' else loop e2')
+        EALetRec y ty e1' e2' -> EALet y ty (loop e1') (if x == y then e2' else loop e2')
         EIf b e1' e2' -> EIf (loop b) (loop e1') (loop e2')
         EFix e -> EFix $ loop e
 
@@ -120,6 +121,7 @@ step expr = case expr of
   -- Let
   ELet x e1 e2 -> substitute x e1 e2
   EALet x ty e1 e2 -> ELet x e1 e2
+  EALetRec x ty e1 e2 -> substitute x (EFix $ EALam x ty e1) e2
   -- IfElse
   EIf ETrue e _ -> e
   EIf EFalse _ e -> e
