@@ -15,7 +15,8 @@ module Syntax.Type
   )
 where
 
-import Data.Set as S
+import qualified Data.Set as S
+import Data.Set (Set)
 import Data.String (IsString)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -104,7 +105,9 @@ instance Show Type where
   show (TSum a b) = tyParen a ++ " + " ++ tyParen b
   show (TArr a b) = tyParen a ++ " → " ++ tyParen b
   show (TAll a ty) = "∀" ++ show a ++ ". " ++ tyParen ty
-  show (TData name pat) = show name ++ " " ++ unwords (show <$> pat)
+  show (TData name pat) =
+    let patStr = if null pat then "" else " " ++ unwords (show <$> pat)
+     in T.unpack name ++ patStr
 
 tyParen :: Type -> String
 tyParen ty = case ty of

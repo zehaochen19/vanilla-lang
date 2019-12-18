@@ -193,3 +193,6 @@ expressionParseSpec = describe "exprP should" $ do
   it "parse a sumcase" $
     runParser exprP "" "sumcase (Inj1 ()) { Inj1 x → True, Inj2 y → False }"
       `shouldBe` Right (ESumCase (EInj1 EUnit) "x" ETrue "y" EFalse)
+  it "parse a type application" $
+    runParser exprP "" "Nil @ Foo"
+      `shouldBe` Right (cons "Nil" -@ TData "Foo" [])

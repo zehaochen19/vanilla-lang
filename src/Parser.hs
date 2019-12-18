@@ -220,12 +220,15 @@ exprP :: Parser Expr
 exprP =
   makeExprParser
     exprTermP
-    [[Postfix eProjP], [InfixL (EApp <$ space)], [Postfix eAnnoP]]
+    [[Postfix eProjP], [Postfix eTAppP], [InfixL (EApp <$ space)], [Postfix eAnnoP]]
   where
     eAnnoP = do
       ty <- annotationP
       return $ \e -> EAnno e ty
     eProjP = (symbol ".1" $> EProj1) <|> (symbol ".2" $> EProj2)
+    eTAppP = do
+      tyArg <- symbol "@" >> typeP
+      return $ \e -> ETApp e tyArg
 
 declP :: Parser Declaration
 declP = do
