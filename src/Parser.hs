@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Parser where
@@ -13,6 +14,7 @@ import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void
+import Syntax.Cons
 import Syntax.Decl
 import Syntax.Expr
 import Syntax.Type
@@ -80,14 +82,20 @@ varP start = lexeme (p >>= checkVar)
 smallVarP :: Parser Text
 smallVarP = varP lowerChar
 
-bigVar :: Parser Text
-bigVar = varP upperChar
+bigVarP :: Parser Text
+bigVarP = varP upperChar
 
 evarP :: Parser EVar
 evarP = (MkEVar <$> smallVarP) <?> "Expression variable"
 
 tvarP :: Parser TVar
 tvarP = (MkTVar <$> smallVarP) <?> "Type variable"
+
+consVarP :: Parser ConsVar
+consVarP = (MkConsVar <$> bigVarP) <?> "Constructor"
+
+dataTypeP :: Parser Text
+dataTypeP = bigVarP <?> "Data type"
 
 typeTermP :: Parser Type
 typeTermP =
@@ -97,9 +105,14 @@ typeTermP =
     <|> tBoolP
     <|> tNatP
     <|> tAllP
+    <|> tDataP
     <|> TVar
     <$> tvarP
   where
+    tDataP = do
+      tyName <- dataTypeP
+      tyArgs <- many typeP
+      return $ TData tyName tyArgs
     tUnitP = symbol "Unit" $> TUnit
     tBoolP = symbol "Bool" $> TBool
     tNatP = symbol "Nat" $> TNat
@@ -212,5 +225,8 @@ exprP =
 declP :: Parser Declaration
 declP = undefined
 
-consP :: Parser Constructor
-consP = undefined
+constructorP :: Parser Constructor
+constructorP = do
+  consVar <- consVarP
+  tyArgs <- many typeP
+  return $ Constructor consVar tyArgs

@@ -2,6 +2,7 @@
 
 module SystemF.Examples where
 
+import Syntax.Cons
 import Syntax.Decl
 import Syntax.Expr
 import Syntax.Program

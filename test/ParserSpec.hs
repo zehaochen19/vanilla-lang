@@ -7,10 +7,23 @@ import Data.Either
     isRight,
   )
 import Parser
+import Syntax.Cons
 import Syntax.Expr
 import Syntax.Type
 import Test.Hspec
 import Text.Megaparsec (runParser)
+
+parserSpec = do
+  typeParserSpec
+  expressionParseSpec
+  constructorPSpec
+
+constructorPSpec = describe "constructorP should" $ do
+  it "parse Nil constructor" $
+    runParser constructorP "" "Nil" `shouldBe` Right (Constructor "Nil" [])
+  it "parse Cons constructor" $
+    runParser constructorP "" "Cons a (List a)"
+      `shouldBe` Right (Constructor "Cons" [TVar "a", TData "List" [TVar "a"]])
 
 typeParserSpec = describe "typeP should" $ do
   it "parse Nat to Nat" $
@@ -54,6 +67,8 @@ typeParserSpec = describe "typeP should" $ do
   it "parse a pair of arrow" $
     runParser typeP "" "(Nat → Nat, Nat → Nat)"
       `shouldBe` Right (TProd (TNat --> TNat) (TNat --> TNat))
+  it "parse a List type" $
+    runParser typeP "" "List a" `shouldBe` Right (TData "List" [TVar "a"])
 
 expressionParseSpec = describe "exprP should" $ do
   it "parse nat id" $
@@ -133,7 +148,3 @@ expressionParseSpec = describe "exprP should" $ do
   it "parse a sumcase" $
     runParser exprP "" "sumcase (Inj1 ()) { Inj1 x → True, Inj2 y → False }"
       `shouldBe` Right (ESumCase (EInj1 EUnit) "x" ETrue "y" EFalse)
-
-parserSpec = do
-  typeParserSpec
-  expressionParseSpec
