@@ -34,6 +34,8 @@ Expressions     e         ::=   x                                     -- variabl
                               | fix e                                 -- fixpoint
 ```
 
+TODO : update grammer of data types here
+
 ## Usage
 
 First of all, `stack` should be installed in `PATH`
@@ -136,10 +138,9 @@ cannot establish subtyping with Unit <: Nat
   - [x] Nat
   - [x] Product
   - [x] Sum
-- [ ] Algebraic data types
+- [x] Algebraic data types
   - [x] Declarations
   - [x] Pattern match
-  - [ ] Parser
 - [x] Type application
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
