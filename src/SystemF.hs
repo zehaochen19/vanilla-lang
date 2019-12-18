@@ -10,27 +10,16 @@ import Dynamic.Step (eval)
 import Parser (runProgramP)
 import Polysemy
 import Polysemy.Error
-import Polysemy.Reader
-import Polysemy.State
 import Static.Context (applyCtx)
 import Static.TypeCheck
-import Syntax.Decl
 import Syntax.Expr
 import Syntax.Program
 import Syntax.Type
 import Text.Megaparsec.Error (errorBundlePretty)
 
--- | Given an expression, first typecheck it and then evaluate it
-interpretF :: Member (Error String) r => Expr -> Sem r (Expr, Type)
-interpretF expr = do
-  (ty, ctx) <-
-    runReader emptyDecls . evalState initCheckState $
-      synthesize mempty expr
-        `catch` (\e -> throw $ "Typecheck error:\n" ++ e)
-  return (eval expr, applyCtx ctx ty)
-
-interpretF' :: Member (Error String) r => Program -> Sem r (Expr, Type)
-interpretF' prog = do
+-- | Given a program, first typecheck it and then evaluate it
+interpretF :: Member (Error String) r => Program -> Sem r (Expr, Type)
+interpretF prog = do
   (ty, ctx) <- typecheckProg prog `catch` (\e -> throw $ "Typecheck error:\n" ++ e)
   return (eval . mainExpr $ prog, applyCtx ctx ty)
 

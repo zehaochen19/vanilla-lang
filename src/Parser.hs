@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Parser where
@@ -17,6 +16,7 @@ import Data.Void
 import Syntax.Cons
 import Syntax.Decl
 import Syntax.Expr
+import Syntax.Program (Program (..))
 import Syntax.Type
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -24,10 +24,10 @@ import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void Text
 
-programP :: Parser Expr
-programP = exprP <* eof
+programP :: Parser Program
+programP = Program <$> many declP <*> exprP <* eof
 
-runProgramP :: String -> Text -> Either (ParseErrorBundle Text Void) Expr
+runProgramP :: String -> Text -> Either (ParseErrorBundle Text Void) Program
 runProgramP path prog = mapLeft id $ runParser programP path prog
 
 sc :: Parser ()
