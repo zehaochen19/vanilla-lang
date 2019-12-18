@@ -211,15 +211,13 @@ exprTermP =
       e1 <- symbol "then" >> exprP
       e2 <- symbol "else" >> exprP
       return $ EIf b e1 e2
-    eFixP = symbol "fix" >> (EFix <$> exprP)
+    eFixP = symbol "fix" *> (EFix <$> exprP)
     eConsP = ECons <$> consVarP <*> pure mempty
-    eCaseP = do
-      e <- symbol "case" >> exprP
-      symbol "of"
-      symbol "{"
-      branches <- sepBy1 branchP $ symbol ","
-      symbol "}"
-      return $ ECase e branches
+    eCaseP =
+      ECase
+        <$> (symbol "case" *> exprP)
+        <*> (symbol "of" *> symbol "{" *> sepBy1 branchP (symbol ","))
+        <* symbol "}"
 
 branchP :: Parser Branch
 branchP = Branch <$> consVarP <*> many evarP <*> (symbol "→" *> exprP)
@@ -241,13 +239,12 @@ exprP =
       return $ \e -> ETApp e tyArg
 
 declP :: Parser Declaration
-declP = do
-  typeName <- symbol "data" >> dataTypeP
-  tyVars <- many tvarP
-  symbol "="
-  conss <- sepBy1 constructorP (symbol "|")
-  dotP
-  return $ Declaration typeName tyVars conss
+declP =
+  Declaration
+    <$> (symbol "data" *> dataTypeP)
+    <*> many tvarP
+    <*> (symbol "=" *> sepBy1 constructorP (symbol "|"))
+    <* dotP
 
 constructorP :: Parser Constructor
 constructorP = Constructor <$> consVarP <*> many typeP
