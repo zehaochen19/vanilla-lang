@@ -280,6 +280,6 @@ nonzeroSingletonList =
   Program [listDec, natDec] $
     ECase
       (cons "Succ" $$ cons "Zero")
-      [ Branch "Zero" [] (cons "Nil" -: TData "List" [TData "Nat" []]),
+      [ Branch "Zero" [] (cons "Nil" -@ TData "Nat" []),
         Branch "Succ" ["x"] (cons "Cons" $$ (cons "Succ" $$ EVar "x") $$ cons "Nil")
       ]

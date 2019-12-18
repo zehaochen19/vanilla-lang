@@ -140,6 +140,7 @@ cannot establish subtyping with Unit <: Nat
   - [x] Declarations
   - [x] Pattern match
   - [ ] Parser
+- [x] Type application
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
 - [x] Parser

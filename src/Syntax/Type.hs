@@ -11,6 +11,7 @@ module Syntax.Type
     (-->),
     isTArr,
     isTAll,
+    tyParen,
   )
 where
 

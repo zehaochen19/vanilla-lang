@@ -203,6 +203,12 @@ synthesize ctx (EAnno e ty) = do
   if typeWellForm decls ctx ty
     then (,) ty <$> check ctx e ty
     else throw $ "ill-formed type " ++ show ty
+-- TyApp ==>
+synthesize ctx (ETApp e tyArg) = do
+  (polyTy, theta) <- synthesize ctx e
+  case polyTy of
+    TAll tv ty' -> return (applyCtx theta $ tySubstitue tv tyArg ty', theta)
+    _ -> throw $ "cannot apply type to non-poly type: " ++ show polyTy
 -- 1I ==>
 synthesize ctx EUnit = pure (TUnit, ctx)
 -- True ==>
@@ -401,6 +407,16 @@ check ctx (EIf b e1 e2) ty = do
   check delta e2 ty
 -- Fix
 check ctx (EFix e) ty = check ctx e $ TArr ty ty
+-- TyApp
+check ctx (ETApp e tyArg) ty = do
+  (polyTy, theta) <- synthesize ctx e
+  case polyTy of
+    TAll tv ty' ->
+      subtype
+        theta
+        (applyCtx theta $ tySubstitue tv tyArg ty')
+        (applyCtx theta ty)
+    _ -> throw $ "cannot apply type to non-poly type: " ++ show polyTy
 -- Sub
 check ctx e b = do
   (a, theta) <- synthesize ctx e

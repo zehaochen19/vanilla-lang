@@ -6,6 +6,7 @@ module Syntax.Expr
     evar,
     ($$),
     (-:),
+    (-@),
     isELam,
     cons,
     Branch (..),
@@ -19,7 +20,7 @@ import Data.String (IsString)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Syntax.Cons (ConsVar (..))
-import Syntax.Type (Type)
+import Syntax.Type (Type, tyParen)
 
 newtype EVar = MkEVar Text deriving (Eq, Ord, IsString)
 
@@ -59,6 +60,7 @@ data Expr
   | EFix Expr
   | ECons ConsVar (Seq Expr)
   | ECase Expr [Branch]
+  | ETApp Expr Type
   deriving (Eq)
 
 isELam :: Expr -> Bool
@@ -70,6 +72,11 @@ infixl 2 $$
 
 ($$) :: Expr -> Expr -> Expr
 ($$) = EApp
+
+infixl 3 -@
+
+(-@) :: Expr -> Type -> Expr
+(-@) = ETApp
 
 infixl 1 -:
 
@@ -123,7 +130,8 @@ instance Show Expr where
   show (ELam x e) = "λ" ++ show x ++ " . " ++ eParen e
   show (EALam x ty e) = "λ" ++ show x ++ " : " ++ show ty ++ " . " ++ eParen e
   show (EApp e1 e2) = eParen e1 ++ " " ++ eParen e2
-  show (EAnno e ty) = eParen e ++ " : " ++ show ty
+  show (EAnno e ty) = eParen e ++ " : " ++ tyParen ty
+  show (ETApp e ty) = eParen e ++ " @" ++ tyParen ty
   show (ELet x e1 e2) =
     "let " ++ show x ++ " = " ++ eParen e1 ++ " in " ++ eParen e2
   show (EALet x ty e1 e2) =

@@ -58,7 +58,8 @@ substitute x e1 e2 =
         abs@(ELam y e2') -> if x == y then abs else ELam y $ loop e2'
         abs@(EALam y ty e2') -> if x == y then abs else EALam y ty $ loop e2'
         EApp e21 e22 -> EApp (loop e21) (loop e22)
-        EAnno e2' _ -> loop e2'
+        EAnno e2' ty -> EAnno (loop e2') ty
+        ETApp e2' ty -> ETApp (loop e2') ty
         ELet y e1' e2' -> ELet y (loop e1') (if x == y then e2' else loop e2')
         EALet y ty e1' e2' ->
           EALet y ty (loop e1') (if x == y then e2' else loop e2')
@@ -114,6 +115,8 @@ step expr = case expr of
       loop (_ : bs) = loop bs
   -- Anno
   EAnno e _ -> e
+  -- Type application
+  ETApp e _ -> e
   -- Let
   ELet x e1 e2 -> substitute x e1 e2
   EALet x ty e1 e2 -> ELet x e1 e2
