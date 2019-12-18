@@ -13,6 +13,7 @@ import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void
+import Syntax.Decl
 import Syntax.Expr
 import Syntax.Type
 import Text.Megaparsec
@@ -52,7 +53,9 @@ keywords =
       "∀",
       "let",
       "S",
+      "case",
       "natcase",
+      "sumcase",
       "in",
       "if",
       "then",
@@ -69,16 +72,22 @@ checkVar x =
     then fail $ "keyword " ++ T.unpack x ++ " cannot be an variable"
     else return x
 
-varP :: Parser Text
-varP = lexeme ((p >>= checkVar) <?> "variable")
+varP :: Parser Char -> Parser Text
+varP start = lexeme (p >>= checkVar)
   where
-    p = fmap T.pack $ (:) <$> letterChar <*> many alphaNumChar
+    p = fmap T.pack $ (:) <$> start <*> many alphaNumChar
+
+smallVarP :: Parser Text
+smallVarP = varP lowerChar
+
+bigVar :: Parser Text
+bigVar = varP upperChar
 
 evarP :: Parser EVar
-evarP = MkEVar <$> varP
+evarP = (MkEVar <$> smallVarP) <?> "Expression variable"
 
 tvarP :: Parser TVar
-tvarP = MkTVar <$> varP
+tvarP = (MkTVar <$> smallVarP) <?> "Type variable"
 
 typeTermP :: Parser Type
 typeTermP =
@@ -199,3 +208,9 @@ exprP =
       ty <- annotationP
       return $ \e -> EAnno e ty
     eProjP = (symbol ".1" $> EProj1) <|> (symbol ".2" $> EProj2)
+
+declP :: Parser Declaration
+declP = undefined
+
+consP :: Parser Constructor
+consP = undefined

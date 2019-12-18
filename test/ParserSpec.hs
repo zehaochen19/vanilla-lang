@@ -18,34 +18,34 @@ typeParserSpec = describe "typeP should" $ do
       `shouldBe` Right
         (TNat --> TNat)
   it "parse type of id" $
-    runParser typeP "" "∀A.A→A"
+    runParser typeP "" "∀a.a→a"
       `shouldBe` Right
-        (TAll "A" (TVar "A" --> TVar "A"))
+        (TAll "a" (TVar "a" --> TVar "a"))
   it "reject forall without a dot" $
     runParser typeP "" "∀A A→A"
       `shouldSatisfy` isLeft
   it "parse type of cont" $
-    runParser typeP "" "∀A . A → ∀R.((A → R) → R)"
+    runParser typeP "" "∀a . a → ∀r.((a → r) → r)"
       `shouldBe` Right
         ( TAll
-            "A"
-            ( TVar "A" --> TAll "R" ((TVar "A" --> TVar "R") --> TVar "R")
+            "a"
+            ( TVar "a" --> TAll "r" ((TVar "a" --> TVar "r") --> TVar "r")
             )
         )
   it "parse type of runCont" $
-    runParser typeP "" "∀A . (∀R.(A → R) → R) → A"
+    runParser typeP "" "∀a . (∀r.(a → r) → r) → a"
       `shouldBe` Right
         ( TAll
-            "A"
-            ( TAll "R" ((TVar "A" --> TVar "R") --> TVar "R") --> TVar "A"
+            "a"
+            ( TAll "r" ((TVar "a" --> TVar "r") --> TVar "r") --> TVar "a"
             )
         )
   it "parse type of nestedId" $
-    runParser typeP "" "∀B . (∀A . A → A) → (B → B)"
+    runParser typeP "" "∀b . (∀a . a → a) → (b → b)"
       `shouldBe` Right
         ( TAll
-            "B"
-            ( TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B")
+            "b"
+            ( TAll "a" (TVar "a" --> TVar "a") --> (TVar "b" --> TVar "b")
             )
         )
   it "parse type of prod" $
@@ -68,9 +68,9 @@ expressionParseSpec = describe "exprP should" $ do
       `shouldBe` Right
         (ELam "x" $ EVar "x")
   it "parse annoated id" $
-    runParser exprP "" "(λx . x) : ∀A.A→A"
+    runParser exprP "" "(λx . x) : ∀a.a→a"
       `shouldBe` Right
-        ( EAnno (ELam "x" $ EVar "x") (TAll "A" (TVar "A" --> TVar "A"))
+        ( EAnno (ELam "x" $ EVar "x") (TAll "a" (TVar "a" --> TVar "a"))
         )
   it "parse unit with parenthesis" $
     runParser exprP "" "((()))"
