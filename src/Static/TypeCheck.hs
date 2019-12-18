@@ -177,7 +177,7 @@ instantiateR ctx ty ea
     decls <- ask
     if typeWellForm decls gamma ty
       then pure $ gamma |> CSolve ea ty <> gamma'
-      else throw $ "ill-formed type " ++ show ty
+      else throw $ "ill-formed type: " ++ show ty
 instantiateR ctx ty eb =
   throw $ "cannot instantiate " ++ show ty ++ " with " ++ show eb
 
@@ -186,6 +186,20 @@ synthesize :: TypeCheck r => Context -> Expr -> Sem r (Type, Context)
 synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
 -- Cons
 synthesize ctx (ECons name mempty) | Just ty <- ctxCons ctx name = pure (ty, ctx)
+synthesize ctx (ECase e branches) = do
+  (ty, theta) <- synthesize ctx e
+  let ty' = applyCtx theta ty
+  case ty' of
+    TData cName types -> do
+      (branchTys, delta) <- synthesizeBranch theta types branches
+      eRes <- freshTEVar
+      sigma <-
+        foldlM
+          (\ctx t -> subtype ctx (applyCtx ctx t) (applyCtx ctx (TEVar eRes)))
+          (delta |> CEVar eRes)
+          branchTys
+      return (TEVar eRes, sigma)
+    _ -> throw $ "cannot use pattern match on: " ++ show ty'
 -- Anno
 synthesize ctx (EAnno e ty) = do
   decls <- ask
@@ -434,6 +448,22 @@ checkBranch ctx tys (Branch cons evars e : bs) target =
       let ctx' = ctx |> CMarker eTy <> typings
       theta <- ctxUntil (CMarker eTy) <$> check ctx' e target
       checkBranch theta tys bs target
+      where
+        instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
+        (_, typings) = foldl (\(TArr a b, c) x -> (b, c |> CAssump x a)) (instTy, mempty) evars
+
+synthesizeBranch :: TypeCheck r => Context -> [Type] -> [Branch] -> Sem r ([Type], Context)
+synthesizeBranch ctx tys [] = pure ([], ctx)
+synthesizeBranch ctx tys (Branch cons evars e : bs) =
+  case ctxCons ctx cons of
+    Nothing -> throw $ "undefined constructor: " ++ show cons
+    Just consTy -> do
+      eTy <- freshTEVar
+      let ctx' = ctx |> CMarker eTy <> typings
+      (inferred, theta) <- synthesize ctx' e
+      let theta' = ctxUntil (CMarker eTy) theta
+      (inferredTys, delta) <- synthesizeBranch theta' tys bs
+      return (inferred : inferredTys, delta)
       where
         instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
         (_, typings) = foldl (\(TArr a b, c) x -> (b, c |> CAssump x a)) (instTy, mempty) evars

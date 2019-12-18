@@ -267,7 +267,6 @@ listEmptyProg =
     ECase
       (cons "Nil" -: TData "List" [TUnit])
       [Branch "Nil" [] ETrue, Branch "Cons" ["x"] EFalse]
-      -: TBool
 
 listNonEmptyProg :: Program
 listNonEmptyProg =
@@ -275,14 +274,12 @@ listNonEmptyProg =
     ECase
       (cons "Cons" $$ EUnit $$ (cons "Cons" $$ EUnit $$ cons "Nil"))
       [Branch "Nil" [] ETrue, Branch "Cons" ["x"] EFalse]
-      -: TBool
 
 nonzeroSingletonList :: Program
 nonzeroSingletonList =
   Program [listDec, natDec] $
     ECase
       (cons "Succ" $$ cons "Zero")
-      [ Branch "Zero" [] (cons "Nil"),
+      [ Branch "Zero" [] (cons "Nil" -: TData "List" [TData "Nat" []]),
         Branch "Succ" ["x"] (cons "Cons" $$ (cons "Succ" $$ EVar "x") $$ cons "Nil")
       ]
-      -: TData "List" [TData "Nat" []]
