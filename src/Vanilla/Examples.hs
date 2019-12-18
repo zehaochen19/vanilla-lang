@@ -284,3 +284,24 @@ nonzeroSingletonList =
       [ Branch "Zero" [] (cons "Nil" -@ TData "Nat" []),
         Branch "Succ" ["x"] (cons "Cons" $$ (cons "Succ" $$ EVar "x") $$ cons "Nil")
       ]
+
+mapProgram :: Program
+mapProgram =
+  Program [listDec] $
+    EALetRec
+      "map"
+      ( TAll "a" $ TAll "b" $
+          (TVar "a" --> TVar "b") --> (TData "List" [TVar "a"] --> TData "List" [TVar "b"])
+      )
+      ( ELam "f"
+          $ ELam "xs"
+          $ ECase
+            (EVar "xs")
+            [ Branch "Nil" [] (ETApp (cons "Nil") (TVar "b")),
+              Branch
+                "Cons"
+                ["y", "ys"]
+                (cons "Cons" $$ (EVar "f" $$ EVar "y") $$ (EVar "map" $$ EVar "f" $$ EVar "ys"))
+            ]
+      )
+      (EVar "map")

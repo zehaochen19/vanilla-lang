@@ -136,3 +136,7 @@ typeCheckSpec = describe "typeCheck" $ do
   it "checks nonzeroSingletonList"
     $ checkAndShouldBe nonzeroSingletonList
     $ TData "List" [TData "Nat" []]
+  it "infers map function" $ checkAndShouldBe mapProgram
+    $ TAll "a"
+    $ TAll "b"
+    $ (TVar "a" --> TVar "b") --> (TData "List" [TVar "a"] --> TData "List" [TVar "b"])
