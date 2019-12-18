@@ -223,7 +223,12 @@ exprP =
     eProjP = (symbol ".1" $> EProj1) <|> (symbol ".2" $> EProj2)
 
 declP :: Parser Declaration
-declP = undefined
+declP = do
+  typeName <- symbol "data" >> dataTypeP
+  tyVars <- many tvarP
+  symbol "="
+  conss <- sepBy1 constructorP (symbol "|")
+  return $ Declaration typeName tyVars conss
 
 constructorP :: Parser Constructor
 constructorP = do

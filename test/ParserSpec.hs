@@ -8,6 +8,7 @@ import Data.Either
   )
 import Parser
 import Syntax.Cons
+import Syntax.Decl
 import Syntax.Expr
 import Syntax.Type
 import Test.Hspec
@@ -17,6 +18,7 @@ parserSpec = do
   typeParserSpec
   expressionParseSpec
   constructorPSpec
+  declPSpec
 
 constructorPSpec = describe "constructorP should" $ do
   it "parse Nil constructor" $
@@ -24,6 +26,22 @@ constructorPSpec = describe "constructorP should" $ do
   it "parse Cons constructor" $
     runParser constructorP "" "Cons a (List a)"
       `shouldBe` Right (Constructor "Cons" [TVar "a", TData "List" [TVar "a"]])
+
+declPSpec = describe "declP should" $ do
+  it "parse Nat declaration" $
+    runParser declP "" "data TNat = Zero | Succ TNat"
+      `shouldBe` Right
+        (Declaration "TNat" [] [Constructor "Zero" [], Constructor "Succ" [TData "TNat" []]])
+  it "parse List declaration" $
+    runParser declP "" "data List a = Nil | Cons a (List a)"
+      `shouldBe` Right
+        ( Declaration
+            "List"
+            ["a"]
+            [ Constructor "Nil" [],
+              Constructor "Cons" [TVar "a", TData "List" [TVar "a"]]
+            ]
+        )
 
 typeParserSpec = describe "typeP should" $ do
   it "parse Nat to Nat" $
