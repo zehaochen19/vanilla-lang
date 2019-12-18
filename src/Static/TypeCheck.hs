@@ -192,13 +192,10 @@ synthesize ctx (ECase e branches) = do
   case ty' of
     TData cName types -> do
       (branchTys, delta) <- synthesizeBranch theta types branches
-      eRes <- freshTEVar
-      sigma <-
-        foldlM
-          (\ctx t -> subtype ctx (applyCtx ctx t) (applyCtx ctx (TEVar eRes)))
-          (delta |> CEVar eRes)
-          branchTys
-      return (TEVar eRes, sigma)
+      sigma <- allSubype delta branchTys
+      case branchTys of
+        [] -> throw "Empty branch"
+        (t : _) -> return (applyCtx sigma t, sigma)
     _ -> throw $ "cannot use pattern match on: " ++ show ty'
 -- Anno
 synthesize ctx (EAnno e ty) = do
@@ -467,6 +464,14 @@ synthesizeBranch ctx tys (Branch cons evars e : bs) =
       where
         instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
         (_, typings) = foldl (\(TArr a b, c) x -> (b, c |> CAssump x a)) (instTy, mempty) evars
+
+allSubype :: TypeCheck r => Context -> [Type] -> Sem r Context
+allSubype ctx [] = pure ctx
+allSubype ctx (ty : tys) = foldlM loop ctx tys
+  where
+    loop gamma ty' = do
+      theta <- subtype gamma (applyCtx gamma ty) (applyCtx gamma ty')
+      subtype theta (applyCtx theta ty') (applyCtx theta ty)
 
 typecheck :: Expr -> Either String (Type, Context)
 typecheck expr = do
