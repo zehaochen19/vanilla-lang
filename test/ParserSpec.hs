@@ -20,6 +20,7 @@ parserSpec = do
   expressionParseSpec
   constructorPSpec
   declPSpec
+  branchPSpec
   programPSpec
 
 programPSpec =
@@ -46,6 +47,13 @@ programPSpec =
             ]
             (cons "Cons" $$ cons "MyUnit" $$ (cons "Cons" $$ cons "MyUnit" $$ cons "Nil"))
         )
+
+branchPSpec = describe "branchP should" $ do
+  it "parse a Zero branch" $
+    runParser branchP "" "Zero → ()" `shouldBe` Right (Branch "Zero" [] EUnit)
+  it "parse a Succ branch" $
+    runParser branchP "" "Succ x → Cons x Nil"
+      `shouldBe` Right (Branch "Succ" ["x"] (cons "Cons" $$ EVar "x" $$ cons "Nil"))
 
 constructorPSpec = describe "constructorP should" $ do
   it "parse Nil constructor" $
