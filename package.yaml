@@ -1,6 +1,6 @@
-name: SystemF
+name: vanilla-lang
 version: 0.1.0.0
-github: "zehaochen19/SystemF"
+github: "zehaochen19/vanilla-lang"
 license: MIT
 author: "Zehao Chen"
 maintainer: "zehaochen19@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description: Please see the README on GitHub at <https://github.com/zehaochen19/SystemF#readme>
+description: Please see the README on GitHub at <https://github.com/zehaochen19/vanilla-lang#readme>
 
 dependencies:
   - base >= 4.7 && < 5
@@ -32,7 +32,7 @@ library:
   source-dirs: src
 
 executables:
-  systemf:
+  vanilla:
     main: Main.hs
     source-dirs: app
     ghc-options:
@@ -41,10 +41,10 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - SystemF
+      - vanilla-lang
 
 tests:
-  SystemF-test:
+  vanilla-test:
     main: Spec.hs
     source-dirs: test
     ghc-options:
@@ -52,5 +52,5 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - SystemF
+      - vanilla-lang
       - hspec

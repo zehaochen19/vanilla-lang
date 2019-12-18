@@ -3,7 +3,7 @@ module Main where
 import qualified Data.Text.IO as TIO
 import System.Environment
 import System.Exit
-import SystemF
+import Vanilla
 
 main :: IO ()
 main = do

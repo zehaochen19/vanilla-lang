@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 
-module SystemF where
+module Vanilla where
 
 import Data.Either.Extra (mapLeft)
 import Data.Text (Text)

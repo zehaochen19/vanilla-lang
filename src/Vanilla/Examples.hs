@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SystemF.Examples where
+module Vanilla.Examples where
 
 import Syntax.Cons
 import Syntax.Decl

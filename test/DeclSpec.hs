@@ -7,8 +7,8 @@ import Data.Sequence as S
 import Static.Context
 import Syntax.Decl
 import Syntax.Type
-import SystemF.Examples
 import Test.Hspec
+import Vanilla.Examples
 
 declSpec = declMapSpec >> initDeclCtxSpec
 

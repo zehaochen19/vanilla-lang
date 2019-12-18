@@ -13,8 +13,8 @@ import Static.TypeCheck (typecheck, typecheckProg)
 import Syntax.Expr
 import Syntax.Program (Program)
 import Syntax.Type
-import SystemF.Examples
 import Test.Hspec
+import Vanilla.Examples
 
 runTypecheckProg :: Program -> Either String (Type, Context)
 runTypecheckProg p = run . runError $ typecheckProg p

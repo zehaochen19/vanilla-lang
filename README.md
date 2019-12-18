@@ -1,7 +1,13 @@
-# SystemF
+# Vinilla Lang
 
-Brilliant PL people implement their own dependently typed languages.
-I can only implement a System F.
+Vanilla is a pure functional programming language based on System F, a classic but powerful type system.
+
+It supports:
+
+- Higher-order polymorphism
+- Type inference (Only polymorphic bindings need annotations)
+- Algebraic data types
+- Pattern matching
 
 For simplicity, this programming language only supports type checking and evaluation on closed terms.
 
@@ -42,7 +48,7 @@ First of all, `stack` should be installed in `PATH`
 
 ### Add operator for natural numbers
 
-Given `example/add.sf`:
+Given `example/add.vn`:
 
 ```
 let add : Nat → Nat → Nat =
@@ -56,7 +62,7 @@ add (S (S (S 0))) (S S (0))
 Run
 
 ```
-$ stack run example/add.sf
+$ stack run example/add.vn
 ```
 
 It should output the inferred type and evaluated value of this program:
@@ -73,7 +79,7 @@ S (S (S (S (S 0))))
 
 Mutual recursive functions can be easily defined with the fixpoint and projections.
 
-Given `example/evenodd.sf`:
+Given `example/evenodd.vn`:
 
 ```
 let evenodd : (Nat → Bool, Nat → Bool) =
@@ -103,7 +109,7 @@ Result:
 
 ### Ill-typed Program
 
-Given `example/illtypedid`:
+Given `example/illtypedid.vn`:
 
 ```
 let id : Nat → Nat =

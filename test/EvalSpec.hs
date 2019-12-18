@@ -6,12 +6,12 @@ import Data.Sequence as S
 import Dynamic.Step (eval)
 import Syntax.Expr
 import Syntax.Program
-import SystemF.Examples
 import Test.Hspec
 import Utils
   ( intToNat,
     natToInt,
   )
+import Vanilla.Examples
 
 evalSpec = describe "eval" $ do
   it "evals id'" $ do
