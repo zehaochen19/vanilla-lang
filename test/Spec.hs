@@ -6,7 +6,7 @@ import TypeCheckSpec
 
 main :: IO ()
 main = hspec $ do
-  typecheckSpec
+  typeCheckSpec
   evalSpec
   parserSpec
   declSpec

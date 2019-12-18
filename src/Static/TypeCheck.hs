@@ -489,17 +489,11 @@ allSubype ctx (ty : tys) = foldlM loop ctx tys
       theta <- subtype gamma (applyCtx gamma ty) (applyCtx gamma ty')
       subtype theta (applyCtx theta ty') (applyCtx theta ty)
 
-typecheck :: Expr -> Either String (Type, Context)
-typecheck expr = do
-  (ty, ctx) <-
-    run . runReader emptyDecls . runError . evalState initCheckState $
-      synthesize
-        mempty
-        expr
-  return (applyCtx ctx ty, ctx)
+typeCheckExpr :: Member (Error String) r => Expr -> Sem r (Type, Context)
+typeCheckExpr expr = typeCheck $ Program [] expr
 
-typecheckProg :: Member (Error String) r => Program -> Sem r (Type, Context)
-typecheckProg prog = do
+typeCheck :: Member (Error String) r => Program -> Sem r (Type, Context)
+typeCheck prog = do
   (ty, ctx) <-
     runReader decls . evalState initCheckState $
       synthesize (initDeclCtx . declarations $ prog) expr
