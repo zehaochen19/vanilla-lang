@@ -93,7 +93,9 @@ cons' name pat = ECons (MkConsVar name) (fromList pat)
 instance Show Expr where
   show EUnit = "()"
   show (EVar v) = show v
-  show (ECons name pat) = show name ++ " " ++ (unwords . toList . fmap eParen $ pat)
+  show (ECons name pat) =
+    let patStr = if null pat then "" else " " ++ (unwords . toList . fmap eParen $ pat)
+     in show name ++ patStr
   show (ECase e branch) =
     "case " ++ eParen e ++ "{ "
       ++ intercalate
@@ -160,4 +162,5 @@ eParen e = case e of
   EZero -> show e
   EProj1 _ -> show e
   EProj2 _ -> show e
+  ECons _ _ -> show e
   _ -> "(" ++ show e ++ ")"
