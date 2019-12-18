@@ -136,6 +136,10 @@ cannot establish subtyping with Unit <: Nat
   - [x] Nat
   - [x] Product
   - [x] Sum
+- [ ] Algebraic data types
+  - [x] Declarations
+  - [x] Pattern match
+  - [ ] Parser
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
 - [x] Parser
