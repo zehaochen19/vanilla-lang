@@ -25,7 +25,7 @@ import qualified Text.Megaparsec.Char.Lexer as L
 type Parser = Parsec Void Text
 
 programP :: Parser Program
-programP = Program <$> many declP <*> exprP <* eof
+programP = sc >> (Program <$> many (try declP) <*> exprP <* eof)
 
 runProgramP :: String -> Text -> Either (ParseErrorBundle Text Void) Program
 runProgramP path prog = mapLeft id $ runParser programP path prog
@@ -54,6 +54,7 @@ keywords =
     [ "λ",
       "∀",
       "let",
+      "data",
       "S",
       "case",
       "natcase",
@@ -149,6 +150,7 @@ exprTermP =
     <|> eLetP
     <|> eIfP
     <|> eFixP
+    <|> eConsP
     <|> try (EVar <$> evarP)
   where
     eProdP = do
@@ -208,6 +210,9 @@ exprTermP =
       e2 <- symbol "else" >> exprP
       return $ EIf b e1 e2
     eFixP = symbol "fix" >> (EFix <$> exprP)
+    eConsP = do
+      cons <- consVarP
+      return $ ECons cons mempty
 
 annotationP = symbol ":" >> typeP
 
@@ -228,6 +233,7 @@ declP = do
   tyVars <- many tvarP
   symbol "="
   conss <- sepBy1 constructorP (symbol "|")
+  dotP
   return $ Declaration typeName tyVars conss
 
 constructorP :: Parser Constructor

@@ -10,6 +10,7 @@ import Parser
 import Syntax.Cons
 import Syntax.Decl
 import Syntax.Expr
+import Syntax.Program (Program (..))
 import Syntax.Type
 import Test.Hspec
 import Text.Megaparsec (runParser)
@@ -19,6 +20,32 @@ parserSpec = do
   expressionParseSpec
   constructorPSpec
   declPSpec
+  programPSpec
+
+programPSpec =
+  describe "programP should"
+    $ it "parse a program with List type"
+    $ runParser
+      programP
+      ""
+      " data List a = Nil | Cons a (List a) .\
+      \ data MyUnit = MyUnit .\
+      \ Cons MyUnit (Cons MyUnit Nil)"
+      `shouldBe` Right
+        ( Program
+            [ Declaration
+                "List"
+                ["a"]
+                [ Constructor "Nil" [],
+                  Constructor "Cons" [TVar "a", TData "List" [TVar "a"]]
+                ],
+              Declaration
+                "MyUnit"
+                []
+                [Constructor "MyUnit" []]
+            ]
+            (cons "Cons" $$ cons "MyUnit" $$ (cons "Cons" $$ cons "MyUnit" $$ cons "Nil"))
+        )
 
 constructorPSpec = describe "constructorP should" $ do
   it "parse Nil constructor" $
@@ -29,11 +56,11 @@ constructorPSpec = describe "constructorP should" $ do
 
 declPSpec = describe "declP should" $ do
   it "parse Nat declaration" $
-    runParser declP "" "data TNat = Zero | Succ TNat"
+    runParser declP "" "data TNat = Zero | Succ TNat ."
       `shouldBe` Right
         (Declaration "TNat" [] [Constructor "Zero" [], Constructor "Succ" [TData "TNat" []]])
   it "parse List declaration" $
-    runParser declP "" "data List a = Nil | Cons a (List a)"
+    runParser declP "" "data List a = Nil | Cons a (List a) ."
       `shouldBe` Right
         ( Declaration
             "List"

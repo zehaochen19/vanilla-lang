@@ -9,13 +9,14 @@ module Syntax.Expr
     (-@),
     isELam,
     cons,
+    cons',
     Branch (..),
   )
 where
 
 import Data.Foldable (toList)
 import Data.List (intercalate)
-import Data.Sequence (Seq)
+import Data.Sequence (Seq, fromList)
 import Data.String (IsString)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -86,10 +87,13 @@ infixl 1 -:
 cons :: Text -> Expr
 cons name = ECons (MkConsVar name) mempty
 
+cons' :: Text -> [Expr] -> Expr
+cons' name pat = ECons (MkConsVar name) (fromList pat)
+
 instance Show Expr where
   show EUnit = "()"
   show (EVar v) = show v
-  show (ECons name pat) = show name ++ " " ++ (unwords . toList . fmap show $ pat)
+  show (ECons name pat) = show name ++ " " ++ (unwords . toList . fmap eParen $ pat)
   show (ECase e branch) =
     "case " ++ eParen e ++ "{ "
       ++ intercalate
@@ -156,5 +160,4 @@ eParen e = case e of
   EZero -> show e
   EProj1 _ -> show e
   EProj2 _ -> show e
-  ECons _ _ -> show e
   _ -> "(" ++ show e ++ ")"

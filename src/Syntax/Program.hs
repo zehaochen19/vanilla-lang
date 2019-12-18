@@ -8,3 +8,4 @@ data Program
       { declarations :: [Declaration],
         mainExpr :: Expr
       }
+  deriving (Eq, Show)
