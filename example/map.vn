@@ -1,0 +1,13 @@
+data List a = Nil | Cons a (List a).
+
+
+let map : ∀a. ∀b. (a → b) → (List a) → (List b) =
+          λ f.
+          λ xs. case xs of {
+      Nil → Nil,
+      Cons y ys → Cons (f y) (map f ys)
+    }
+in
+
+()
+

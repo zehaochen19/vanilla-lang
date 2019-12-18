@@ -2,5 +2,9 @@ let add : Nat → Nat → Nat =
   fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)})
 in
 
+let add2 : Nat → Nat → Nat =
+  λ x . λ y . natcase x {0 → y, S a → S (add2 a y)}
+in
+
 -- 3 + 2 = 5
-add (S (S (S 0))) (S S (0))
+add2 (S (S (S 0))) (S S (0))

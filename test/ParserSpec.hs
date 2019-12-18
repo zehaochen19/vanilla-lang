@@ -122,6 +122,12 @@ typeParserSpec = describe "typeP should" $ do
       `shouldBe` Right (TProd (TNat --> TNat) (TNat --> TNat))
   it "parse a List type" $
     runParser typeP "" "List a" `shouldBe` Right (TData "List" [TVar "a"])
+  it "parse map type" $
+    runParser typeP "" "∀a. ∀b. (a → b) → (List a) → (List b)"
+      `shouldBe` Right
+        ( TAll "a" $ TAll "b" $
+            (TVar "a" --> TVar "b") --> (TData "List" [TVar "a"] --> TData "List" [TVar "b"])
+        )
 
 expressionParseSpec = describe "exprP should" $ do
   it "parse nat id" $

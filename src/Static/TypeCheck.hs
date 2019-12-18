@@ -7,6 +7,7 @@ module Static.TypeCheck where
 
 import Data.Foldable (foldlM)
 import Data.Text (Text)
+import Debug.Trace
 import Polysemy
 import Polysemy.Error
 import Polysemy.Reader
@@ -22,7 +23,6 @@ import Syntax.Type
     Type (..),
     isMono,
     tyFreeTEVars,
-    tyFreeTVars,
   )
 import Utils (freshVarStream)
 
@@ -43,20 +43,18 @@ freshTEVar = do
 -- | [ty1/alpha]ty2
 tySubstitue :: TVar -> Type -> Type -> Type
 tySubstitue alpha ty1 ty2 =
-  if not . null $ tyFreeTVars ty1
-    then error $ "Non-closed type: " ++ show ty1
-    else case ty2 of
-      TUnit -> TUnit
-      TBool -> TBool
-      TNat -> TNat
-      TVar alpha' -> if alpha == alpha' then ty1 else ty2
-      TEVar _ -> ty2
-      TAll beta a ->
-        if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
-      TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-      TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-      TSum a b -> TSum (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-      TData d pat -> TData d (tySubstitue alpha ty1 <$> pat)
+  case ty2 of
+    TUnit -> TUnit
+    TBool -> TBool
+    TNat -> TNat
+    TVar alpha' -> if alpha == alpha' then ty1 else ty2
+    TEVar _ -> ty2
+    TAll beta a ->
+      if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
+    TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+    TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+    TSum a b -> TSum (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+    TData d pat -> TData d (tySubstitue alpha ty1 <$> pat)
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var
@@ -302,10 +300,10 @@ synthesize ctx (ELet x e1 e2) = do
   return (TEVar eb, ctxUntil (CAssump x a') delta)
 -- ALet==>
 synthesize ctx (EALet x ty e1 e2) = do
-  eb <- freshTEVar
-  theta <- check (ctx |> CEVar eb) e1 ty
+  theta <- check ctx e1 ty
   let xAssump = CAssump x (applyCtx theta ty)
-  delta <- check (theta |> xAssump) e2 (TEVar eb)
+  eb <- freshTEVar
+  delta <- check (theta |> CEVar eb |> xAssump) e2 (TEVar eb)
   return (TEVar eb, ctxUntil xAssump delta)
 -- If==>
 synthesize ctx (EIf b e1 e2) = do
@@ -446,8 +444,10 @@ apply ctx (TEVar ea) e | Just (l, r) <- ctxHole (CEVar ea) ctx = do
 apply ctx (TArr a c) e = do
   delta <- check ctx e a
   return (c, delta)
-apply ctx e1 e2 =
-  throw $ "cannot infer type after applying " ++ show e1 ++ " with " ++ show e2
+apply ctx ty1 e2 = do
+  trace (show ty1) $ pure ()
+  trace (show e2) $ pure ()
+  throw $ "cannot infer type after applying " ++ show ty1 ++ " with " ++ show e2
 
 -- | Given context and type variables, checking
 --   pattern match branches will be evaluated to a target type
