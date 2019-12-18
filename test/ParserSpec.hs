@@ -204,3 +204,17 @@ expressionParseSpec = describe "exprP should" $ do
   it "parse a type application" $
     runParser exprP "" "Nil @ Foo"
       `shouldBe` Right (cons "Nil" -@ TData "Foo" [])
+  it "parse a cons" $
+    runParser exprP "" "Cons () Nil" `shouldBe` Right (cons "Cons" $$ EUnit $$ cons "Nil")
+  it "parse a pattern match expression" $
+    runParser
+      exprP
+      ""
+      "case (Cons () Nil) of {\
+      \ Nil → True , \
+      \ Cons x xs → False }"
+      `shouldBe` Right
+        ( ECase
+            (cons "Cons" $$ EUnit $$ cons "Nil")
+            [Branch "Nil" [] ETrue, Branch "Cons" ["x", "xs"] EFalse]
+        )

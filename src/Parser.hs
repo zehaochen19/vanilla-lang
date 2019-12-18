@@ -57,6 +57,7 @@ keywords =
       "data",
       "S",
       "case",
+      "of",
       "natcase",
       "sumcase",
       "in",
@@ -211,13 +212,12 @@ exprTermP =
       e2 <- symbol "else" >> exprP
       return $ EIf b e1 e2
     eFixP = symbol "fix" >> (EFix <$> exprP)
-    eConsP = do
-      cons <- consVarP
-      return $ ECons cons mempty
+    eConsP = ECons <$> consVarP <*> pure mempty
     eCaseP = do
       e <- symbol "case" >> exprP
+      symbol "of"
       symbol "{"
-      branches <- sepBy1 branchP ","
+      branches <- sepBy1 branchP $ symbol ","
       symbol "}"
       return $ ECase e branches
 

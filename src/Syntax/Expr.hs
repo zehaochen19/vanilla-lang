@@ -97,7 +97,7 @@ instance Show Expr where
     let patStr = if null pat then "" else " " ++ (unwords . toList . fmap eParen $ pat)
      in show name ++ patStr
   show (ECase e branch) =
-    "case " ++ eParen e ++ "{ "
+    "case " ++ eParen e ++ " { "
       ++ intercalate
         ", "
         (show <$> branch)
