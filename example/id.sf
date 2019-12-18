@@ -1,4 +1,4 @@
-let id : ∀A. A → A =
+let id : ∀a. a → a =
   (λx . x)
 in
   id ()
