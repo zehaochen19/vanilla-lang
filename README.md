@@ -2,7 +2,7 @@
 
 Vanilla is a pure functional programming language based on System F, a classic but powerful type system.
 
-Simple as it is, Vanilla contains many features that main-stream language don't have:
+Simple as it is, Vanilla contains many features that many main-stream languages don't have:
 
 - Higher-order polymorphism
   - It allows using polymorphic functions as arguments of higher-order functions
@@ -48,7 +48,7 @@ Expressions     e, n, f   ::=   x                                     -- variabl
                               | if e then e1 else e2                  -- if-else
                               | fix e                                 -- fixpoint
 
-Program         P         ::= D P | E
+Program         P         ::= D P | e
 ```
 
 A valid Vanilla program consists of several ADT declarations followed by a main expression.
