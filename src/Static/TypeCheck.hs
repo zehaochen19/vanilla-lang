@@ -292,19 +292,16 @@ synthesize ctx (EApp e1 e2) = do
   apply theta (applyCtx theta a) e2
 -- Let==>
 synthesize ctx (ELet x e1 e2) = do
-  eb <- freshTEVar
-  let ctx' = ctx |> CEVar eb
-  (a, theta) <- synthesize ctx' e1
+  (a, theta) <- synthesize ctx e1
   let a' = applyCtx theta a
-  delta <- check (theta |> CAssump x a') e2 (TEVar eb)
-  return (TEVar eb, ctxUntil (CAssump x a') delta)
+  (b, delta) <- synthesize (theta |> CAssump x a') e2
+  return (applyCtx delta b, ctxUntil (CAssump x a') delta)
 -- ALet==>
 synthesize ctx (EALet x ty e1 e2) = do
   theta <- check ctx e1 ty
   let xAssump = CAssump x (applyCtx theta ty)
-  eb <- freshTEVar
-  delta <- check (theta |> CEVar eb |> xAssump) e2 (TEVar eb)
-  return (TEVar eb, ctxUntil xAssump delta)
+  (b, delta) <- synthesize (theta |> xAssump) e2
+  return (applyCtx delta b, ctxUntil xAssump delta)
 synthesize ctx (EALetRec x ty e1 e2) = do
   theta <- check (ctx |> CAssump x ty) e1 ty
   (b, delta) <- synthesize theta e2
