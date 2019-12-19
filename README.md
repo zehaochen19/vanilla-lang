@@ -2,10 +2,12 @@
 
 Vanilla is a pure functional programming language based on System F, a classic but powerful type system.
 
-It supports:
+Simple as it is, Vanilla contains many features that main-stream language don't have:
 
 - Higher-order polymorphism
-- Type inference (Only polymorphic and recursive bindings need annotations)
+  - it allows using polymorphic functions as arguments of higher-order functions
+- Strong type inference
+  - Only polymorphic and recursive bindings need annotations
 - Algebraic data types
 - Pattern matching
 
@@ -34,7 +36,7 @@ Expressions     e         ::=   x                                     -- variabl
                               | e.1                                   -- projection first
                               | e.2                                   -- projection second
                               | Inj1 e                                -- injection1
-                              | Inj2 e1                               -- injection2
+                              | Inj2 e                                -- injection2
                               | sumcase e {Inj1 x → e1, Inj2 y → e2}  -- sum elimination
                               | λx.e                                  -- implicit λ
                               | λx : A.e                              -- annotated λ
