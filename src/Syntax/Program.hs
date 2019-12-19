@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Syntax.Program where
 
 import Syntax.Decl
@@ -8,4 +10,7 @@ data Program
       { declarations :: [Declaration],
         mainExpr :: Expr
       }
-  deriving (Eq, Show)
+  deriving (Eq)
+
+instance Show Program where
+  show Program {..} = unlines (show <$> declarations) ++ "\n" ++ show mainExpr

@@ -1,5 +1,8 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Syntax.Decl where
 
+import Data.List (intercalate)
 import qualified Data.Map as M
 import qualified Data.Sequence as S
 import Data.Text (Text)
@@ -14,7 +17,16 @@ data Declaration
         tvars :: [TVar],
         constructors :: [Constructor]
       }
-  deriving (Eq, Show)
+  deriving (Eq)
+
+instance Show Declaration where
+  show Declaration {..} =
+    "data "
+      ++ show name
+      ++ " "
+      ++ unwords (show <$> tvars)
+      ++ " = "
+      ++ intercalate " | " (show <$> constructors)
 
 type DeclarationMap = M.Map Text Declaration
 
