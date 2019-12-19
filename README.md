@@ -40,23 +40,72 @@ Expressions     e         ::=   x                                     -- variabl
                               | fix e                                 -- fixpoint
 ```
 
+Haskell-style comments are also supported.
+
 TODO : update grammer of data types here
 
 ## Usage
 
 First of all, `stack` should be installed in `PATH`
 
+### Map for Lists
+
+Given `example/map.vn`:
+
+```
+data List a = Nil | Cons a (List a).
+
+
+let rec map : ∀a. ∀b. (a → b) → (List a) → (List b) =
+          λ f.
+          λ xs. case xs of {
+      Nil → Nil,
+      Cons y ys → Cons (f y) (map f ys)
+    }
+in
+
+let not : Bool → Bool =
+  λb. if b then False else True
+in
+
+let xs = Cons True (Cons False Nil) in
+
+map not xs
+```
+
+Run
+
+```
+$ stack run example/map.vn
+```
+
+It should output:
+
+```
+Type:
+List Bool
+
+Result:
+Cons False Cons True Nil
+```
+
 ### Add operator for natural numbers
 
 Given `example/add.vn`:
 
 ```
+-- add can be defined by `fixpoint`
 let add : Nat → Nat → Nat =
   fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)})
 in
 
+-- or `let rec`
+let rec add2 : Nat → Nat → Nat =
+  λ x . λ y . natcase x {0 → y, S a → S (add2 a y)}
+in
+
 -- 3 + 2 = 5
-add (S (S (S 0))) (S S (0))
+(add (S (S (S 0))) (S S (0)), add2 (S (S (S 0))) (S S (0)))
 ```
 
 Run
@@ -69,10 +118,10 @@ It should output the inferred type and evaluated value of this program:
 
 ```
 Type:
-Nat
+(Nat, Nat)
 
 Result:
-S (S (S (S (S 0))))
+((S (S (S (S (S 0))))), (S (S (S (S (S 0))))))
 ```
 
 ### Mutual Recursion
