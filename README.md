@@ -23,7 +23,7 @@ Constructor     K         ::= K
 Declaration     D         ::= data T a1...at = K1 τ1...τm | ... | Kn σ1...σn .
 Pattern         p         ::= K x1...xn
 
-Expressions     e         ::=   x                                     -- variable
+Expressions     e, n, f   ::=   x                                     -- variable
                               | K                                     -- constructor
                               | case e of {pi → ei}                   -- pattern match
                               | ()                                    -- unit
@@ -44,7 +44,7 @@ Expressions     e         ::=   x                                     -- variabl
                               | e : A                                 -- annotation
                               | let x = e1 in e2                      -- let binding
                               | let x : A = e1 in e2                  -- annotated let binding
-                              | let rec f : A = e1                    -- recursive binding
+                              | let rec f : A = e1 in e2              -- recursive binding
                               | if e then e1 else e2                  -- if-else
                               | fix e                                 -- fixpoint
 
