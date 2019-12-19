@@ -1,0 +1,13 @@
+-- Can you belive that
+-- type `a` and `∀r. ((a → r) → r)` are isomorphic?
+
+let cont : ∀a. a → ∀r. ((a → r) → r) =
+  λ x . λ callback . callback x
+in
+
+let runCont : ∀a. (∀r. (a → r) → r) → a =
+  λ f . (let callback = λ x . x in f callback)
+in
+
+-- should output ()
+runCont (cont ())

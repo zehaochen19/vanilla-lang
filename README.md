@@ -5,7 +5,7 @@ Vanilla is a pure functional programming language based on System F, a classic b
 Simple as it is, Vanilla contains many features that main-stream language don't have:
 
 - Higher-order polymorphism
-  - it allows using polymorphic functions as arguments of higher-order functions
+  - It allows using polymorphic functions as arguments of higher-order functions
 - Strong type inference
   - Only polymorphic and recursive bindings need annotations
 - Algebraic data types
@@ -64,6 +64,42 @@ First of all, `stack` should be installed in `PATH`
 
 ## Examples
 
+### Higher-order Polymorphism
+
+Given `example/cont.vn`:
+
+```
+-- Can you belive that
+-- type `a` and `∀r. ((a → r) → r)` are isomorphic?
+
+let cont : ∀a. a → ∀r. ((a → r) → r) =
+  λ x . λ callback . callback x
+in
+
+let runCont : ∀a. (∀r. (a → r) → r) → a =
+  λ f . (let callback = λ x . x in f callback)
+in
+
+-- should output ()
+runCont (cont ())
+```
+
+Run
+
+```
+stack run example/cont.vn
+```
+
+It should output:
+
+```
+Type:
+Unit
+
+Result:
+()
+```
+
 ### Map for Lists
 
 Given `example/map.vn`:
@@ -104,7 +140,7 @@ Result:
 Cons False (Cons True (Nil))
 ```
 
-### Add operator for natural numbers
+### Add operator for Natural Numbers
 
 Given `example/add.vn`:
 
