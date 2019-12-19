@@ -144,7 +144,7 @@ instance Show Expr where
   show (EALet x ty e1 e2) =
     "let " ++ annottatedLet x ty e1 e2
   show (EALetRec x ty e1 e2) =
-    "let rec" ++ annottatedLet x ty e1 e2
+    "let rec " ++ annottatedLet x ty e1 e2
   show (EIf b e1 e2) =
     "if " ++ eParen b ++ " then " ++ eParen e1 ++ " else " ++ show e2
   show (EFix e) = "fix " ++ eParen e

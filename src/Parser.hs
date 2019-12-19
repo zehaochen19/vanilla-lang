@@ -8,6 +8,7 @@ import Control.Monad.Combinators.Expr
   )
 import Data.Either.Extra (mapLeft)
 import Data.Functor (($>))
+import Data.Maybe (isJust)
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.Text (Text)
@@ -57,6 +58,7 @@ keywords =
       "data",
       "S",
       "case",
+      "rec",
       "of",
       "natcase",
       "sumcase",
@@ -199,13 +201,15 @@ exprTermP =
         Nothing -> ELam x body
         Just ty -> EALam x ty body
     eLetP = do
-      x <- symbol "let" >> evarP
+      symbol "let"
+      rec' <- optional (symbol "rec")
+      x <- evarP
       anno <- optional annotationP
       e1 <- symbol "=" >> exprP
       e2 <- symbol "in" >> exprP
       return $ case anno of
         Nothing -> ELet x e1 e2
-        Just ty -> EALet x ty e1 e2
+        Just ty -> (if isJust rec' then EALetRec else EALet) x ty e1 e2
     eIfP = do
       b <- symbol "if" >> exprP
       e1 <- symbol "then" >> exprP

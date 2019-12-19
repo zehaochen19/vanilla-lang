@@ -63,7 +63,8 @@ substitute x e1 e2 =
         ELet y e1' e2' -> ELet y (loop e1') (if x == y then e2' else loop e2')
         EALet y ty e1' e2' ->
           EALet y ty (loop e1') (if x == y then e2' else loop e2')
-        EALetRec y ty e1' e2' -> EALet y ty (loop e1') (if x == y then e2' else loop e2')
+        EALetRec y ty e1' e2' ->
+          EALetRec y ty (if x == y then e1 else loop e1') (if x == y then e2' else loop e2')
         EIf b e1' e2' -> EIf (loop b) (loop e1') (loop e2')
         EFix e -> EFix $ loop e
 

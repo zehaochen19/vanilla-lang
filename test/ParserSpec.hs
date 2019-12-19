@@ -224,3 +224,20 @@ expressionParseSpec = describe "exprP should" $ do
             (cons "Cons" $$ EUnit $$ cons "Nil")
             [Branch "Nil" [] ETrue, Branch "Cons" ["x", "xs"] EFalse]
         )
+  it "parse a add function defined by let rec" $
+    runParser
+      exprP
+      ""
+      "let rec add : Nat → Nat → Nat =\
+      \ λ x . λ y . natcase x {0 → y, S a → S (add a y)}\
+      \ in\
+      \ add"
+      `shouldBe` Right
+        ( EALetRec
+            "add"
+            (TNat --> TNat --> TNat)
+            ( ELam "x" $ ELam "y" $
+                ENatCase (EVar "x") (EVar "y") "a" (ESucc $ EVar "add" $$ EVar "a" $$ EVar "y")
+            )
+            (EVar "add")
+        )
