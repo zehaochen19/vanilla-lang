@@ -9,4 +9,10 @@ let rec map : ∀a. ∀b. (a → b) → (List a) → (List b) =
     }
 in
 
-map
+let not : Bool → Bool =
+  λb. if b then False else True
+in
+
+let xs = Cons True (Cons False Nil) in
+
+map not xs
