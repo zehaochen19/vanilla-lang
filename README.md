@@ -44,6 +44,7 @@ Expressions     e         ::=   x                                     -- variabl
                               | e : A                                 -- annotation
                               | let x = e1 in e2                      -- let binding
                               | let x : A = e1 in e2                  -- annotated let binding
+                              | let rec f : A = e1                    -- recursive binding
                               | if e then e1 else e2                  -- if-else
                               | fix e                                 -- fixpoint
 
