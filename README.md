@@ -99,7 +99,7 @@ Type:
 List Bool
 
 Result:
-Cons False Cons True Nil
+Cons False (Cons True (Nil))
 ```
 
 ### Add operator for natural numbers
