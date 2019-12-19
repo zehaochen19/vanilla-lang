@@ -5,7 +5,7 @@ Vanilla is a pure functional programming language based on System F, a classic b
 It supports:
 
 - Higher-order polymorphism
-- Type inference (Only polymorphic bindings need annotations)
+- Type inference (Only polymorphic and recursive bindings need annotations)
 - Algebraic data types
 - Pattern matching
 
@@ -17,7 +17,13 @@ For simplicity, this programming language only supports type checking and evalua
 Types           A, B, C   ::= Unit | Bool | Nat | α | ∀α.A | A → B
 Monotypes       τ, σ      ::= Unit | Bool | Nat | α | τ → σ
 
+Constructor     K         ::= K
+Declaration     D         ::= data T a1...at = K1 τ1...τm | ... | Kn σ1...σn .
+Pattern         p         ::= K x1...xn
+
 Expressions     e         ::=   x                                     -- variable
+                              | K                                     -- constructor
+                              | case e of {pi → ei}                   -- pattern match
                               | ()                                    -- unit
                               | True                                  -- boolean constant true
                               | False                                 -- boolean constant false
@@ -38,15 +44,23 @@ Expressions     e         ::=   x                                     -- variabl
                               | let x : A = e1 in e2                  -- annotated let binding
                               | if e then e1 else e2                  -- if-else
                               | fix e                                 -- fixpoint
+
+Program         P         ::= D P | E
 ```
 
-Haskell-style comments are also supported.
+A valid Vanilla program consists of several ADT declarations followed by a main expression.
 
-TODO : update grammer of data types here
+ADT declarations are similar to ones in Haskell, except that they end with a dot for easy parsing.
+
+For legacy reasons, some types such as Nat and Bool are built-in, but they shouldn't be too annoying.
+
+Haskell-style comments (`--` and `{- -}`) are also supported.
 
 ## Usage
 
 First of all, `stack` should be installed in `PATH`
+
+## Examples
 
 ### Map for Lists
 
@@ -57,8 +71,7 @@ data List a = Nil | Cons a (List a).
 
 
 let rec map : ∀a. ∀b. (a → b) → (List a) → (List b) =
-          λ f.
-          λ xs. case xs of {
+  λ f. λ xs. case xs of {
       Nil → Nil,
       Cons y ys → Cons (f y) (map f ys)
     }
@@ -205,7 +218,3 @@ cannot establish subtyping with Unit <: Nat
 ## References
 
 - [Complete and Easy Bidirectional Typechecking for Higher-Rank Polymorphism](https://arxiv.org/abs/1306.6032)
-
-- [Minimal Haskell implementation of Complete and Easy Bidirectional Typechecking for Higher-Rank Polymorphism](https://gist.github.com/lexi-lambda/287dc8513f6a20424457b9d3eda5026a)
-
-- [Let Arguments Go First](https://link.springer.com/chapter/10.1007/978-3-319-89884-1_10)
