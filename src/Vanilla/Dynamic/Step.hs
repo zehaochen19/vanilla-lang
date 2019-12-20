@@ -1,8 +1,8 @@
-module Dynamic.Step where
+module Vanilla.Dynamic.Step where
 
 import Data.Foldable (toList)
 import Data.Sequence ((|>))
-import Syntax.Expr
+import Vanilla.Syntax.Expr
 
 value :: Expr -> Bool
 value EUnit = True

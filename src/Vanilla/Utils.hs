@@ -1,8 +1,8 @@
-module Utils where
+module Vanilla.Utils where
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import Syntax.Expr
+import Vanilla.Syntax.Expr
 
 freshVarStream :: [Text]
 freshVarStream = do

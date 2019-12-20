@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Parser where
+module Vanilla.Parser where
 
 import Control.Monad.Combinators.Expr
   ( Operator (..),
@@ -14,14 +14,14 @@ import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Void
-import Syntax.Cons
-import Syntax.Decl
-import Syntax.Expr
-import Syntax.Program (Program (..))
-import Syntax.Type
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
+import Vanilla.Syntax.Cons
+import Vanilla.Syntax.Decl
+import Vanilla.Syntax.Expr
+import Vanilla.Syntax.Program (Program (..))
+import Vanilla.Syntax.Type
 
 type Parser = Parsec Void Text
 

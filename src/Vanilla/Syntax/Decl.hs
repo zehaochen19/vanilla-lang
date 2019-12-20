@@ -1,14 +1,14 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Syntax.Decl where
+module Vanilla.Syntax.Decl where
 
 import Data.List (intercalate)
 import qualified Data.Map as M
 import qualified Data.Sequence as S
 import Data.Text (Text)
-import Static.Context
-import Syntax.Cons
-import Syntax.Type
+import Vanilla.Static.Context
+import Vanilla.Syntax.Cons
+import Vanilla.Syntax.Type
 
 -- | user defined data type declaration
 data Declaration

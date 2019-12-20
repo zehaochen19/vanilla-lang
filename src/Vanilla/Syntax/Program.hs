@@ -1,9 +1,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Syntax.Program where
+module Vanilla.Syntax.Program where
 
-import Syntax.Decl
-import Syntax.Expr
+import Vanilla.Syntax.Decl
+import Vanilla.Syntax.Expr
 
 data Program
   = Program

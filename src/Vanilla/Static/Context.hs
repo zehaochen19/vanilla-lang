@@ -1,11 +1,11 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Static.Context where
+module Vanilla.Static.Context where
 
 import qualified Data.Sequence as S
-import Syntax.Cons (ConsVar)
-import Syntax.Expr (EVar)
-import Syntax.Type
+import Vanilla.Syntax.Cons (ConsVar)
+import Vanilla.Syntax.Expr (EVar)
+import Vanilla.Syntax.Type
   ( TEVar,
     TVar,
     Type (..),

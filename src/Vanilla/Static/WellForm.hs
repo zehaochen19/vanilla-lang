@@ -1,11 +1,11 @@
-module Static.WellForm where
+module Vanilla.Static.WellForm where
 
 import Data.Map as M
 import Data.Maybe (isJust)
 import Data.Text (Text)
-import Static.Context
-import Syntax.Decl
-import Syntax.Type
+import Vanilla.Static.Context
+import Vanilla.Syntax.Decl
+import Vanilla.Syntax.Type
 
 typeWellForm :: Map Text Declaration -> Context -> Type -> Bool
 typeWellForm decls ctx ty = case ty of

@@ -3,15 +3,15 @@
 module EvalSpec where
 
 import Data.Sequence as S
-import Dynamic.Eval (eval, eval')
-import Syntax.Expr
-import Syntax.Program
 import Test.Hspec
-import Utils
+import Vanilla.Dynamic.Eval (eval, eval')
+import Vanilla.Examples
+import Vanilla.Syntax.Expr
+import Vanilla.Syntax.Program
+import Vanilla.Utils
   ( intToNat,
     natToInt,
   )
-import Vanilla.Examples
 
 evalSpec = describe "eval" $ do
   it "evals id'" $ do

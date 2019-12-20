@@ -6,14 +6,14 @@ import Data.Either
   ( isLeft,
     isRight,
   )
-import Parser
-import Syntax.Cons
-import Syntax.Decl
-import Syntax.Expr
-import Syntax.Program (Program (..))
-import Syntax.Type
 import Test.Hspec
 import Text.Megaparsec (runParser)
+import Vanilla.Parser
+import Vanilla.Syntax.Cons
+import Vanilla.Syntax.Decl
+import Vanilla.Syntax.Expr
+import Vanilla.Syntax.Program (Program (..))
+import Vanilla.Syntax.Type
 
 parserSpec = do
   typeParserSpec

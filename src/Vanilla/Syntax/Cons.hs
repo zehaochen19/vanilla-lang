@@ -1,11 +1,11 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Syntax.Cons where
+module Vanilla.Syntax.Cons where
 
 import Data.String (IsString)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Syntax.Type (Type)
+import Vanilla.Syntax.Type (Type)
 
 newtype ConsVar = MkConsVar Text deriving (Eq, Ord, IsString)
 

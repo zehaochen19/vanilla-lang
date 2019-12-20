@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Syntax.Expr
+module Vanilla.Syntax.Expr
   ( EVar (..),
     Expr (..),
     evar,
@@ -20,8 +20,8 @@ import Data.Sequence (Seq, fromList)
 import Data.String (IsString)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Syntax.Cons (ConsVar (..))
-import Syntax.Type (Type, tyParen)
+import Vanilla.Syntax.Cons (ConsVar (..))
+import Vanilla.Syntax.Type (Type, tyParen)
 
 newtype EVar = MkEVar Text deriving (Eq, Ord, IsString)
 

@@ -2,11 +2,11 @@
 
 module Vanilla.Examples where
 
-import Syntax.Cons
-import Syntax.Decl
-import Syntax.Expr
-import Syntax.Program
-import Syntax.Type
+import Vanilla.Syntax.Cons
+import Vanilla.Syntax.Decl
+import Vanilla.Syntax.Expr
+import Vanilla.Syntax.Program
+import Vanilla.Syntax.Type
 
 -- | Data types
 

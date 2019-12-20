@@ -6,16 +6,16 @@ module Vanilla where
 
 import Data.Either.Extra (mapLeft)
 import Data.Text (Text)
-import Dynamic.Eval (eval)
-import Parser (runProgramP)
 import Polysemy
 import Polysemy.Error
-import Static.Context (applyCtx)
-import Static.TypeCheck
-import Syntax.Expr
-import Syntax.Program
-import Syntax.Type
 import Text.Megaparsec.Error (errorBundlePretty)
+import Vanilla.Dynamic.Eval (eval)
+import Vanilla.Parser (runProgramP)
+import Vanilla.Static.Context (applyCtx)
+import Vanilla.Static.TypeCheck
+import Vanilla.Syntax.Expr
+import Vanilla.Syntax.Program
+import Vanilla.Syntax.Type
 
 -- | Given a program, first typecheck it and then evaluate it
 interpretF :: Member (Error String) r => Program -> Sem r (Expr, Type)

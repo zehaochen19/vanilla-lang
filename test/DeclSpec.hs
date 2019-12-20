@@ -4,11 +4,11 @@ module DeclSpec where
 
 import Data.Map as M
 import Data.Sequence as S
-import Static.Context
-import Syntax.Decl
-import Syntax.Type
 import Test.Hspec
 import Vanilla.Examples
+import Vanilla.Static.Context
+import Vanilla.Syntax.Decl
+import Vanilla.Syntax.Type
 
 declSpec = declMapSpec >> initDeclCtxSpec
 

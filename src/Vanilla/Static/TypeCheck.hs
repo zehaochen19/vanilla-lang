@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 
-module Static.TypeCheck where
+module Vanilla.Static.TypeCheck where
 
 import Data.Foldable (foldlM)
 import Data.Text (Text)
@@ -12,19 +12,19 @@ import Polysemy
 import Polysemy.Error
 import Polysemy.Reader
 import Polysemy.State
-import Static.Context
-import Static.WellForm
-import Syntax.Decl
-import Syntax.Expr (Branch (..), Expr (..))
-import Syntax.Program
-import Syntax.Type
+import Vanilla.Static.Context
+import Vanilla.Static.WellForm
+import Vanilla.Syntax.Decl
+import Vanilla.Syntax.Expr (Branch (..), Expr (..))
+import Vanilla.Syntax.Program
+import Vanilla.Syntax.Type
   ( TEVar (..),
     TVar,
     Type (..),
     isMono,
     tyFreeTEVars,
   )
-import Utils (freshVarStream)
+import Vanilla.Utils (freshVarStream)
 
 -- | Apply bidirectional typechecking
 newtype CheckState = CheckState {freshTypeVars :: [Text]}

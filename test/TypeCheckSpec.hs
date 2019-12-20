@@ -8,13 +8,13 @@ import Data.Either
   )
 import Polysemy
 import Polysemy.Error
-import Static.Context (Context)
-import Static.TypeCheck (typeCheck)
-import Syntax.Expr
-import Syntax.Program (Program (..))
-import Syntax.Type
 import Test.Hspec
 import Vanilla.Examples
+import Vanilla.Static.Context (Context)
+import Vanilla.Static.TypeCheck (typeCheck)
+import Vanilla.Syntax.Expr
+import Vanilla.Syntax.Program (Program (..))
+import Vanilla.Syntax.Type
 
 runTypeCheck :: Program -> Either String (Type, Context)
 runTypeCheck p = run . runError $ typeCheck p

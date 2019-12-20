@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Syntax.Type
+module Vanilla.Syntax.Type
   ( Type (..),
     TVar (..),
     TEVar (..),
