@@ -3,7 +3,7 @@
 module EvalSpec where
 
 import Data.Sequence as S
-import Dynamic.Step (eval)
+import Dynamic.Eval (eval, eval')
 import Syntax.Expr
 import Syntax.Program
 import Test.Hspec
@@ -22,8 +22,8 @@ evalSpec = describe "eval" $ do
     let EAnno e _ = id''
     eval id'' `shouldSatisfy` isELam
     eval id'' `shouldBe` e
-  it "evals idUnit" $ eval idUnit `shouldBe` EUnit
-  it "evals idUnit'" $ eval idUnit' `shouldBe` EUnit
+  it "evals idUnit" $ eval' idUnit `shouldBe` cons "Unit"
+  it "evals idUnit'" $ eval' idUnit' `shouldBe` cons "Unit"
   it "evalsidIdAnno" $ do
     let res = eval idIdAnno
     print res

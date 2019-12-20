@@ -8,16 +8,37 @@ import Syntax.Expr
 import Syntax.Program
 import Syntax.Type
 
+-- | Data types
+
+-- | List declaration
+listDec :: Declaration
+listDec =
+  Declaration
+    "List"
+    ["A"]
+    [ Constructor "Nil" [],
+      Constructor "Cons" [TVar "A", TData "List" [TVar "A"]]
+    ]
+
+-- | Nat declaration
+natDec =
+  Declaration
+    "Nat"
+    []
+    [Constructor "Zero" [], Constructor "Succ" [TData "Nat" []]]
+
+unitDec = Declaration "Unit" [] [Constructor "Unit" []]
+
 id' :: Expr
 id' = ELam "x" (EVar "x") -: TAll "A" (TVar "A" --> TVar "A")
 
 id'' = ELam "y" (EVar "y") -: TAll "B" (TArr (TVar "B") (TVar "B"))
 
-idUnit :: Expr
-idUnit = id' $$ EUnit
+idUnit :: Program
+idUnit = Program [unitDec] $ id' $$ cons "Unit"
 
-idUnit' :: Expr
-idUnit' = ELam "x" (EVar "x") $$ EUnit
+idUnit' :: Program
+idUnit' = Program [unitDec] $ ELam "x" (EVar "x") $$ cons "Unit"
 
 idId :: Expr
 idId = EApp id' id''
@@ -239,25 +260,6 @@ isInj1 :: Expr
 isInj1 =
   ELam "s" (ESumCase (EVar "s") "x" ETrue "y" EFalse)
     -: TAll "A" (TAll "B" $ TSum (TVar "A") (TVar "B") --> TBool)
-
--- | Data types
-
--- | List declaration
-listDec :: Declaration
-listDec =
-  Declaration
-    "List"
-    ["A"]
-    [ Constructor "Nil" [],
-      Constructor "Cons" [TVar "A", TData "List" [TVar "A"]]
-    ]
-
--- | Nat declaration
-natDec =
-  Declaration
-    "Nat"
-    []
-    [Constructor "Zero" [], Constructor "Succ" [TData "Nat" []]]
 
 listDummyProg :: Program
 listDummyProg = Program [listDec] (cons "Cons" $$ EUnit $$ cons "Nil")

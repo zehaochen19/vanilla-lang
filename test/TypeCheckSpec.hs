@@ -46,11 +46,11 @@ typeCheckSpec = describe "typeCheck" $ do
     let Right (ty, _) = id''Res
     ty `shouldSatisfy` isTAll
   it "infers idUnit" $ do
-    let Right (ty, _) = runTypeCheckExpr idUnit
-    ty `shouldBe` TUnit
+    let Right (ty, _) = runTypeCheck idUnit
+    ty `shouldBe` TData "Unit" []
   it "infers idUnit'" $ do
-    let Right (ty, _) = runTypeCheckExpr idUnit
-    ty `shouldBe` TUnit
+    let Right (ty, _) = runTypeCheck idUnit'
+    ty `shouldBe` TData "Unit" []
   it "infers idIdAnno" $ do
     let Right (ty, _) = runTypeCheckExpr idIdAnno
     ty `shouldBe` TAll "C" (TVar "C" --> TVar "C")

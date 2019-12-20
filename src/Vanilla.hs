@@ -6,7 +6,7 @@ module Vanilla where
 
 import Data.Either.Extra (mapLeft)
 import Data.Text (Text)
-import Dynamic.Step (eval)
+import Dynamic.Eval (eval)
 import Parser (runProgramP)
 import Polysemy
 import Polysemy.Error

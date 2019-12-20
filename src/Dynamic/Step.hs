@@ -68,9 +68,6 @@ substitute x e1 e2 =
         EIf b e1' e2' -> EIf (loop b) (loop e1') (loop e2')
         EFix e -> EFix $ loop e
 
-eval :: Expr -> Expr
-eval e = let e' = step e in if e' == e then e else eval e'
-
 step :: Expr -> Expr
 step expr = case expr of
   -- Unit
