@@ -20,5 +20,5 @@ main = do
           putStrLn "Result:"
           print expr
     _ -> do
-      putStrLn "Usage: systemf src.sf"
+      putStrLn "Usage: vanilla [src].vn"
       exitFailure
