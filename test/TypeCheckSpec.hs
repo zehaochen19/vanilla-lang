@@ -64,28 +64,29 @@ typeCheckSpec = describe "typeCheck" $ do
     let Right (ty, _) = runTypeCheckExpr nestedIdId
     ty `shouldBe` TAll "A" (TVar "A" --> TVar "A")
   it "infers nestedIdUnit" $ do
-    let Right (ty, _) = runTypeCheckExpr nestedIdUnit
-    ty `shouldBe` TUnit
+    let Right (ty, _) = runTypeCheck nestedIdUnit
+    ty `shouldBe` TData "Unit" []
   it "infers nestedIdIdUnit" $ do
-    let Right (ty, _) = runTypeCheckExpr nestedIdIdUnit
-    ty `shouldBe` TUnit
+    let Right (ty, _) = runTypeCheck nestedIdIdUnit
+    ty `shouldBe` TData "Unit" []
   it "infers letIdUnit" $ do
-    let Right (ty, _) = runTypeCheckExpr letIdUnit
-    ty `shouldBe` TUnit
-  it "infers letNestedIdUnit" $ do
-    let Right (ty, _) = runTypeCheckExpr letNestedIdUnit
-    ty `shouldBe` TUnit
+    let Right (ty, _) = runTypeCheck letIdUnit
+    ty `shouldBe` TData "Unit" []
+  it "infers letNestedIdUnit"
+    $ checkAndShouldBe letNestedIdUnit
+    $ TData "Unit" []
   it "rejects illtypedLetNestedUnit" $
     runTypeCheckExpr illtypedLetNestedUnit
       `shouldSatisfy` isLeft
   it "checks unitId" $ do
-    let Right (ty, _) = runTypeCheckExpr unitId
-    ty `shouldBe` TArr TUnit TUnit
-  it "infers letNestIdUnitId" $ do
-    let Right (ty, _) = runTypeCheckExpr letNestedIdUnit
-    ty `shouldBe` TUnit
+    let Right (ty, _) = runTypeCheck (Program [unitDec] unitId)
+    ty `shouldBe` (TData "Unit" [] --> TData "Unit" [])
+  it "infers illtypedLetNestIdUnitId" $
+    runTypeCheck
+      illtypedLetNestIdUnitId
+      `shouldSatisfy` isLeft
   it "rejects illtypedLetNestedIdUnitIdId" $
-    runTypeCheckExpr illtypedLetNestedIdUnitIdId
+    runTypeCheck illtypedLetNestedIdUnitIdId
       `shouldSatisfy` isLeft
   it "checks applyToUnit" $
     let Right (ty, _) = runTypeCheckExpr applyToUnit

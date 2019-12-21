@@ -54,47 +54,52 @@ nestedId =
 nestedIdId :: Expr
 nestedIdId = nestedId $$ id' -: TAll "A" (TVar "A" --> TVar "A")
 
-nestedIdUnit :: Expr
-nestedIdUnit = nestedId $$ id' $$ EUnit
+nestedIdUnit :: Program
+nestedIdUnit = Program [unitDec] $ nestedId $$ id' $$ cons "Unit"
 
 nestedIdId' :: Expr
 nestedIdId' = (nestedId $$ id' $$ id') -: TAll "A" (TVar "A" --> TVar "A")
 
-nestedIdIdUnit :: Expr
-nestedIdIdUnit = nestedId $$ id' $$ id'' $$ EUnit
+nestedIdIdUnit :: Program
+nestedIdIdUnit = Program [unitDec] $ nestedId $$ id' $$ id'' $$ cons "Unit"
 
-letIdUnit :: Expr
-letIdUnit = ELet "myid" id' (EVar "myid" $$ EUnit)
+letIdUnit :: Program
+letIdUnit = Program [unitDec] $ ELet "myid" id' (EVar "myid" $$ cons "Unit")
 
 letNestedIdId :: Expr
 letNestedIdId = ELet "myNestedId" nestedId (EVar "myNestedId" $$ id')
 
-letNestedIdUnit :: Expr
+letNestedIdUnit :: Program
 letNestedIdUnit =
-  ELet "myNestedId" nestedId $
-    ELet "myid" id' (EVar "myNestedId" $$ EVar "myid" $$ EUnit)
+  Program [unitDec]
+    $ ELet "myNestedId" nestedId
+    $ ELet "myid" id' (EVar "myNestedId" $$ EVar "myid" $$ cons "Unit")
 
 illtypedLetNestedUnit :: Expr
 illtypedLetNestedUnit =
   ELet "nestedId" nestedId (EVar "nestedId" $$ EUnit $$ EUnit)
 
-unitId = ELam "x" (EVar "x") -: TArr TUnit TUnit
+unitId = ELam "x" (EVar "x") -: TData "Unit" [] --> TData "Unit" []
 
-letNestIdUnitId =
-  ELet "nestedId" nestedId
+illtypedLetNestIdUnitId =
+  Program [unitDec]
+    $ ELet "nestedId" nestedId
     $ ELet "unitId" unitId
     $ EVar "nestedId"
       $$ EVar "unitId"
-      $$ EUnit
+      $$ cons "Unit"
 
 illtypedLetNestedIdUnitIdId =
-  ELet "nestedId" nestedId
+  Program [unitDec]
+    $ ELet "nestedId" nestedId
     $ ELet "unitId" unitId
     $ EVar "nestedId"
       $$ EVar "unitId"
       $$ id'
 
-lambdaIdIdUnit = ELam "f" (ELam "x" $ EVar "f" $$ EVar "x") $$ id' $$ EUnit
+lambdaIdIdUnit =
+  Program [unitDec] $
+    ELam "f" (ELam "x" $ EVar "f" $$ EVar "x") $$ id' $$ cons "Unit"
 
 applyToUnit =
   ELam "f" (EVar "f" $$ EUnit) -: TAll "A" (TVar "A" --> TVar "A") --> TUnit

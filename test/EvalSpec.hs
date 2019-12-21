@@ -36,11 +36,10 @@ evalSpec = describe "eval" $ do
     let res = eval nestedIdId
     print res
     res `shouldSatisfy` isELam
-  it "evals nestedIdUnit" $ eval nestedIdUnit `shouldBe` EUnit
-  it "evlas nestedIdIdUnit" $ eval nestedIdIdUnit `shouldBe` EUnit
-  it "evals letIdUnit" $ eval letIdUnit `shouldBe` EUnit
-  it "evals letNestedIdUnit" $ eval letNestedIdUnit `shouldBe` EUnit
-  it "evals letNestIdUnitId" $ eval letNestIdUnitId `shouldBe` EUnit
+  it "evals nestedIdUnit" $ eval' nestedIdUnit `shouldBe` cons "Unit"
+  it "evlas nestedIdIdUnit" $ eval' nestedIdIdUnit `shouldBe` cons "Unit"
+  it "evals letIdUnit" $ eval' letIdUnit `shouldBe` cons "Unit"
+  it "evals letNestedIdUnit" $ eval' letNestedIdUnit `shouldBe` cons "Unit"
   it "evals applyToUnitId" $ eval applyToUnitId `shouldBe` EUnit
   it "evals polyLetNat" $ eval polyLetNat `shouldBe` ESucc EZero
   it "evals annotedIdSZero" $ eval annotedIdSZero `shouldBe` ESucc EZero
