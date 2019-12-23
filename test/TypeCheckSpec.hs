@@ -118,10 +118,14 @@ typeCheckSpec = describe "typeCheck" $ do
     $ TData "Nat" [] --> TData "Bool" []
   it "infers nonZeroZero" $ checkAndShouldBe nonZeroZero $ TData "Bool" []
   it "infers nonZeroTwo" $ checkAndShouldBe nonZeroTwo $ TData "Bool" []
-  it "infers natAdd" $ checkExprAndShouldBe natAdd $ TNat --> TNat --> TNat
-  it "checks natAddAnno" $ checkExprAndShouldBe natAddAnno $ TNat --> TNat --> TNat
-  it "checks natMinus" $ checkExprAndShouldBe natMinus $ TNat --> TNat --> TNat
-  it "checks fibonacci" $ checkExprAndShouldBe fibonacci $ TNat --> TNat
+  it "infers natAdd" $ checkAndShouldBe (Program [natDec] natAdd) $
+    TData "Nat" [] --> TData "Nat" [] --> TData "Nat" []
+  it "checks natAddAnno" $ checkAndShouldBe (Program [natDec] natAddAnno) $
+    TData "Nat" [] --> TData "Nat" [] --> TData "Nat" []
+  it "checks natMinus" $ checkAndShouldBe (Program [natDec] natMinus) $
+    TData "Nat" [] --> TData "Nat" [] --> TData "Nat" []
+  it "checks fibonacci" $ checkAndShouldBe (Program [natDec] fibonacci) $
+    TData "Nat" [] --> TData "Nat" []
   it "infers aLetId" $ checkExprAndShouldBe aLetId TBool
   it "infers boolNatProd" $ checkExprAndShouldBe boolNatProd $ TProd TBool TNat
   it "infers idProd" $ checkExprAndShouldBe idProd $ TProd TBool TNat

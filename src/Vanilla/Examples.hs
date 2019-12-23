@@ -185,25 +185,30 @@ natAdd =
         "f"
         ( EALam
             "x"
-            TNat
+            (TData "Nat" [])
             ( EALam
                 "y"
-                TNat
-                ( ENatCase
+                (TData "Nat" [])
+                ( ECase
                     (EVar "x")
-                    (EVar "y")
-                    "x'"
-                    (ESucc (EVar "f" $$ EVar "x'" $$ EVar "y"))
+                    [ Branch "Zero" [] $ EVar "y",
+                      Branch "Succ" ["x1"] $
+                        cons "Succ" $$ (EVar "f" $$ EVar "x1" $$ EVar "y")
+                    ]
                 )
             )
         )
     )
 
-natAddAnno = natAdd -: TNat --> TNat --> TNat
+natAddAnno = natAdd -: TData "Nat" [] --> TData "Nat" [] --> TData "Nat" []
 
 natPred :: Expr
 natPred =
-  EALam "n" TNat (ENatCase (EVar "n") EZero "n'" (EVar "n'")) -: TNat --> TNat
+  EALam
+    "n"
+    (TData "Nat" [])
+    (ECase (EVar "n") [Branch "Zero" [] $ cons "Zero", Branch "Succ" ["x"] $ EVar "x"])
+    -: TData "Nat" [] --> TData "Nat" []
 
 natMinus :: Expr
 natMinus =
@@ -212,27 +217,25 @@ natMinus =
         "f"
         ( EALam
             "x"
-            TNat
+            (TData "Nat" [])
             ( EALam
                 "y"
-                TNat
-                ( ENatCase
+                (TData "Nat" [])
+                ( ECase
                     (EVar "y")
-                    (EVar "x")
-                    "y'"
-                    ( ENatCase
-                        (EVar "x")
-                        EZero
-                        "x'"
-                        (EVar "f" $$ EVar "x'" $$ EVar "y'")
-                    )
+                    [ Branch "Zero" [] $ EVar "x",
+                      Branch "Succ" ["y1"] $
+                        ECase
+                          (EVar "x")
+                          [ Branch "Zero" [] $ cons "Zero",
+                            Branch "Succ" ["x1"] $ EVar "f" $$ EVar "x1" $$ EVar "y1"
+                          ]
+                    ]
                 )
             )
         )
     )
-    -: TNat
-    --> TNat
-    --> TNat
+    -: TData "Nat" [] --> TData "Nat" [] --> TData "Nat" []
 
 fibonacci :: Expr
 fibonacci =
@@ -241,20 +244,18 @@ fibonacci =
         "fib"
         ( EALam
             "n"
-            TNat
-            ( ENatCase
+            (TData "Nat" [])
+            ( ECase
                 (EVar "n")
-                (ESucc EZero)
-                "n'"
-                ( natAdd
-                    $$ (EVar "fib" $$ EVar "n'")
-                    $$ (EVar "fib" $$ (natPred $$ EVar "n'"))
-                )
+                [ Branch "Zero" [] $ cons "Succ" $$ cons "Zero",
+                  Branch "Succ" ["n1"] $
+                    natAdd $$ (EVar "fib" $$ EVar "n1") $$ (EVar "fib" $$ (natPred $$ EVar "n1"))
+                ]
             )
         )
     )
-    -: TNat
-    --> TNat
+    -: TData "Nat" []
+    --> TData "Nat" []
 
 aLetId :: Expr
 aLetId =
