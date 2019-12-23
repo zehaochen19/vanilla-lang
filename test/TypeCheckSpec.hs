@@ -126,10 +126,16 @@ typeCheckSpec = describe "typeCheck" $ do
     TData "Nat" [] --> TData "Nat" [] --> TData "Nat" []
   it "checks fibonacci" $ checkAndShouldBe (Program [natDec] fibonacci) $
     TData "Nat" [] --> TData "Nat" []
-  it "infers aLetId" $ checkExprAndShouldBe aLetId TBool
-  it "infers boolNatProd" $ checkExprAndShouldBe boolNatProd $ TProd TBool TNat
+  it "infers aLetId" $ checkAndShouldBe aLetId $ TData "Bool" []
+  it "infers boolNatProd"
+    $ checkAndShouldBe
+      ( Program
+          [boolDec, prodDec, natDec]
+          boolNatProd
+      )
+    $ TData "Prod" [TData "Bool" [], TData "Nat" []]
   it "infers idProd" $ checkExprAndShouldBe idProd $ TProd TBool TNat
-  it "infers boolNatProj1" $ checkExprAndShouldBe boolNatProj1 TBool
+  it "infers boolNatProj1" $ checkAndShouldBe boolNatProj1 $ TData "Bool" []
   it "checks sumUnit" $ checkExprAndShouldBe sumUnit $
     TAll
       "A"

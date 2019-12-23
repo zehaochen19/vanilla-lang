@@ -34,7 +34,11 @@ boolDec =
     []
     [Constructor "True" [], Constructor "False" []]
 
+-- | Unit declaration
 unitDec = Declaration "Unit" [] [Constructor "Unit" []]
+
+-- | Product delaration
+prodDec = Declaration "Prod" ["a", "b"] [Constructor "Prod" [TVar "a", TVar "b"]]
 
 id' :: Expr
 id' = ELam "x" (EVar "x") -: TAll "A" (TVar "A" --> TVar "A")
@@ -257,16 +261,18 @@ fibonacci =
     -: TData "Nat" []
     --> TData "Nat" []
 
-aLetId :: Expr
+aLetId :: Program
 aLetId =
-  EALet
-    "id"
-    (TAll "A" (TVar "A" --> TVar "A"))
-    (ELam "x" $ EVar "x")
-    (EVar "id" $$ ETrue)
+  Program [boolDec] $
+    EALet
+      "id"
+      (TAll "A" (TVar "A" --> TVar "A"))
+      (ELam "x" $ EVar "x")
+      (EVar "id" $$ cons "True")
 
 boolNatProd :: Expr
-boolNatProd = EProd ETrue (ESucc EZero)
+boolNatProd =
+  cons "Prod" $$ cons "True" $$ (cons "Succ" $$ cons "Zero")
 
 idProd :: Expr
 idProd =
@@ -276,8 +282,10 @@ idProd =
     (ELam "x" $ EVar "x")
     (EProd (EVar "id" $$ EFalse) (EVar "id" $$ EZero))
 
-boolNatProj1 :: Expr
-boolNatProj1 = EProj1 boolNatProd
+boolNatProj1 :: Program
+boolNatProj1 =
+  Program [boolDec, prodDec, natDec] $
+    ECase boolNatProd [Branch "Prod" ["x", "y"] $ EVar "x"]
 
 sumUnit :: Expr
 sumUnit = ELam "s" EUnit -: TAll "A" (TSum TNat (TVar "A") --> TUnit)
