@@ -10,15 +10,19 @@ Simple as it is, Vanilla contains many features that many main-stream languages 
   - Only polymorphic and recursive bindings need annotations
 - Algebraic data types
 - Pattern matching
+- Simpleness
+  - Only polymorphism and arrows are built-in types
+  - All regular types such as `Unit` and `Bool` can be declared as ADT and eliminated by pattern matching
 
 For simplicity, this programming language only supports type checking and evaluation on closed terms.
 
 ## Grammar
 
 ```
-Types           A, B, C   ::= Unit | Bool | Nat | α | ∀α.A | A → B
-Monotypes       τ, σ      ::= Unit | Bool | Nat | α | τ → σ
+Types           A, B, C   ::= T A1...An | a | ∀a.A | A → B
+Monotypes       τ, σ      ::= T τ1...τn | a | τ → σ
 
+Data Type       T         ::= T
 Constructor     K         ::= K
 Declaration     D         ::= data T a1...at = K1 τ1...τm | ... | Kn σ1...σn .
 Pattern         p         ::= K x1...xn
@@ -26,18 +30,6 @@ Pattern         p         ::= K x1...xn
 Expressions     e, n, f   ::=   x                                     -- variable
                               | K                                     -- constructor
                               | case e of {pi → ei}                   -- pattern match
-                              | ()                                    -- unit
-                              | True                                  -- boolean constant true
-                              | False                                 -- boolean constant false
-                              | 0                                     -- natural number zero
-                              | S e                                   -- natural number successor
-                              | natcase n {0 → e1, S x → e2}          -- natural number elimination
-                              | (e1, e2)                              -- product
-                              | e.1                                   -- projection first
-                              | e.2                                   -- projection second
-                              | Inj1 e                                -- injection1
-                              | Inj2 e                                -- injection2
-                              | sumcase e {Inj1 x → e1, Inj2 y → e2}  -- sum elimination
                               | λx.e                                  -- implicit λ
                               | λx : A.e                              -- annotated λ
                               | e1 e2                                 -- application
@@ -70,6 +62,8 @@ First of all, `stack` should be installed in `PATH`
 Given `example/cont.vn`:
 
 ```
+data Unit = Unit.
+
 -- Can you belive that
 -- type `a` and `∀r. ((a → r) → r)` are isomorphic?
 
@@ -81,8 +75,8 @@ let runCont : ∀a. (∀r. (a → r) → r) → a =
   λ f . (let callback = λ x . x in f callback)
 in
 
--- should output ()
-runCont (cont ())
+-- should output Unit
+runCont (cont Unit)
 ```
 
 Run
@@ -98,7 +92,7 @@ Type:
 Unit
 
 Result:
-()
+Unit
 ```
 
 ### Map for Lists
@@ -106,6 +100,7 @@ Result:
 Given `example/map.vn`:
 
 ```
+data Bool = False | True.
 data List a = Nil | Cons a (List a).
 
 
@@ -117,7 +112,7 @@ let rec map : ∀a. ∀b. (a → b) → (List a) → (List b) =
 in
 
 let not : Bool → Bool =
-  λb. if b then False else True
+  λb. case b of {False → True, True → False}
 in
 
 let xs = Cons True (Cons False Nil) in
@@ -138,7 +133,7 @@ Type:
 List Bool
 
 Result:
-Cons False (Cons True (Nil))
+Cons False (Cons True Nil)
 ```
 
 ### Add operator for Natural Numbers
@@ -146,18 +141,24 @@ Cons False (Cons True (Nil))
 Given `example/add.vn`:
 
 ```
+data Nat = Zero | Succ Nat.
+data Prod a b = Prod a b.
+
 -- add can be defined by `fixpoint`
 let add : Nat → Nat → Nat =
-  fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)})
+  fix (λf. λx : Nat . λy : Nat. case x of {Zero → y, Succ a → Succ (f a y)})
 in
 
 -- or `let rec`
 let rec add2 : Nat → Nat → Nat =
-  λ x . λ y . natcase x {0 → y, S a → S (add2 a y)}
+  λ x . λ y . case x of {Zero → y, Succ a → Succ (add2 a y)}
 in
 
+let two = Succ (Succ Zero) in
+let three = Succ two in
+
 -- 3 + 2 = 5
-(add (S (S (S 0))) (S S (0)), add2 (S (S (S 0))) (S S (0)))
+Prod (add three two) (add2 three two)
 ```
 
 Run
@@ -170,10 +171,10 @@ It should output the inferred type and evaluated value of this program:
 
 ```
 Type:
-(Nat, Nat)
+Prod Nat Nat
 
 Result:
-((S (S (S (S (S 0))))), (S (S (S (S (S 0))))))
+Prod (Succ (Succ (Succ (Succ (Succ Zero))))) (Succ (Succ (Succ (Succ (Succ Zero)))))
 ```
 
 ### Mutual Recursion
@@ -183,29 +184,33 @@ Mutual recursive functions can be easily defined with the fixpoint and projectio
 Given `example/evenodd.vn`:
 
 ```
-let evenodd : (Nat → Bool, Nat → Bool) =
-  fix (λ eo  .
-    let e = λ n . natcase n { 0 → True, S x → eo.2 x } in
-    let o = λ n . natcase n { 0 → False, S x → eo.1 x } in
-    (e, o))
+data Nat = Zero | Succ Nat.
+data Bool = False | True.
+data Prod a b = Prod a b.
+
+let evenodd : Prod (Nat → Bool) (Nat → Bool) =
+  fix (λ eo .
+    let e = λ n : Nat . case n of { Zero → True, Succ x → (case eo of {Prod e o → o}) x } in
+    let o = λ n : Nat . case n of { Zero → False, Succ x → (case eo of {Prod e o → e}) x } in
+    (Prod e o))
 in
 
-let even = evenodd.1 in
-let odd = evenodd.2 in
+let even = (case evenodd of {Prod e o → e}) in
+let odd = (case evenodd of {Prod e o → o}) in
 
-let five = S(S(S(S(S(0))))) in
+let five = Succ(Succ(Succ(Succ(Succ(Zero))))) in
 
-(even five, odd five)
+Prod (even five) (odd five)
 ```
 
 It reports:
 
 ```
 Type:
-(Bool, Bool)
+Prod Bool Bool
 
 Result:
-(False, True)
+Prod False True
 ```
 
 ### Ill-typed Program
@@ -228,7 +233,14 @@ cannot establish subtyping with Unit <: Nat
 
 ### Unit tests
 
-`$ stack test`
+```
+$ stack test
+
+Finished in 0.0513 seconds
+122 examples, 0 failures
+
+vanilla-lang> Test suite vanilla-test passed
+```
 
 ## (Planned) Features
 
@@ -239,18 +251,14 @@ cannot establish subtyping with Unit <: Nat
 - [x] Both annotated and implicit λ
 - [x] Examples
 - [x] Unit tests
-- [x] Let Binding (not verified)
-- [x] Extended basic types
-  - [x] Bool
-  - [x] Nat
-  - [x] Product
-  - [x] Sum
+- [x] Let Binding
 - [x] Algebraic data types
   - [x] Declarations
   - [x] Pattern match
 - [x] Type application
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
+- [x] Let rec
 - [x] Parser
 - [x] Pretty printing
 
