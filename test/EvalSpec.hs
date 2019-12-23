@@ -59,10 +59,10 @@ evalSpec = describe "eval" $ do
   it "evals fibinacci 10 = 55" $
     (natToInt' . eval $ (fibonacci $$ intToNat' 10)) `shouldBe` 144
   it "evals aLetId" $ eval' aLetId `shouldBe` cons "True"
-  it "evals idProd" $ eval idProd `shouldBe` EProd EFalse EZero
+  it "evals idProd" $ eval' idProd `shouldBe` cons' "Prod" [cons "False", cons "Zero"]
   it "evals boolNatProj1" $ eval' boolNatProj1 `shouldBe` cons "True"
-  it "evals (isInj1 inj2Unit)" $ eval (isInj1 $$ inj2Unit) `shouldBe` EFalse
-  it "evals (isInj1 inj1Nat)" $ eval (isInj1 $$ inj1Nat) `shouldBe` ETrue
+  it "evals (isInj1 inj2Unit)" $ eval (isInj1 $$ inj2Unit) `shouldBe` cons "False"
+  it "evals (isInj1 inj1Nat)" $ eval (isInj1 $$ inj1Nat) `shouldBe` cons "True"
   it "evals listEmptyProg" $ eval (mainExpr listEmptyProg) `shouldBe` ETrue
   it "evals listNonEmptyProg" $ eval (mainExpr listNonEmptyProg) `shouldBe` EFalse
   it "evals nonzeroSingletonList" $

@@ -40,6 +40,13 @@ unitDec = Declaration "Unit" [] [Constructor "Unit" []]
 -- | Product delaration
 prodDec = Declaration "Prod" ["a", "b"] [Constructor "Prod" [TVar "a", TVar "b"]]
 
+-- | Sum declaration
+sumDec =
+  Declaration
+    "Sum"
+    ["a", "b"]
+    [Constructor "Inj1" [TVar "a"], Constructor "Inj2" [TVar "b"]]
+
 id' :: Expr
 id' = ELam "x" (EVar "x") -: TAll "A" (TVar "A" --> TVar "A")
 
@@ -274,13 +281,15 @@ boolNatProd :: Expr
 boolNatProd =
   cons "Prod" $$ cons "True" $$ (cons "Succ" $$ cons "Zero")
 
-idProd :: Expr
+idProd :: Program
 idProd =
-  EALet
-    "id"
-    (TAll "A" (TVar "A" --> TVar "A"))
-    (ELam "x" $ EVar "x")
-    (EProd (EVar "id" $$ EFalse) (EVar "id" $$ EZero))
+  Program
+    [prodDec, boolDec, natDec]
+    $ EALet
+      "id"
+      (TAll "A" (TVar "A" --> TVar "A"))
+      (ELam "x" $ EVar "x")
+      (cons "Prod" $$ (EVar "id" $$ cons "False") $$ (EVar "id" $$ cons "Zero"))
 
 boolNatProj1 :: Program
 boolNatProj1 =
@@ -288,18 +297,20 @@ boolNatProj1 =
     ECase boolNatProd [Branch "Prod" ["x", "y"] $ EVar "x"]
 
 sumUnit :: Expr
-sumUnit = ELam "s" EUnit -: TAll "A" (TSum TNat (TVar "A") --> TUnit)
+sumUnit =
+  ELam "s" (cons "Unit")
+    -: TAll "A" (TData "Sum" [TData "Nat" [], TVar "A"] --> TData "Unit" [])
 
 inj1Nat :: Expr
-inj1Nat = EInj1 EZero
+inj1Nat = cons "Inj1" $$ cons "Zero"
 
 inj2Unit :: Expr
-inj2Unit = EInj2 EUnit
+inj2Unit = cons "Inj2" $$ cons "Unit"
 
 isInj1 :: Expr
 isInj1 =
-  ELam "s" (ESumCase (EVar "s") "x" ETrue "y" EFalse)
-    -: TAll "A" (TAll "B" $ TSum (TVar "A") (TVar "B") --> TBool)
+  ELam "s" (ECase (EVar "s") [Branch "Inj1" ["x"] $ cons "True", Branch "Inj2" ["y"] $ cons "False"])
+    -: TAll "A" (TAll "B" $ TData "Sum" [TVar "A", TVar "B"] --> TData "Bool" [])
 
 listDummyProg :: Program
 listDummyProg = Program [listDec] (cons "Cons" $$ EUnit $$ cons "Nil")

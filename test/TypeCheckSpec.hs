@@ -134,18 +134,26 @@ typeCheckSpec = describe "typeCheck" $ do
           boolNatProd
       )
     $ TData "Prod" [TData "Bool" [], TData "Nat" []]
-  it "infers idProd" $ checkExprAndShouldBe idProd $ TProd TBool TNat
+  it "infers idProd" $ checkAndShouldBe idProd $ TData "Prod" [TData "Bool" [], TData "Nat" []]
   it "infers boolNatProj1" $ checkAndShouldBe boolNatProj1 $ TData "Bool" []
-  it "checks sumUnit" $ checkExprAndShouldBe sumUnit $
-    TAll
-      "A"
-      (TSum TNat (TVar "A") --> TUnit)
-  it "infers (sumUnit inj1Nat)" $ checkExprAndShouldBe (EApp sumUnit inj1Nat) TUnit
-  it "infers (sumUnit inj2Unit" $
-    checkExprAndShouldBe (EApp sumUnit inj2Unit) TUnit
-  it "checks isInj1" $ runTypeCheckExpr isInj1 `shouldSatisfy` isRight
-  it "infers (isInj1 inj2Unit)" $ checkExprAndShouldBe (isInj1 $$ inj2Unit) TBool
-  it "infers (isInj1 inj1Nat)" $ checkExprAndShouldBe (isInj1 $$ inj1Nat) TBool
+  it "checks sumUnit" $ checkAndShouldBe (Program [unitDec, sumDec, natDec] sumUnit) $
+    TAll "A" (TData "Sum" [TData "Nat" [], TVar "A"] --> TData "Unit" [])
+  it "infers (sumUnit inj1Nat)"
+    $ checkAndShouldBe
+      ( Program [unitDec, sumDec, natDec] $
+          EApp sumUnit inj1Nat
+      )
+    $ TData "Unit" []
+  it "infers (sumUnit inj2Unit)"
+    $ checkAndShouldBe (Program [unitDec, sumDec, natDec] $ EApp sumUnit inj2Unit)
+    $ TData "Unit" []
+  it "checks isInj1" $ runTypeCheck (Program [sumDec, boolDec] isInj1) `shouldSatisfy` isRight
+  it "infers (isInj1 inj2Unit)"
+    $ checkAndShouldBe (Program [sumDec, boolDec, natDec, unitDec] $ isInj1 $$ inj2Unit)
+    $ TData "Bool" []
+  it "infers (isInj1 inj1Nat)"
+    $ checkAndShouldBe (Program [sumDec, boolDec, natDec, unitDec] $ isInj1 $$ inj1Nat)
+    $ TData "Bool" []
   it "checks listDummyProg"
     $ checkAndShouldBe listDummyProg
     $ TData "List" [TUnit]
