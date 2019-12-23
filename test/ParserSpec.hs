@@ -50,7 +50,7 @@ programPSpec =
 
 branchPSpec = describe "branchP should" $ do
   it "parse a Zero branch" $
-    runParser branchP "" "Zero → ()" `shouldBe` Right (Branch "Zero" [] EUnit)
+    runParser branchP "" "Zero → Unit" `shouldBe` Right (Branch "Zero" [] $ cons "Unit")
   it "parse a Succ branch" $
     runParser branchP "" "Succ x → Cons x Nil"
       `shouldBe` Right (Branch "Succ" ["x"] (cons "Cons" $$ EVar "x" $$ cons "Nil"))
@@ -82,7 +82,7 @@ typeParserSpec = describe "typeP should" $ do
   it "parse Nat to Nat" $
     runParser typeP "" "Nat → Nat"
       `shouldBe` Right
-        (TNat --> TNat)
+        (TData "Nat" [] --> TData "Nat" [])
   it "parse type of id" $
     runParser typeP "" "∀a.a→a"
       `shouldBe` Right
@@ -115,11 +115,12 @@ typeParserSpec = describe "typeP should" $ do
             )
         )
   it "parse type of prod" $
-    runParser typeP "" "(Nat, Nat → Nat)"
-      `shouldBe` Right (TProd TNat (TNat --> TNat))
+    runParser typeP "" "Prod (Nat) (Nat → Nat)"
+      `shouldBe` Right (TData "Prod" [TData "Nat" [], TData "Nat" [] --> TData "Nat" []])
   it "parse a pair of arrow" $
-    runParser typeP "" "(Nat → Nat, Nat → Nat)"
-      `shouldBe` Right (TProd (TNat --> TNat) (TNat --> TNat))
+    runParser typeP "" "Prod (Nat → Nat) (Nat → Nat)"
+      `shouldBe` Right
+        (TData "Prod" [TData "Nat" [] --> TData "Nat" [], TData "Nat" [] --> TData "Nat" []])
   it "parse a List type" $
     runParser typeP "" "List a" `shouldBe` Right (TData "List" [TVar "a"])
   it "parse map type" $
@@ -133,10 +134,11 @@ expressionParseSpec = describe "exprP should" $ do
   it "parse nat id" $
     runParser exprP "" "λx : Nat. x"
       `shouldBe` Right
-        (EALam "x" TNat $ EVar "x")
+        (EALam "x" (TData "Nat" []) $ EVar "x")
   it "parse annotated nat id" $
     runParser exprP "" "(λx : Nat. x) : Nat → Nat"
-      `shouldBe` Right (EAnno (EALam "x" TNat $ EVar "x") (TNat --> TNat))
+      `shouldBe` Right
+        (EAnno (EALam "x" (TData "Nat" []) $ EVar "x") (TData "Nat" [] --> TData "Nat" []))
   it "parse unannotated id" $
     runParser exprP "" "λx . x"
       `shouldBe` Right
@@ -147,8 +149,8 @@ expressionParseSpec = describe "exprP should" $ do
         ( EAnno (ELam "x" $ EVar "x") (TAll "a" (TVar "a" --> TVar "a"))
         )
   it "parse unit with parenthesis" $
-    runParser exprP "" "((()))"
-      `shouldBe` Right EUnit
+    runParser exprP "" "((Unit))"
+      `shouldBe` Right (cons "Unit")
   it "parse application" $
     runParser exprP "" "f x"
       `shouldBe` Right
@@ -157,20 +159,35 @@ expressionParseSpec = describe "exprP should" $ do
     runParser exprP "" "f g x"
       `shouldBe` Right
         (EVar "f" $$ EVar "g" $$ EVar "x")
-  it "parse nat 1" $ runParser exprP "" "S 0" `shouldBe` Right (ESucc EZero)
+  it "parse nat 1" $ runParser exprP "" "Succ Zero" `shouldBe` Right (cons "Succ" $$ cons "Zero")
   it "parse a if-else clause" $
-    runParser exprP "" "if True then 0 else S 0"
-      `shouldBe` Right (EIf ETrue EZero (ESucc EZero))
+    runParser exprP "" "if True Zero (Succ Zero)"
+      `shouldBe` Right (EVar "if" $$ cons "True" $$ cons "Zero" $$ (cons "Succ" $$ cons "Zero"))
   it "parse a let binding" $
-    runParser exprP "" "let f = λx. x in f ()"
-      `shouldBe` Right (ELet "f" (ELam "x" $ EVar "x") (EVar "f" $$ EUnit))
-  it "parse a natcase with 0" $
-    runParser exprP "" "natcase 0 { 0 → True, S x → False}"
-      `shouldBe` Right (ENatCase EZero ETrue "x" EFalse)
-  it "parse a let binding with natcase" $
-    runParser exprP "" "let n = S 0 in natcase n { 0 → False, S x → True } "
+    runParser exprP "" "let f = λx. x in f Unit"
+      `shouldBe` Right (ELet "f" (ELam "x" $ EVar "x") (EVar "f" $$ cons "Unit"))
+  it "parse a nat case with 0" $
+    runParser exprP "" "case Zero of { Zero → True, Succ x → False}"
       `shouldBe` Right
-        (ELet "n" (ESucc EZero) (ENatCase (EVar "n") EFalse "x" ETrue))
+        ( ECase
+            (cons "Zero")
+            [ Branch "Zero" [] $ cons "True",
+              Branch "Succ" ["x"] $ cons "False"
+            ]
+        )
+  it "parse a let binding with nat case" $
+    runParser exprP "" "let n = Succ Zero in case n of { Zero → False, Succ x → True } "
+      `shouldBe` Right
+        ( ELet
+            "n"
+            (cons "Succ" $$ cons "Zero")
+            ( ECase
+                (EVar "n")
+                [ Branch "Zero" [] $ cons "False",
+                  Branch "Succ" ["x"] $ cons "True"
+                ]
+            )
+        )
   it "parse a chain of lambdas" $
     runParser exprP "" "λ f . λ x . f x"
       `shouldSatisfy` isRight
@@ -178,66 +195,77 @@ expressionParseSpec = describe "exprP should" $ do
     runParser
       exprP
       ""
-      "(fix (λf. λx : Nat . λy : Nat. natcase x {0 → y, S a → S (f a y)})) : Nat → Nat → Nat"
+      "(fix (λf. λx : Nat . λy : Nat. case x of {Zero → y, Succ a → Succ (f a y)})) : Nat → Nat → Nat"
       `shouldSatisfy` isRight
   it "parse a product" $
-    runParser exprP "" "(True, 0)"
-      `shouldBe` Right
-        (EProd ETrue EZero)
+    runParser exprP "" "Prod True Zero"
+      `shouldBe` Right (cons "Prod" $$ cons "True" $$ cons "Zero")
   it "parse a proj1" $
-    runParser exprP "" "(True, 0).1"
-      `shouldBe` Right
-        (EProj1 (EProd ETrue EZero))
+    runParser exprP "" "proj1 (Prod True Zero)"
+      `shouldBe` Right (EVar "proj1" $$ (cons "Prod" $$ cons "True" $$ cons "Zero"))
   it "parse a chain of lets" $ do
     let res =
           runParser
             exprP
             ""
             "let evenodd =\
-            \ fix (λ eo : (Nat → Bool, Nat → Bool).\
-            \ let e = λ n : Nat. natcase n { 0 → True, S x → eo.2 x } in\
-            \ let o = λ n : Nat. natcase n { 0 → False, S x → eo.1 x } in\
-            \ (e, o))\
-            \ in evenodd.1"
+            \ fix (λ eo : Prod (Nat → Bool) (Nat → Bool).\
+            \ let e = λ n : Nat. case n of { Zero → True, Succ x → (proj2 eo) x } in\
+            \ let o = λ n : Nat. case n of { Zero → False, Succ x → (proj1 eo) x } in\
+            \ (Prod e o))\
+            \ in (proj1 evenodd)"
     print res
     res `shouldSatisfy` isRight
   it "parse a sum" $
-    runParser exprP "" "(Inj1 ()) : Unit + Nat"
-      `shouldBe` Right (EInj1 EUnit -: TSum TUnit TNat)
-  it "parse a sumcase" $
-    runParser exprP "" "sumcase (Inj1 ()) { Inj1 x → True, Inj2 y → False }"
-      `shouldBe` Right (ESumCase (EInj1 EUnit) "x" ETrue "y" EFalse)
+    runParser exprP "" "Inj1 Unit : Sum (Unit) (Nat)"
+      `shouldBe` Right
+        ( cons "Inj1" $$ cons "Unit"
+            -: TData "Sum" [TData "Unit" [], TData "Nat" []]
+        )
+  it "parse a sum case" $
+    runParser exprP "" "case (Inj1 Unit) of { Inj1 x → True, Inj2 y → False }"
+      `shouldBe` Right
+        ( ECase
+            (cons "Inj1" $$ cons "Unit")
+            [ Branch "Inj1" ["x"] $ cons "True",
+              Branch "Inj2" ["y"] $ cons "False"
+            ]
+        )
   it "parse a type application" $
     runParser exprP "" "Nil @ Foo"
       `shouldBe` Right (cons "Nil" -@ TData "Foo" [])
   it "parse a cons" $
-    runParser exprP "" "Cons () Nil" `shouldBe` Right (cons "Cons" $$ EUnit $$ cons "Nil")
+    runParser exprP "" "Cons Unit Nil" `shouldBe` Right (cons "Cons" $$ cons "Unit" $$ cons "Nil")
   it "parse a pattern match expression" $
     runParser
       exprP
       ""
-      "case (Cons () Nil) of {\
+      "case (Cons Unit Nil) of {\
       \ Nil → True , \
       \ Cons x xs → False }"
       `shouldBe` Right
         ( ECase
-            (cons "Cons" $$ EUnit $$ cons "Nil")
-            [Branch "Nil" [] ETrue, Branch "Cons" ["x", "xs"] EFalse]
+            (cons "Cons" $$ cons "Unit" $$ cons "Nil")
+            [Branch "Nil" [] $ cons "True", Branch "Cons" ["x", "xs"] $ cons "False"]
         )
   it "parse a add function defined by let rec" $
     runParser
       exprP
       ""
       "let rec add : Nat → Nat → Nat =\
-      \ λ x . λ y . natcase x {0 → y, S a → S (add a y)}\
+      \ λ x . λ y . case x of { Zero → y, Succ a → Succ (add a y)}\
       \ in\
       \ add"
       `shouldBe` Right
         ( EALetRec
             "add"
-            (TNat --> TNat --> TNat)
+            (TData "Nat" [] --> TData "Nat" [] --> TData "Nat" [])
             ( ELam "x" $ ELam "y" $
-                ENatCase (EVar "x") (EVar "y") "a" (ESucc $ EVar "add" $$ EVar "a" $$ EVar "y")
+                ECase
+                  (EVar "x")
+                  [ Branch "Zero" [] $ EVar "y",
+                    Branch "Succ" ["a"] $ cons "Succ" $$ (EVar "add" $$ EVar "a" $$ EVar "y")
+                  ]
             )
             (EVar "add")
         )

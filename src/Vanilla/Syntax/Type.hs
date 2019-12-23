@@ -106,7 +106,7 @@ instance Show Type where
   show (TArr a b) = tyParen a ++ " → " ++ tyParen b
   show (TAll a ty) = "∀" ++ show a ++ ". " ++ tyParen ty
   show (TData name pat) =
-    let patStr = if null pat then "" else " " ++ unwords (show <$> pat)
+    let patStr = if null pat then "" else " " ++ unwords (tyParen <$> pat)
      in T.unpack name ++ patStr
 
 tyParen :: Type -> String
