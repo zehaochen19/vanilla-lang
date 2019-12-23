@@ -156,9 +156,9 @@ typeCheckSpec = describe "typeCheck" $ do
     $ TData "Bool" []
   it "checks listDummyProg"
     $ checkAndShouldBe listDummyProg
-    $ TData "List" [TUnit]
-  it "checks listEmptyProg" $ checkAndShouldBe listEmptyProg TBool
-  it "checks listNonEmptyProg" $ checkAndShouldBe listNonEmptyProg TBool
+    $ TData "List" [TData "Unit" []]
+  it "checks listEmptyProg" $ checkAndShouldBe listEmptyProg $ TData "Bool" []
+  it "checks listNonEmptyProg" $ checkAndShouldBe listNonEmptyProg $ TData "Bool" []
   it "checks nonzeroSingletonList"
     $ checkAndShouldBe nonzeroSingletonList
     $ TData "List" [TData "Nat" []]

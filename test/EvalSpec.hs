@@ -63,8 +63,8 @@ evalSpec = describe "eval" $ do
   it "evals boolNatProj1" $ eval' boolNatProj1 `shouldBe` cons "True"
   it "evals (isInj1 inj2Unit)" $ eval (isInj1 $$ inj2Unit) `shouldBe` cons "False"
   it "evals (isInj1 inj1Nat)" $ eval (isInj1 $$ inj1Nat) `shouldBe` cons "True"
-  it "evals listEmptyProg" $ eval (mainExpr listEmptyProg) `shouldBe` ETrue
-  it "evals listNonEmptyProg" $ eval (mainExpr listNonEmptyProg) `shouldBe` EFalse
+  it "evals listEmptyProg" $ eval (mainExpr listEmptyProg) `shouldBe` cons "True"
+  it "evals listNonEmptyProg" $ eval (mainExpr listNonEmptyProg) `shouldBe` cons "False"
   it "evals nonzeroSingletonList" $
     eval (mainExpr nonzeroSingletonList)
       `shouldBe` cons' "Cons" [cons' "Succ" [cons "Zero"], cons "Nil"]

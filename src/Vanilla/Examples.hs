@@ -313,21 +313,21 @@ isInj1 =
     -: TAll "A" (TAll "B" $ TData "Sum" [TVar "A", TVar "B"] --> TData "Bool" [])
 
 listDummyProg :: Program
-listDummyProg = Program [listDec] (cons "Cons" $$ EUnit $$ cons "Nil")
+listDummyProg = Program [listDec, unitDec] (cons "Cons" $$ cons "Unit" $$ cons "Nil")
 
 listEmptyProg :: Program
 listEmptyProg =
-  Program [listDec] $
+  Program [listDec, boolDec, unitDec] $
     ECase
-      (cons "Nil" -: TData "List" [TUnit])
-      [Branch "Nil" [] ETrue, Branch "Cons" ["x"] EFalse]
+      (cons "Nil" -: TData "List" [TData "Unit" []])
+      [Branch "Nil" [] $ cons "True", Branch "Cons" ["x"] $ cons "False"]
 
 listNonEmptyProg :: Program
 listNonEmptyProg =
-  Program [listDec] $
+  Program [listDec, boolDec, unitDec] $
     ECase
-      (cons "Cons" $$ EUnit $$ (cons "Cons" $$ EUnit $$ cons "Nil"))
-      [Branch "Nil" [] ETrue, Branch "Cons" ["x"] EFalse]
+      (cons "Cons" $$ cons "Unit" $$ (cons "Cons" $$ cons "Unit" $$ cons "Nil"))
+      [Branch "Nil" [] $ cons "True", Branch "Cons" ["x"] $ cons "False"]
 
 nonzeroSingletonList :: Program
 nonzeroSingletonList =
