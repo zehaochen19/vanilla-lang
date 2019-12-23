@@ -20,7 +20,7 @@ import Vanilla.Syntax.Type
 -- | Given a program, first typecheck it and then evaluate it
 interpretF :: Member (Error String) r => Program -> Sem r (Expr, Type)
 interpretF prog = do
-  (ty, ctx) <- typeCheck prog `catch` (\e -> throw $ "Typecheck error:\n" ++ e ++ "\n" ++ show prog)
+  (ty, ctx) <- typeCheck prog `catch` (\e -> throw $ "Typecheck error:\n" ++ e)
   return (eval . mainExpr $ prog, applyCtx ctx ty)
 
 systemF :: Member (Error String) r => FilePath -> Text -> Sem r (Expr, Type)

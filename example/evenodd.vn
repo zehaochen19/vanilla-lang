@@ -1,13 +1,17 @@
-let evenodd : (Nat → Bool, Nat → Bool) =
-  fix (λ eo  .
-    let e = λ n . natcase n { 0 → True, S x → eo.2 x } in
-    let o = λ n . natcase n { 0 → False, S x → eo.1 x } in
-    (e, o))
+data Nat = Zero | Succ Nat.
+data Bool = False | True.
+data Prod a b = Prod a b.
+
+let evenodd : Prod (Nat → Bool) (Nat → Bool) =
+  fix (λ eo .
+    let e = λ n : Nat . case n of { Zero → True, Succ x → (case eo of {Prod e o → o}) x } in
+    let o = λ n : Nat . case n of { Zero → False, Succ x → (case eo of {Prod e o → e}) x } in
+    (Prod e o))
 in
 
-let even = evenodd.1 in
-let odd = evenodd.2 in
+let even = (case evenodd of {Prod e o → e}) in
+let odd = (case evenodd of {Prod e o → o}) in
 
-let five = S(S(S(S(S(0))))) in
+let five = Succ(Succ(Succ(Succ(Succ(Zero))))) in
 
-(even five, odd five)
+Prod (even five) (odd five)

@@ -1,8 +1,0 @@
-let not : Bool → Bool =
-  λb. if b then False else True
-in
-
-let pair = (not True, not False)
-in
-
-pair.1

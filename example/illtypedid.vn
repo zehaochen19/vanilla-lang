@@ -1,4 +1,7 @@
+data Unit = Unit.
+data Nat = Zero | Succ Nat.
+
 let id : Nat → Nat =
   (λx . x)
 in
-  id ()
+  id Unit

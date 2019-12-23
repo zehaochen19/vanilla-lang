@@ -1,4 +1,6 @@
+data Unit = Unit.
+
 let id : ∀a. a → a =
   (λx . x)
 in
-  id ()
+  id Unit

@@ -1,3 +1,7 @@
+data Nat = Zero | Succ Zero.
+data Bool = False | True.
+data Prod a b = Prod a b.
+ 
 let id : ∀a. a → a = λ x . x in
 
-(id 0, id True)
+Prod (id Zero) (id True)

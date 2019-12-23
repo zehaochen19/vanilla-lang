@@ -1,3 +1,5 @@
+data Unit = Unit.
+
 -- Can you belive that
 -- type `a` and `∀r. ((a → r) → r)` are isomorphic?
 
@@ -9,5 +11,5 @@ let runCont : ∀a. (∀r. (a → r) → r) → a =
   λ f . (let callback = λ x . x in f callback)
 in
 
--- should output ()
-runCont (cont ())
+-- should output Unit
+runCont (cont Unit)
