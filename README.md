@@ -11,7 +11,7 @@ Simple as it is, Vanilla contains many features that many main-stream languages 
 - Algebraic data types
 - Pattern matching
 - Simpleness
-  - Only polymorphism and arrows are built-in types
+  - Only polymorphism`∀` and arrows`→` are built-in types
   - All regular types such as `Unit` and `Bool` can be declared as ADT and eliminated by pattern matching
 
 For simplicity, this programming language only supports type checking and evaluation on closed terms.
@@ -242,7 +242,7 @@ Finished in 0.0513 seconds
 vanilla-lang> Test suite vanilla-test passed
 ```
 
-## (Planned) Features
+## Features
 
 - [x] Static semantic
 - [x] Higher-rank polymorphism
