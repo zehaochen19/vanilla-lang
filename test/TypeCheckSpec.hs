@@ -103,16 +103,21 @@ typeCheckSpec = describe "typeCheck" $ do
   it "infers polyLetNat"
     $ checkAndShouldBe polyLetNat
     $ TData "Nat" []
-  it "infers annotedIdSZero" $ do
-    let res = runTypeCheckExpr annotedIdSZero
-    res `shouldSatisfy` isRight
-    let Right (ty, _) = res
-    ty `shouldBe` TNat
-  it "checks ifElseIdNat" $ checkExprAndShouldBe ifElseIdNat $ TNat --> TNat
-  it "infers ifElseIdNatZero" $ checkExprAndShouldBe ifElseIdNatZero TNat
-  it "checks nonZero" $ checkExprAndShouldBe nonZero $ TNat --> TBool
-  it "infers nonZeroZero" $ checkExprAndShouldBe nonZeroZero TBool
-  it "infers nonZeroTwo" $ checkExprAndShouldBe nonZeroTwo TBool
+  it "infers annotedIdSZero"
+    $ checkAndShouldBe annotedIdSZero
+    $ TData "Nat" []
+  it "checks if" $ checkAndShouldBe (Program [boolDec] if') $
+    TAll "a" (TData "Bool" [] --> TVar "a" --> TVar "a" --> TVar "a")
+  it "checks ifElseIdNat"
+    $ checkAndShouldBe
+      (Program [natDec, boolDec] ifElseIdNat)
+    $ TData "Nat" [] --> TData "Nat" []
+  it "infers ifElseIdNatZero" $ checkAndShouldBe ifElseIdNatZero $ TData "Nat" []
+  it "checks nonZero"
+    $ checkAndShouldBe (Program [natDec, boolDec] nonZero)
+    $ TData "Nat" [] --> TData "Bool" []
+  it "infers nonZeroZero" $ checkAndShouldBe nonZeroZero $ TData "Bool" []
+  it "infers nonZeroTwo" $ checkAndShouldBe nonZeroTwo $ TData "Bool" []
   it "infers natAdd" $ checkExprAndShouldBe natAdd $ TNat --> TNat --> TNat
   it "checks natAddAnno" $ checkExprAndShouldBe natAddAnno $ TNat --> TNat --> TNat
   it "checks natMinus" $ checkExprAndShouldBe natMinus $ TNat --> TNat --> TNat

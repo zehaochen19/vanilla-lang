@@ -42,11 +42,11 @@ evalSpec = describe "eval" $ do
   it "evals applyToUnitId" $ eval' applyToUnitId `shouldBe` cons "Unit"
   it "evals polyLet" $ eval' polyLet `shouldBe` cons "Unit"
   it "evals polyLetNat" $ eval' polyLetNat `shouldBe` cons' "Succ" [cons "Zero"]
-  it "evals annotedIdSZero" $ eval annotedIdSZero `shouldBe` ESucc EZero
+  it "evals annotedIdSZero" $ eval' annotedIdSZero `shouldBe` cons' "Succ" [cons "Zero"]
   it "evals ifElseIdNat" $ eval ifElseIdNat `shouldSatisfy` isELam
-  it "evals ifElseIdNatZero" $ eval ifElseIdNatZero `shouldBe` EZero
-  it "evals nonZeroZero" $ eval nonZeroZero `shouldBe` ETrue
-  it "evals nonZeroTwo" $ eval nonZeroTwo `shouldBe` EFalse
+  it "evals ifElseIdNatZero" $ eval' ifElseIdNatZero `shouldBe` cons "Zero"
+  it "evals nonZeroZero" $ eval' nonZeroZero `shouldBe` cons "False"
+  it "evals nonZeroTwo" $ eval' nonZeroTwo `shouldBe` cons "True"
   it "evals 0 + 2 = 2" $
     eval (natAdd $$ EZero $$ intToNat 2)
       `shouldBe` intToNat 2

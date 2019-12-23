@@ -167,4 +167,5 @@ eParen e = case e of
   EZero -> show e
   EProj1 _ -> show e
   EProj2 _ -> show e
+  ECons _ es | null es -> show e
   _ -> "(" ++ show e ++ ")"

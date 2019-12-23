@@ -116,4 +116,5 @@ tyParen ty = case ty of
   TNat -> show ty
   TVar _ -> show ty
   TEVar _ -> show ty
+  TData _ tys | null tys -> show ty
   _ -> "(" ++ show ty ++ ")"

@@ -27,6 +27,13 @@ natDec =
     []
     [Constructor "Zero" [], Constructor "Succ" [TData "Nat" []]]
 
+-- | Bool declaration
+boolDec =
+  Declaration
+    "Bool"
+    []
+    [Constructor "True" [], Constructor "False" []]
+
 unitDec = Declaration "Unit" [] [Constructor "Unit" []]
 
 id' :: Expr
@@ -135,26 +142,41 @@ polyLetNat =
     $ ELet "my0" (EVar "id" $$ cons "Zero")
     $ cons "Succ" $$ (EVar "myId" $$ EVar "my0")
 
-annotedIdSZero :: Expr
+annotedIdSZero :: Program
 annotedIdSZero =
-  EALam "f" (TNat --> TNat) (ESucc (EVar "f" $$ EZero))
-    $$ ELam "x" (EVar "x")
-    -: TNat
+  Program [natDec] $
+    EALam "f" (TData "Nat" [] --> TData "Nat" []) (cons "Succ" $$ (EVar "f" $$ cons "Zero"))
+      $$ ELam "x" (EVar "x")
+      -: TData "Nat" []
+
+if' :: Expr
+if' =
+  ELam
+    "b"
+    ( ELam "e1" $ ELam "e2" $
+        ECase
+          (EVar "b")
+          [Branch "True" [] $ EVar "e1", Branch "False" [] $ EVar "e2"]
+    )
+    -: TAll "a" (TData "Bool" [] --> TVar "a" --> TVar "a" --> TVar "a")
 
 ifElseIdNat :: Expr
 ifElseIdNat =
-  EIf ETrue (ELam "x" $ EVar "x") (EALam "x" TNat $ EVar "x") -: TNat --> TNat
+  ELet "if" if' $
+    EVar "if" $$ cons "True" $$ ELam "x" (EVar "x")
+      $$ EALam "x" (TData "Nat" []) (EVar "x")
 
-ifElseIdNatZero :: Expr
-ifElseIdNatZero = ifElseIdNat $$ EZero
+ifElseIdNatZero :: Program
+ifElseIdNatZero = Program [boolDec, natDec] $ ifElseIdNat $$ cons "Zero"
 
 nonZero :: Expr
 nonZero =
-  EALam "n" TNat (ENatCase (EVar "n") ETrue "n'" EFalse) -: (TNat --> TBool)
+  EALam "n" (TData "Nat" []) $
+    ECase (EVar "n") [Branch "Zero" [] $ cons "False", Branch "Succ" ["n2"] $ cons "True"]
 
-nonZeroZero = nonZero $$ EZero
+nonZeroZero = Program [natDec, boolDec] $ nonZero $$ cons "Zero"
 
-nonZeroTwo = nonZero $$ ESucc (ESucc EZero)
+nonZeroTwo = Program [natDec, boolDec] $ nonZero $$ (cons "Succ" $$(cons "Succ" $$ cons "Zero"))
 
 natAdd :: Expr
 natAdd =
