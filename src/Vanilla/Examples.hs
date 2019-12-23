@@ -102,9 +102,9 @@ lambdaIdIdUnit =
     ELam "f" (ELam "x" $ EVar "f" $$ EVar "x") $$ id' $$ cons "Unit"
 
 applyToUnit =
-  ELam "f" (EVar "f" $$ EUnit) -: TAll "A" (TVar "A" --> TVar "A") --> TUnit
+  ELam "f" (EVar "f" $$ cons "Unit") -: TAll "A" (TVar "A" --> TVar "A") --> TData "Unit" []
 
-applyToUnitId = applyToUnit $$ id'
+applyToUnitId = Program [unitDec] $ applyToUnit $$ id'
 
 -- The continuation monad
 cont :: Expr
@@ -118,18 +118,22 @@ runCont =
     -: TAll "A" (TAll "R" ((TVar "A" --> TVar "R") --> TVar "R") --> TVar "A")
 
 -- polymorphic let
+polyLet :: Program
 polyLet =
-  ELet "id" id'
+  Program [unitDec]
+    $ ELet "id" id'
     $ ELet "myId" (EVar "id" $$ id')
-    $ ELet "myUnit" (EVar "id" $$ EUnit)
+    $ ELet "myUnit" (EVar "id" $$ cons "Unit")
     $ EVar "myId"
       $$ EVar "myUnit"
 
+polyLetNat :: Program
 polyLetNat =
-  ELet "id" id'
+  Program [natDec]
+    $ ELet "id" id'
     $ ELet "myId" (EVar "id" $$ id'')
-    $ ELet "my0" (EVar "id" $$ EZero)
-    $ ESucc (EVar "myId" $$ EVar "my0")
+    $ ELet "my0" (EVar "id" $$ cons "Zero")
+    $ cons "Succ" $$ (EVar "myId" $$ EVar "my0")
 
 annotedIdSZero :: Expr
 annotedIdSZero =

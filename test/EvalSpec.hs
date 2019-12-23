@@ -40,8 +40,9 @@ evalSpec = describe "eval" $ do
   it "evlas nestedIdIdUnit" $ eval' nestedIdIdUnit `shouldBe` cons "Unit"
   it "evals letIdUnit" $ eval' letIdUnit `shouldBe` cons "Unit"
   it "evals letNestedIdUnit" $ eval' letNestedIdUnit `shouldBe` cons "Unit"
-  it "evals applyToUnitId" $ eval applyToUnitId `shouldBe` EUnit
-  it "evals polyLetNat" $ eval polyLetNat `shouldBe` ESucc EZero
+  it "evals applyToUnitId" $ eval' applyToUnitId `shouldBe` cons "Unit"
+  it "evals polyLet" $ eval' polyLet `shouldBe` cons "Unit"
+  it "evals polyLetNat" $ eval' polyLetNat `shouldBe` cons' "Succ" [cons "Zero"]
   it "evals annotedIdSZero" $ eval annotedIdSZero `shouldBe` ESucc EZero
   it "evals ifElseIdNat" $ eval ifElseIdNat `shouldSatisfy` isELam
   it "evals ifElseIdNatZero" $ eval ifElseIdNatZero `shouldBe` EZero

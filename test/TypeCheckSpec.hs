@@ -88,19 +88,21 @@ typeCheckSpec = describe "typeCheck" $ do
   it "rejects illtypedLetNestedIdUnitIdId" $
     runTypeCheck illtypedLetNestedIdUnitIdId
       `shouldSatisfy` isLeft
-  it "checks applyToUnit" $
-    let Right (ty, _) = runTypeCheckExpr applyToUnit
-     in ty `shouldBe` TAll "A" (TVar "A" --> TVar "A") --> TUnit
-  it "checks applyToUnitId" $
-    let Right (ty, _) = runTypeCheckExpr applyToUnitId in ty `shouldBe` TUnit
+  it "checks applyToUnit"
+    $ checkAndShouldBe
+      (Program [unitDec] applyToUnit)
+    $ TAll "A" (TVar "A" --> TVar "A") --> TData "Unit" []
+  it "checks applyToUnitId"
+    $ checkAndShouldBe applyToUnitId
+    $ TData "Unit" []
   it "checks cont" $ runTypeCheckExpr cont `shouldSatisfy` isRight
   it "checks runCont" $ runTypeCheckExpr runCont `shouldSatisfy` isRight
-  it "infers polyLet" $ do
-    let Right (ty, _) = runTypeCheckExpr polyLet
-    ty `shouldBe` TUnit
-  it "infers polyLetNat" $ do
-    let Right (ty, _) = runTypeCheckExpr polyLetNat
-    ty `shouldBe` TNat
+  it "infers polyLet"
+    $ checkAndShouldBe polyLet
+    $ TData "Unit" []
+  it "infers polyLetNat"
+    $ checkAndShouldBe polyLetNat
+    $ TData "Nat" []
   it "infers annotedIdSZero" $ do
     let res = runTypeCheckExpr annotedIdSZero
     res `shouldSatisfy` isRight
