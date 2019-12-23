@@ -10,7 +10,7 @@ Simple as it is, Vanilla contains many features that many main-stream languages 
   - Only polymorphic and recursive bindings need annotations
 - Algebraic data types
 - Pattern matching
-- Simpleness
+- Simplicity
   - Only polymorphism`∀` and arrows`→` are built-in types
   - All regular types such as `Unit` and `Bool` can be declared as ADT and eliminated by pattern matching
 
