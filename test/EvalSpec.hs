@@ -2,7 +2,6 @@
 
 module EvalSpec where
 
-import Data.Sequence as S
 import Test.Hspec
 import Vanilla.Dynamic.Eval (eval, eval')
 import Vanilla.Examples
@@ -69,4 +68,4 @@ evalSpec = describe "eval" $ do
   it "evals listNonEmptyProg" $ eval (mainExpr listNonEmptyProg) `shouldBe` EFalse
   it "evals nonzeroSingletonList" $
     eval (mainExpr nonzeroSingletonList)
-      `shouldBe` ECons "Cons" (fromList [ECons "Succ" $ fromList [cons "Zero"], cons "Nil"])
+      `shouldBe` cons' "Cons" [cons' "Succ" [cons "Zero"], cons "Nil"]
