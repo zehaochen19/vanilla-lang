@@ -8,8 +8,8 @@ import Vanilla.Examples
 import Vanilla.Syntax.Expr
 import Vanilla.Syntax.Program
 import Vanilla.Utils
-  ( intToNat',
-    natToInt',
+  ( intToNat,
+    natToInt,
   )
 
 evalSpec = describe "eval" $ do
@@ -48,16 +48,16 @@ evalSpec = describe "eval" $ do
   it "evals nonZeroZero" $ eval' nonZeroZero `shouldBe` cons "False"
   it "evals nonZeroTwo" $ eval' nonZeroTwo `shouldBe` cons "True"
   it "evals 0 + 2 = 2" $
-    eval (natAdd $$ intToNat' 0 $$ intToNat' 2)
-      `shouldBe` intToNat' 2
+    eval (natAdd $$ intToNat 0 $$ intToNat 2)
+      `shouldBe` intToNat 2
   it "evals 4 + 6 = 10" $
-    eval (natAdd $$ intToNat' 4 $$ intToNat' 6)
-      `shouldBe` intToNat' 10
+    eval (natAdd $$ intToNat 4 $$ intToNat 6)
+      `shouldBe` intToNat 10
   it "evals 6 - 2 = 4" $
-    eval (natMinus $$ intToNat' 6 $$ intToNat' 2)
-      `shouldBe` intToNat' 4
+    eval (natMinus $$ intToNat 6 $$ intToNat 2)
+      `shouldBe` intToNat 4
   it "evals fibinacci 10 = 55" $
-    (natToInt' . eval $ (fibonacci $$ intToNat' 10)) `shouldBe` 144
+    (natToInt . eval $ (fibonacci $$ intToNat 10)) `shouldBe` 144
   it "evals aLetId" $ eval' aLetId `shouldBe` cons "True"
   it "evals idProd" $ eval' idProd `shouldBe` cons' "Prod" [cons "False", cons "Zero"]
   it "evals boolNatProj1" $ eval' boolNatProj1 `shouldBe` cons "True"

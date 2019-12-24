@@ -44,37 +44,18 @@ freshTEVar = do
 tySubstitue :: TVar -> Type -> Type -> Type
 tySubstitue alpha ty1 ty2 =
   case ty2 of
-    TUnit -> TUnit
-    TBool -> TBool
-    TNat -> TNat
     TVar alpha' -> if alpha == alpha' then ty1 else ty2
     TEVar _ -> ty2
     TAll beta a ->
       if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
     TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-    TProd a b -> TProd (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-    TSum a b -> TSum (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
     TData d pat -> TData d (tySubstitue alpha ty1 <$> pat)
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var
 subtype ctx (TVar a) (TVar a') | a == a' = pure ctx
--- <:Unit
-subtype ctx TUnit TUnit = pure ctx
--- <:Bool
-subtype ctx TBool TBool = pure ctx
--- <:Nat
-subtype ctx TNat TNat = pure ctx
 -- <:ExVar
 subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
--- <:Product
-subtype ctx (TProd a1 b1) (TProd a2 b2) = do
-  theta <- subtype ctx a1 a2
-  subtype ctx (applyCtx theta b1) (applyCtx theta b2)
--- <:Sum
-subtype ctx (TSum a1 b1) (TSum a2 b2) = do
-  theta <- subtype ctx a1 a2
-  subtype ctx (applyCtx theta b1) (applyCtx theta b2)
 -- <:-->
 subtype ctx (TArr a1 a2) (TArr b1 b2) = do
   theta <- subtype ctx b1 a1
@@ -207,72 +188,6 @@ synthesize ctx (ETApp e tyArg) = do
   case polyTy of
     TAll tv ty' -> return (applyCtx theta $ tySubstitue tv tyArg ty', theta)
     _ -> throw $ "cannot apply type to non-poly type: " ++ show polyTy
--- 1I ==>
-synthesize ctx EUnit = pure (TUnit, ctx)
--- True ==>
-synthesize ctx ETrue = pure (TBool, ctx)
--- False ==>
-synthesize ctx EFalse = pure (TBool, ctx)
--- ZeroI ==>
-synthesize ctx EZero = pure (TNat, ctx)
--- Succ =>
-synthesize ctx (ESucc n) = do
-  theta <- check ctx n TNat
-  return (TNat, theta)
--- NatCase ==>
-synthesize ctx (ENatCase n e1 x e2) = do
-  theta <- check ctx n TNat
-  (a, delta) <- synthesize theta e1
-  eb <- freshTEVar
-  sigma <-
-    ctxUntil (CAssump x TNat)
-      <$> check (delta |> CEVar eb |> CAssump x TNat) e2 (TEVar eb)
-  psi <- subtype sigma a (TEVar eb)
-  chi <- subtype psi (TEVar eb) a
-  return (TEVar eb, chi)
--- Prod==>
-synthesize ctx (EProd e1 e2) = do
-  (a, theta) <- synthesize ctx e1
-  (b, delta) <- synthesize theta e2
-  return (TProd a b, delta)
--- Proj1==>
-synthesize ctx (EProj1 e) = do
-  (prod, theta) <- synthesize ctx e
-  case applyCtx theta prod of
-    TProd a _ -> return (a, theta)
-    _ -> throw $ "cannot do projection on type: " ++ show prod
--- Proj2==>
-synthesize ctx (EProj2 e) = do
-  (prod, theta) <- synthesize ctx e
-  case applyCtx theta prod of
-    TProd _ b -> return (b, theta)
-    _ -> throw $ "cannot do projection on type: " ++ show prod
--- Inj1==>
-synthesize ctx (EInj1 e) = do
-  eb <- freshTEVar
-  (a, theta) <- synthesize (ctx |> CEVar eb) e
-  return (TSum a (TEVar eb), theta)
--- Inj2==>
-synthesize ctx (EInj2 e) = do
-  ea <- freshTEVar
-  (b, theta) <- synthesize (ctx |> CEVar ea) e
-  return (TSum (TEVar ea) b, theta)
-synthesize ctx (ESumCase e x e1 y e2) = do
-  (tySum, theta) <- synthesize ctx e
-  case tySum of
-    TSum a b -> do
-      eRes <- freshTEVar
-      let a' = applyCtx theta a
-      (ty1, delta) <- synthesize (theta |> CAssump x a) e1
-      let delta' = ctxUntil (CAssump x a) delta
-      let b' = applyCtx delta' b
-      (ty2, sigma) <- synthesize (theta |> CAssump y b) e2
-      eRes <- freshTEVar
-      let sigma' = ctxUntil (CAssump y b) sigma |> CEVar eRes
-      psi <- subtype sigma' (TEVar eRes) (applyCtx sigma' a')
-      chi <- subtype psi (TEVar eRes) (applyCtx psi b')
-      return (TEVar eRes, chi)
-    _ -> throw $ "cannot do mattern match on: " ++ show tySum
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -306,15 +221,6 @@ synthesize ctx (EALetRec x ty e1 e2) = do
   theta <- check (ctx |> CAssump x ty) e1 ty
   (b, delta) <- synthesize theta e2
   return (applyCtx delta b, ctxUntil (CAssump x ty) delta)
--- If==>
-synthesize ctx (EIf b e1 e2) = do
-  theta <- check ctx b TBool
-  eRes <- freshTEVar
-  (a, delta) <- synthesize (theta |> CEVar eRes) e1
-  (b, sigma) <- synthesize delta e2
-  psi <- subtype sigma (TEVar eRes) (applyCtx sigma a)
-  chi <- subtype psi (TEVar eRes) (applyCtx psi b)
-  return (TEVar eRes, chi)
 synthesize ctx (EFix e) = do
   (ty, theta) <- synthesize ctx e
   case applyCtx theta ty of
@@ -326,8 +232,6 @@ synthesize ctx (EFix e) = do
 synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
 
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
--- 1I
-check ctx EUnit TUnit = pure ctx
 -- Case
 check ctx (ECase e branches) target = do
   (ty, theta) <- synthesize ctx e
@@ -335,49 +239,6 @@ check ctx (ECase e branches) target = do
   case ty' of
     TData cName types -> checkBranch ctx types branches target
     _ -> throw $ "cannot use pattern match on: " ++ show ty'
--- TrueI
-check ctx ETrue TBool = pure ctx
--- FalseI
-check ctx EFalse TBool = pure ctx
--- ZeroI
-check ctx EZero TNat = pure ctx
--- Succ
-check ctx (ESucc n) TNat = check ctx n TNat
--- NatCase
-check ctx (ENatCase n e1 x e2) ty = do
-  theta <- check ctx n TNat
-  delta <- check theta e1 (applyCtx theta ty)
-  ctxUntil (CAssump x TNat)
-    <$> check (delta |> CAssump x TNat) e2 (applyCtx delta ty)
--- Prod
-check ctx (EProd e1 e2) (TProd a b) = do
-  theta <- check ctx e1 a
-  check theta e2 (applyCtx theta b)
--- Proj1
-check ctx (EProj1 e) ty = do
-  (prod, theta) <- synthesize ctx e
-  case prod of
-    TProd a _ -> subtype theta (applyCtx theta a) (applyCtx theta ty)
-    _ -> throw $ "cannot do projection on type: " ++ show prod
--- Proj2
-check ctx (EProj2 e) ty = do
-  (prod, theta) <- synthesize ctx e
-  case prod of
-    TProd _ a -> subtype theta (applyCtx theta a) (applyCtx theta ty)
-    _ -> throw $ "cannot do projection on type: " ++ show prod
--- Sum
-check ctx (EInj1 e) (TSum a _) = check ctx e a
-check ctx (EInj2 e) (TSum _ a) = check ctx e a
--- SumCase
-check ctx (ESumCase e x e1 y e2) ty = do
-  (tySum, theta) <- synthesize ctx e
-  case tySum of
-    TSum a b -> do
-      let a' = applyCtx theta a
-      delta <- ctxUntil (CAssump x a') <$> check (theta |> CAssump x a') e1 ty
-      let b' = applyCtx delta b
-      ctxUntil (CAssump y b') <$> check (delta |> CAssump y b') e2 ty
-    _ -> throw $ "cannot do mattern match on: " ++ show tySum
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
@@ -402,11 +263,6 @@ check ctx (EALet x ty e1 e2) b = do
 check ctx (EALetRec x ty e1 e2) b = do
   theta <- check (ctx |> CAssump x ty) e1 ty
   ctxUntil (CAssump x ty) <$> check theta e2 (applyCtx theta b)
--- If
-check ctx (EIf b e1 e2) ty = do
-  theta <- check ctx b TBool
-  delta <- check theta e1 ty
-  check delta e2 ty
 -- Fix
 check ctx (EFix e) ty = check ctx e $ TArr ty ty
 -- TyApp

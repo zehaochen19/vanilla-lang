@@ -93,9 +93,13 @@ letNestedIdUnit =
     $ ELet "myNestedId" nestedId
     $ ELet "myid" id' (EVar "myNestedId" $$ EVar "myid" $$ cons "Unit")
 
-illtypedLetNestedUnit :: Expr
+illtypedLetNestedUnit :: Program
 illtypedLetNestedUnit =
-  ELet "nestedId" nestedId (EVar "nestedId" $$ EUnit $$ EUnit)
+  Program [unitDec] $
+    ELet
+      "nestedId"
+      nestedId
+      (EVar "nestedId" $$ cons "Unit" $$ cons "Unit")
 
 unitId = ELam "x" (EVar "x") -: TData "Unit" [] --> TData "Unit" []
 

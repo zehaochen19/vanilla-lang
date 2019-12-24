@@ -76,7 +76,7 @@ typeCheckSpec = describe "typeCheck" $ do
     $ checkAndShouldBe letNestedIdUnit
     $ TData "Unit" []
   it "rejects illtypedLetNestedUnit" $
-    runTypeCheckExpr illtypedLetNestedUnit
+    runTypeCheck illtypedLetNestedUnit
       `shouldSatisfy` isLeft
   it "checks unitId" $ do
     let Right (ty, _) = runTypeCheck (Program [unitDec] unitId)

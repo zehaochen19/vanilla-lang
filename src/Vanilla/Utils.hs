@@ -18,19 +18,10 @@ freshVarStream = do
     nums = [0 ..]
 
 natToInt :: Expr -> Integer
-natToInt EZero = 0
-natToInt (ESucc n) = 1 + natToInt n
+natToInt (ECons (MkConsVar "Zero") mempty) = 0
+natToInt (ECons (MkConsVar "Succ") (S.Empty S.:|> n)) = 1 + natToInt n
 natToInt _ = 0
 
 intToNat :: Integer -> Expr
-intToNat n | n <= 0 = EZero
-intToNat n = ESucc . intToNat $ n - 1
-
-natToInt' :: Expr -> Integer
-natToInt' (ECons (MkConsVar "Zero") mempty) = 0
-natToInt' (ECons (MkConsVar "Succ") (S.Empty S.:|> n)) = 1 + natToInt' n
-natToInt' _ = 0
-
-intToNat' :: Integer -> Expr
-intToNat' n | n <= 0 = cons "Zero"
-intToNat' n = cons' "Succ" [intToNat' $ n -1]
+intToNat n | n <= 0 = cons "Zero"
+intToNat n = cons' "Succ" [intToNat $ n -1]
