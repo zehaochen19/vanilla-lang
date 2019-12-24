@@ -8,6 +8,7 @@ module Vanilla.Server where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (FromJSON, ToJSON)
+import Data.List (sort)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
@@ -19,13 +20,13 @@ import System.Directory (doesFileExist, listDirectory)
 import System.FilePath
 import Vanilla (runSystemF)
 
-newtype RunReq = RunReq {prog :: Text} deriving (Eq, Show, Generic)
+newtype RunReq = RunReq {program :: Text} deriving (Eq, Show, Generic)
 
 data RunRes = RunRes {val :: Text, ty :: Text} deriving (Eq, Show, Generic)
 
 newtype ExampleReq = ExampleReq {example :: Text} deriving (Eq, Show, Generic)
 
-newtype ExampleRes = ExampleRes {prog :: Text} deriving (Eq, Show, Generic)
+newtype ExampleRes = ExampleRes {program :: Text} deriving (Eq, Show, Generic)
 
 instance FromJSON RunReq
 
@@ -60,7 +61,7 @@ server = run :<|> (exampleList :<|> fetchExample)
     exampleList :: Handler [Text]
     exampleList = do
       examples <- liftIO $ filter (isExtensionOf "vn") <$> listDirectory "example"
-      return $ T.pack <$> examples
+      return . sort $ T.pack . dropExtension <$> examples
 
 api :: Proxy API
 api = Proxy
