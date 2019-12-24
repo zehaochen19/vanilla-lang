@@ -21,11 +21,17 @@ description: Please see the README on GitHub at <https://github.com/zehaochen19/
 
 dependencies:
   - base >= 4.7 && < 5
+  - aeson
+  - bytestring
   - containers
+  - directory
   - extra
+  - filepath
   - polysemy
   - megaparsec
   - parser-combinators
+  - servant
+  - servant-server
   - text
 
 library:
@@ -42,6 +48,20 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - vanilla-lang
+
+  vanilla-backend:
+    main: Main.hs
+    source-dirs: backend
+    ghc-options:
+      - -threaded
+      - -O2
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - vanilla-lang
+      - wai
+      - wai-logger
+      - warp
 
 tests:
   vanilla-test:
