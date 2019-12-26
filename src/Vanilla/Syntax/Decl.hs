@@ -36,7 +36,7 @@ emptyDecls = mempty
 consCtxMember :: Declaration -> Constructor -> CtxMember
 consCtxMember dec (Constructor conName pat) = CCons conName genTy
   where
-    monoTy = foldr TArr (TData (name dec) (TVar <$> tvars dec)) pat
+    monoTy = foldr TArr (TData (name dec) (S.fromList $ TVar <$> tvars dec)) pat
     genTy = foldr TAll monoTy (tvars dec)
 
 -- | initialize typing context for constructors

@@ -38,7 +38,7 @@ programPSpec =
                 "List"
                 ["a"]
                 [ Constructor "Nil" [],
-                  Constructor "Cons" [TVar "a", TData "List" [TVar "a"]]
+                  Constructor "Cons" [TVar "a", tdata' "List" [TVar "a"]]
                 ],
               Declaration
                 "MyUnit"
@@ -60,13 +60,13 @@ constructorPSpec = describe "constructorP should" $ do
     runParser constructorP "" "Nil" `shouldBe` Right (Constructor "Nil" [])
   it "parse Cons constructor" $
     runParser constructorP "" "Cons a (List a)"
-      `shouldBe` Right (Constructor "Cons" [TVar "a", TData "List" [TVar "a"]])
+      `shouldBe` Right (Constructor "Cons" [TVar "a", tdata' "List" [TVar "a"]])
 
 declPSpec = describe "declP should" $ do
   it "parse Nat declaration" $
     runParser declP "" "data TNat = Zero | Succ TNat ."
       `shouldBe` Right
-        (Declaration "TNat" [] [Constructor "Zero" [], Constructor "Succ" [TData "TNat" []]])
+        (Declaration "TNat" [] [Constructor "Zero" [], Constructor "Succ" [tdata "TNat"]])
   it "parse List declaration" $
     runParser declP "" "data List a = Nil | Cons a (List a) ."
       `shouldBe` Right
@@ -74,7 +74,7 @@ declPSpec = describe "declP should" $ do
             "List"
             ["a"]
             [ Constructor "Nil" [],
-              Constructor "Cons" [TVar "a", TData "List" [TVar "a"]]
+              Constructor "Cons" [TVar "a", tdata' "List" [TVar "a"]]
             ]
         )
 
@@ -82,7 +82,7 @@ typeParserSpec = describe "typeP should" $ do
   it "parse Nat to Nat" $
     runParser typeP "" "Nat → Nat"
       `shouldBe` Right
-        (TData "Nat" [] --> TData "Nat" [])
+        (tdata "Nat" --> tdata "Nat")
   it "parse type of id" $
     runParser typeP "" "∀a.a→a"
       `shouldBe` Right
@@ -116,29 +116,29 @@ typeParserSpec = describe "typeP should" $ do
         )
   it "parse type of prod" $
     runParser typeP "" "Prod (Nat) (Nat → Nat)"
-      `shouldBe` Right (TData "Prod" [TData "Nat" [], TData "Nat" [] --> TData "Nat" []])
+      `shouldBe` Right (tdata' "Prod" [tdata "Nat", tdata "Nat" --> tdata "Nat"])
   it "parse a pair of arrow" $
     runParser typeP "" "Prod (Nat → Nat) (Nat → Nat)"
       `shouldBe` Right
-        (TData "Prod" [TData "Nat" [] --> TData "Nat" [], TData "Nat" [] --> TData "Nat" []])
+        (tdata' "Prod" [tdata "Nat" --> tdata "Nat", tdata "Nat" --> tdata "Nat"])
   it "parse a List type" $
-    runParser typeP "" "List a" `shouldBe` Right (TData "List" [TVar "a"])
+    runParser typeP "" "List a" `shouldBe` Right (tdata' "List" [TVar "a"])
   it "parse map type" $
     runParser typeP "" "∀a. ∀b. (a → b) → (List a) → (List b)"
       `shouldBe` Right
         ( TAll "a" $ TAll "b" $
-            (TVar "a" --> TVar "b") --> (TData "List" [TVar "a"] --> TData "List" [TVar "b"])
+            (TVar "a" --> TVar "b") --> (tdata' "List" [TVar "a"] --> tdata' "List" [TVar "b"])
         )
 
 expressionParseSpec = describe "exprP should" $ do
   it "parse nat id" $
     runParser exprP "" "λx : Nat. x"
       `shouldBe` Right
-        (EALam "x" (TData "Nat" []) $ EVar "x")
+        (EALam "x" (tdata "Nat") $ EVar "x")
   it "parse annotated nat id" $
     runParser exprP "" "(λx : Nat. x) : Nat → Nat"
       `shouldBe` Right
-        (EAnno (EALam "x" (TData "Nat" []) $ EVar "x") (TData "Nat" [] --> TData "Nat" []))
+        (EAnno (EALam "x" (tdata "Nat") $ EVar "x") (tdata "Nat" --> tdata "Nat"))
   it "parse unannotated id" $
     runParser exprP "" "λx . x"
       `shouldBe` Right
@@ -220,7 +220,7 @@ expressionParseSpec = describe "exprP should" $ do
     runParser exprP "" "Inj1 Unit : Sum (Unit) (Nat)"
       `shouldBe` Right
         ( cons "Inj1" $$ cons "Unit"
-            -: TData "Sum" [TData "Unit" [], TData "Nat" []]
+            -: tdata' "Sum" [tdata "Unit", tdata "Nat"]
         )
   it "parse a sum case" $
     runParser exprP "" "case (Inj1 Unit) of { Inj1 x → True, Inj2 y → False }"
@@ -233,7 +233,7 @@ expressionParseSpec = describe "exprP should" $ do
         )
   it "parse a type application" $
     runParser exprP "" "Nil @ Foo"
-      `shouldBe` Right (cons "Nil" -@ TData "Foo" [])
+      `shouldBe` Right (cons "Nil" -@ tdata "Foo")
   it "parse a cons" $
     runParser exprP "" "Cons Unit Nil" `shouldBe` Right (cons "Cons" $$ cons "Unit" $$ cons "Nil")
   it "parse a pattern match expression" $
@@ -259,7 +259,7 @@ expressionParseSpec = describe "exprP should" $ do
       `shouldBe` Right
         ( EALetRec
             "add"
-            (TData "Nat" [] --> TData "Nat" [] --> TData "Nat" [])
+            (tdata "Nat" --> tdata "Nat" --> tdata "Nat")
             ( ELam "x" $ ELam "y" $
                 ECase
                   (EVar "x")

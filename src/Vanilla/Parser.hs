@@ -9,6 +9,7 @@ import Control.Monad.Combinators.Expr
 import Data.Either.Extra (mapLeft)
 import Data.Functor (($>))
 import Data.Maybe (isJust)
+import qualified Data.Sequence as Seq
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.Text (Text)
@@ -100,15 +101,8 @@ typeTermP =
     <|> TVar
     <$> tvarP
   where
-    tDataP = do
-      tyName <- dataTypeP
-      tyArgs <- many typeP
-      return $ TData tyName tyArgs
-    tAllP = do
-      symbol "∀"
-      tyVar <- tvarP
-      dotP
-      TAll tyVar <$> typeP
+    tDataP = TData <$> dataTypeP <*> (Seq.fromList <$> many typeP)
+    tAllP = TAll <$> (symbol "∀" *> tvarP) <*> (dotP *> typeP)
 
 typeP :: Parser Type
 typeP = makeExprParser typeTermP [[infixR "→" TArr]]

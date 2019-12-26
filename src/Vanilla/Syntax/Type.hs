@@ -12,9 +12,14 @@ module Vanilla.Syntax.Type
     isTArr,
     isTAll,
     tyParen,
+    tdata,
+    tdata',
   )
 where
 
+import Data.Foldable (toList)
+import Data.Sequence (Seq)
+import qualified Data.Sequence as Seq
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.String (IsString)
@@ -38,13 +43,19 @@ data Type
   | TEVar TEVar
   | TArr Type Type
   | TAll TVar Type
-  | TData Text [Type]
+  | TData Text (Seq Type)
   deriving (Eq)
 
 infixr 2 -->
 
 (-->) :: Type -> Type -> Type
 (-->) = TArr
+
+tdata :: Text -> Type
+tdata t = TData t mempty
+
+tdata' :: Text -> [Type] -> Type
+tdata' t tys = TData t (Seq.fromList tys)
 
 -- | Monotypes: tau, sigma.
 isMono :: Type -> Bool
@@ -59,14 +70,14 @@ tyFreeTEVars (TVar _) = S.empty
 tyFreeTEVars (TEVar evar) = S.singleton evar
 tyFreeTEVars (TArr a b) = tyFreeTEVars a <> tyFreeTEVars b
 tyFreeTEVars (TAll _ ty) = tyFreeTEVars ty
-tyFreeTEVars (TData _ pat) = mconcat $ fmap tyFreeTEVars pat
+tyFreeTEVars (TData _ pat) = mconcat (tyFreeTEVars <$> toList pat)
 
 tyFreeTVars :: Type -> Set TVar
 tyFreeTVars (TVar a) = S.singleton a
 tyFreeTVars (TEVar _) = S.empty
 tyFreeTVars (TArr a b) = tyFreeTVars a <> tyFreeTVars b
 tyFreeTVars (TAll a ty) = S.delete a $ tyFreeTVars ty
-tyFreeTVars (TData _ pat) = mconcat $ fmap tyFreeTVars pat
+tyFreeTVars (TData _ pat) = mconcat (tyFreeTVars <$> toList pat)
 
 isTArr :: Type -> Bool
 isTArr (TArr _ _) = True
@@ -82,7 +93,7 @@ instance Show Type where
   show (TArr a b) = tyParen a ++ " → " ++ tyParen b
   show (TAll a ty) = "∀" ++ show a ++ ". " ++ tyParen ty
   show (TData name pat) =
-    let patStr = if null pat then "" else " " ++ unwords (tyParen <$> pat)
+    let patStr = if null pat then "" else " " ++ (unwords . toList . fmap tyParen $ pat)
      in T.unpack name ++ patStr
 
 tyParen :: Type -> String

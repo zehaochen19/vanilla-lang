@@ -25,8 +25,13 @@ initDeclCtxSpec =
       initDeclCtx [listDec]
         `shouldBe` Context
           ( S.fromList
-              [ CCons "Nil" (TAll "A" (TData "List" [TVar "A"])),
-                CCons "Cons" (TAll "A" (TVar "A" --> TData "List" [TVar "A"] --> TData "List" [TVar "A"]))
+              [ CCons "Nil" (TAll "A" (tdata' "List" [TVar "A"])),
+                CCons
+                  "Cons"
+                  ( TAll
+                      "A"
+                      (TVar "A" --> tdata' "List" [TVar "A"] --> tdata' "List" [TVar "A"])
+                  )
               ]
           )
     it
@@ -34,7 +39,7 @@ initDeclCtxSpec =
       $ initDeclCtx [natDec]
         `shouldBe` Context
           ( S.fromList
-              [ CCons "Zero" (TData "Nat" []),
-                CCons "Succ" (TData "Nat" [] --> TData "Nat" [])
+              [ CCons "Zero" (tdata "Nat"),
+                CCons "Succ" (tdata "Nat" --> tdata "Nat")
               ]
           )

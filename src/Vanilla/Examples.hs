@@ -17,7 +17,7 @@ listDec =
     "List"
     ["A"]
     [ Constructor "Nil" [],
-      Constructor "Cons" [TVar "A", TData "List" [TVar "A"]]
+      Constructor "Cons" [TVar "A", tdata' "List" [TVar "A"]]
     ]
 
 -- | Nat declaration
@@ -25,7 +25,7 @@ natDec =
   Declaration
     "Nat"
     []
-    [Constructor "Zero" [], Constructor "Succ" [TData "Nat" []]]
+    [Constructor "Zero" [], Constructor "Succ" [tdata "Nat"]]
 
 -- | Bool declaration
 boolDec =
@@ -101,7 +101,7 @@ illtypedLetNestedUnit =
       nestedId
       (EVar "nestedId" $$ cons "Unit" $$ cons "Unit")
 
-unitId = ELam "x" (EVar "x") -: TData "Unit" [] --> TData "Unit" []
+unitId = ELam "x" (EVar "x") -: tdata "Unit" --> tdata "Unit"
 
 illtypedLetNestIdUnitId =
   Program [unitDec]
@@ -124,7 +124,7 @@ lambdaIdIdUnit =
     ELam "f" (ELam "x" $ EVar "f" $$ EVar "x") $$ id' $$ cons "Unit"
 
 applyToUnit =
-  ELam "f" (EVar "f" $$ cons "Unit") -: TAll "A" (TVar "A" --> TVar "A") --> TData "Unit" []
+  ELam "f" (EVar "f" $$ cons "Unit") -: TAll "A" (TVar "A" --> TVar "A") --> tdata "Unit"
 
 applyToUnitId = Program [unitDec] $ applyToUnit $$ id'
 
@@ -160,9 +160,9 @@ polyLetNat =
 annotedIdSZero :: Program
 annotedIdSZero =
   Program [natDec] $
-    EALam "f" (TData "Nat" [] --> TData "Nat" []) (cons "Succ" $$ (EVar "f" $$ cons "Zero"))
+    EALam "f" (tdata "Nat" --> tdata "Nat") (cons "Succ" $$ (EVar "f" $$ cons "Zero"))
       $$ ELam "x" (EVar "x")
-      -: TData "Nat" []
+      -: tdata "Nat"
 
 if' :: Expr
 if' =
@@ -173,20 +173,20 @@ if' =
           (EVar "b")
           [Branch "True" [] $ EVar "e1", Branch "False" [] $ EVar "e2"]
     )
-    -: TAll "a" (TData "Bool" [] --> TVar "a" --> TVar "a" --> TVar "a")
+    -: TAll "a" (tdata "Bool" --> TVar "a" --> TVar "a" --> TVar "a")
 
 ifElseIdNat :: Expr
 ifElseIdNat =
   ELet "if" if' $
     EVar "if" $$ cons "True" $$ ELam "x" (EVar "x")
-      $$ EALam "x" (TData "Nat" []) (EVar "x")
+      $$ EALam "x" (tdata "Nat") (EVar "x")
 
 ifElseIdNatZero :: Program
 ifElseIdNatZero = Program [boolDec, natDec] $ ifElseIdNat $$ cons "Zero"
 
 nonZero :: Expr
 nonZero =
-  EALam "n" (TData "Nat" []) $
+  EALam "n" (tdata "Nat") $
     ECase (EVar "n") [Branch "Zero" [] $ cons "False", Branch "Succ" ["n2"] $ cons "True"]
 
 nonZeroZero = Program [natDec, boolDec] $ nonZero $$ cons "Zero"
@@ -200,10 +200,10 @@ natAdd =
         "f"
         ( EALam
             "x"
-            (TData "Nat" [])
+            (tdata "Nat")
             ( EALam
                 "y"
-                (TData "Nat" [])
+                (tdata "Nat")
                 ( ECase
                     (EVar "x")
                     [ Branch "Zero" [] $ EVar "y",
@@ -215,15 +215,15 @@ natAdd =
         )
     )
 
-natAddAnno = natAdd -: TData "Nat" [] --> TData "Nat" [] --> TData "Nat" []
+natAddAnno = natAdd -: tdata "Nat" --> tdata "Nat" --> tdata "Nat"
 
 natPred :: Expr
 natPred =
   EALam
     "n"
-    (TData "Nat" [])
+    (tdata "Nat")
     (ECase (EVar "n") [Branch "Zero" [] $ cons "Zero", Branch "Succ" ["x"] $ EVar "x"])
-    -: TData "Nat" [] --> TData "Nat" []
+    -: tdata "Nat" --> tdata "Nat"
 
 natMinus :: Expr
 natMinus =
@@ -232,10 +232,10 @@ natMinus =
         "f"
         ( EALam
             "x"
-            (TData "Nat" [])
+            (tdata "Nat")
             ( EALam
                 "y"
-                (TData "Nat" [])
+                (tdata "Nat")
                 ( ECase
                     (EVar "y")
                     [ Branch "Zero" [] $ EVar "x",
@@ -250,7 +250,7 @@ natMinus =
             )
         )
     )
-    -: TData "Nat" [] --> TData "Nat" [] --> TData "Nat" []
+    -: tdata "Nat" --> tdata "Nat" --> tdata "Nat"
 
 fibonacci :: Expr
 fibonacci =
@@ -259,7 +259,7 @@ fibonacci =
         "fib"
         ( EALam
             "n"
-            (TData "Nat" [])
+            (tdata "Nat")
             ( ECase
                 (EVar "n")
                 [ Branch "Zero" [] $ cons "Succ" $$ cons "Zero",
@@ -269,8 +269,8 @@ fibonacci =
             )
         )
     )
-    -: TData "Nat" []
-    --> TData "Nat" []
+    -: tdata "Nat"
+    --> tdata "Nat"
 
 aLetId :: Program
 aLetId =
@@ -303,7 +303,7 @@ boolNatProj1 =
 sumUnit :: Expr
 sumUnit =
   ELam "s" (cons "Unit")
-    -: TAll "A" (TData "Sum" [TData "Nat" [], TVar "A"] --> TData "Unit" [])
+    -: TAll "A" (tdata' "Sum" [tdata "Nat", TVar "A"] --> tdata' "Unit" [])
 
 inj1Nat :: Expr
 inj1Nat = cons "Inj1" $$ cons "Zero"
@@ -314,7 +314,7 @@ inj2Unit = cons "Inj2" $$ cons "Unit"
 isInj1 :: Expr
 isInj1 =
   ELam "s" (ECase (EVar "s") [Branch "Inj1" ["x"] $ cons "True", Branch "Inj2" ["y"] $ cons "False"])
-    -: TAll "A" (TAll "B" $ TData "Sum" [TVar "A", TVar "B"] --> TData "Bool" [])
+    -: TAll "A" (TAll "B" $ tdata' "Sum" [TVar "A", TVar "B"] --> tdata "Bool")
 
 listDummyProg :: Program
 listDummyProg = Program [listDec, unitDec] (cons "Cons" $$ cons "Unit" $$ cons "Nil")
@@ -323,7 +323,7 @@ listEmptyProg :: Program
 listEmptyProg =
   Program [listDec, boolDec, unitDec] $
     ECase
-      (cons "Nil" -: TData "List" [TData "Unit" []])
+      (cons "Nil" -: tdata' "List" [tdata "Unit"])
       [Branch "Nil" [] $ cons "True", Branch "Cons" ["x"] $ cons "False"]
 
 listNonEmptyProg :: Program
@@ -338,7 +338,7 @@ nonzeroSingletonList =
   Program [listDec, natDec] $
     ECase
       (cons "Succ" $$ cons "Zero")
-      [ Branch "Zero" [] (cons "Nil" -@ TData "Nat" []),
+      [ Branch "Zero" [] (cons "Nil" -@ tdata "Nat"),
         Branch "Succ" ["x"] (cons "Cons" $$ (cons "Succ" $$ EVar "x") $$ cons "Nil")
       ]
 
@@ -348,7 +348,7 @@ mapProgram =
     EALetRec
       "map"
       ( TAll "a" $ TAll "b" $
-          (TVar "a" --> TVar "b") --> (TData "List" [TVar "a"] --> TData "List" [TVar "b"])
+          (TVar "a" --> TVar "b") --> (tdata' "List" [TVar "a"] --> tdata' "List" [TVar "b"])
       )
       ( ELam "f"
           $ ELam "xs"

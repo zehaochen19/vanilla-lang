@@ -5,7 +5,8 @@
 
 module Vanilla.Static.TypeCheck where
 
-import Data.Foldable (foldlM)
+import Data.Foldable (foldlM, toList)
+import Data.Sequence (Seq)
 import Data.Text (Text)
 import Debug.Trace
 import Polysemy
@@ -74,8 +75,10 @@ subtype ctx a (TAll alpha b) =
 -- TODO: consider variances in data types
 subtype ctx (TData t1 pat1) (TData t2 pat2)
   | t1 == t2 = do
-    ctx' <- foldlM subtypePair ctx $ zip pat1 pat2
-    foldlM subtypePair ctx' $ zip pat2 pat1
+    let pat1' = toList pat1
+    let pat2' = toList pat2
+    ctx' <- foldlM subtypePair ctx $ zip pat1' pat2'
+    foldlM subtypePair ctx' $ zip pat2' pat1'
   where
     subtypePair c (ty1, ty2) = subtype c (applyCtx c ty1) (applyCtx c ty2)
 -- <:InstantiateL
@@ -311,7 +314,7 @@ apply ctx ty1 e2 = do
 
 -- | Given context and type variables, checking
 --   pattern match branches will be evaluated to a target type
-checkBranch :: TypeCheck r => Context -> [Type] -> [Branch] -> Type -> Sem r Context
+checkBranch :: TypeCheck r => Context -> Seq Type -> [Branch] -> Type -> Sem r Context
 checkBranch ctx tys [] target = pure ctx
 checkBranch ctx tys (Branch cons evars e : bs) target =
   case ctxCons ctx cons of
@@ -325,7 +328,7 @@ checkBranch ctx tys (Branch cons evars e : bs) target =
         instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
         (_, typings) = foldl (\(TArr a b, c) x -> (b, c |> CAssump x a)) (instTy, mempty) evars
 
-synthesizeBranch :: TypeCheck r => Context -> [Type] -> [Branch] -> Sem r ([Type], Context)
+synthesizeBranch :: TypeCheck r => Context -> Seq Type -> [Branch] -> Sem r ([Type], Context)
 synthesizeBranch ctx tys [] = pure ([], ctx)
 synthesizeBranch ctx tys (Branch cons evars e : bs) =
   case ctxCons ctx cons of
