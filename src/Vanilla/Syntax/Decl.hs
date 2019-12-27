@@ -33,11 +33,14 @@ type DeclarationMap = M.Map Text Declaration
 emptyDecls :: DeclarationMap
 emptyDecls = mempty
 
-consCtxMember :: Declaration -> Constructor -> CtxMember
-consCtxMember dec (Constructor conName pat) = CCons conName genTy
+consType :: Declaration -> Constructor -> Type
+consType dec (Constructor conName pat) = genTy
   where
     monoTy = foldr TArr (TData (name dec) (S.fromList $ TVar <$> tvars dec)) pat
     genTy = foldr TAll monoTy (tvars dec)
+
+consCtxMember :: Declaration -> Constructor -> CtxMember
+consCtxMember dec c@(Constructor conName pat) = CCons conName $ consType dec c
 
 -- | initialize typing context for constructors
 initDeclCtx :: [Declaration] -> Context
