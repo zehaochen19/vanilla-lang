@@ -50,8 +50,8 @@ dotP :: Parser Text
 dotP = symbol "." <?> "dot"
 
 keywords :: Set Text
-keywords =
-  S.fromList ["λ", "∀", "let", "data", "case", "rec", "of", "in", "fix"]
+keywords = S.fromList
+  ["λ", "∀", "let", "forall", "data", "case", "rec", "of", "in", "fix"]
 
 checkVar :: Text -> Parser Text
 checkVar x = if x `S.member` keywords
@@ -80,11 +80,21 @@ consVarP = (MkConsVar <$> bigVarP) <?> "Constructor"
 dataTypeP :: Parser Text
 dataTypeP = bigVarP <?> "Data type"
 
+lambdaP :: Parser ()
+lambdaP = () <$ (symbol "λ" <|> symbol "\\")
+
+forallP :: Parser ()
+forallP = () <$ (symbol "∀" <|> symbol "forall")
+
+arrowP :: Parser ()
+arrowP = () <$ (symbol "→" <|> symbol "->")
+
+
 typeTermP :: Parser Type
-typeTermP = try (paren typeP) <|> tAllP <|> tDataP <|> TVar <$> tvarP
+typeTermP = paren typeP <|> tAllP <|> tDataP <|> TVar <$> tvarP
  where
   tDataP = TData <$> dataTypeP <*> (Seq.fromList <$> many typeP)
-  tAllP  = TAll <$> (symbol "∀" *> tvarP) <*> (dotP *> typeP)
+  tAllP  = TAll <$> (forallP *> tvarP) <*> (dotP *> typeP)
 
 typeP :: Parser Type
 typeP = makeExprParser typeTermP [[infixR "→" TArr]]
@@ -94,11 +104,11 @@ typeP = makeExprParser typeTermP [[infixR "→" TArr]]
 
 exprTermP :: Parser Expr
 exprTermP =
-  try (paren exprP) <|> eLamP <|> eLetP <|> eFixP <|> eConsP <|> eCaseP <|> try
+  paren exprP <|> eLamP <|> eLetP <|> eFixP <|> eConsP <|> eCaseP <|> try
     (EVar <$> evarP)
  where
   eLamP = do
-    x          <- symbol "λ" >> evarP
+    x          <- lambdaP >> evarP
     annotation <- optional annotationP
     body       <- dotP >> exprP
     return $ case annotation of
@@ -123,7 +133,7 @@ exprTermP =
       <*  symbol "}"
 
 branchP :: Parser Branch
-branchP = Branch <$> consVarP <*> many evarP <*> (symbol "→" *> exprP)
+branchP = Branch <$> consVarP <*> many evarP <*> (arrowP *> exprP)
 
 annotationP = symbol ":" >> typeP
 
