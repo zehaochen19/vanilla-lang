@@ -9,9 +9,8 @@ import Vanilla.Syntax.Cons (ConsVar)
 import Vanilla.Syntax.Expr
 import Vanilla.Syntax.Type
 
-data StaticError
+newtype StaticError
   = TypeCheckError TypeCheckError
-  | KindCheckError KindCheckError
 
 data TypeCheckError
   = SubtypeError Type Type
@@ -27,11 +26,8 @@ data TypeCheckError
   | UndefinedConstructor ConsVar
   deriving (Eq)
 
-data KindCheckError = KE deriving (Eq)
-
 instance Show StaticError where
   show (TypeCheckError e) = show e
-  show (KindCheckError e) = show e
 
 instance Show TypeCheckError where
   show (SubtypeError t1 t2) =
@@ -47,9 +43,6 @@ instance Show TypeCheckError where
   show (CheckError e ty) = "cannot check expression: e" ++ show e ++ " with type: " ++ show ty
   show (ApplyError ty e) = "cannot infer type after applying " ++ show ty ++ " with " ++ show e
   show (UndefinedConstructor cons) = "undefined data constructor: " ++ show cons
-
-instance Show KindCheckError where
-  show = undefined
 
 throwTyErr :: Member (Error StaticError) r => TypeCheckError -> Sem r a
 throwTyErr = throw . TypeCheckError
