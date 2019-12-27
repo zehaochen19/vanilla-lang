@@ -6,7 +6,7 @@ Vanilla is a pure functional programming language based on System F, a classic b
 
 Simple as it is, Vanilla contains many features that many main-stream languages don't have:
 
-- Higher-order polymorphism
+- Higher-rank polymorphism
   - It allows using polymorphic functions as arguments of higher-order functions
 - Strong type inference
   - Only polymorphic and recursive bindings need annotations
@@ -35,7 +35,7 @@ Constructor     K         ::= K
 Declaration     D         ::= data T a1...at = K1 τ1...τm | ... | Kn σ1...σn .
 Pattern         p         ::= K x1...xn
 
-Expressions     e, n, f   ::=   x                                     -- variable
+Expressions     e, f      ::=   x                                     -- variable
                               | K                                     -- constructor
                               | case e of {pi → ei}                   -- pattern match
                               | λx.e                                  -- implicit λ
@@ -45,7 +45,6 @@ Expressions     e, n, f   ::=   x                                     -- variabl
                               | let x = e1 in e2                      -- let binding
                               | let x : A = e1 in e2                  -- annotated let binding
                               | let rec f : A = e1 in e2              -- recursive binding
-                              | if e then e1 else e2                  -- if-else
                               | fix e                                 -- fixpoint
 
 Program         P         ::= D P | e
@@ -63,7 +62,7 @@ First of all, `stack` should be installed in `PATH`
 
 ## Examples
 
-### Higher-order Polymorphism
+### Higher-rank Polymorphism
 
 Given `example/cont.vn`:
 
@@ -263,7 +262,6 @@ vanilla-lang> Test suite vanilla-test passed
   - [x] Pattern match
   - [x] Well-formedness checking
 - [x] Type application
-- [x] If-Else clause
 - [x] Fixpoint for general recursion
 - [x] Let rec
 - [x] Parser
