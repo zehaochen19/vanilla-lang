@@ -1,4 +1,4 @@
-data Nat = Zero | Succ Zero.
+data Nat = Zero | Succ Nat.
 data Bool = False | True.
 data Prod a b = Prod a b.
  
