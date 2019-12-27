@@ -14,6 +14,7 @@ module Vanilla.Syntax.Type
     tyParen,
     tdata,
     tdata',
+    tySubstitue,
   )
 where
 
@@ -56,6 +57,17 @@ tdata t = TData t mempty
 
 tdata' :: Text -> [Type] -> Type
 tdata' t tys = TData t (Seq.fromList tys)
+
+-- | [ty1/alpha]ty2
+tySubstitue :: TVar -> Type -> Type -> Type
+tySubstitue alpha ty1 ty2 =
+  case ty2 of
+    TVar alpha' -> if alpha == alpha' then ty1 else ty2
+    TEVar _ -> ty2
+    TAll beta a ->
+      if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
+    TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
+    TData d pat -> TData d (tySubstitue alpha ty1 <$> pat)
 
 -- | Monotypes: tau, sigma.
 isMono :: Type -> Bool

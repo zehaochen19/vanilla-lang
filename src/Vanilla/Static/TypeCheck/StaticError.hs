@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 
-module Vanilla.Static.StaticError where
+module Vanilla.Static.TypeCheck.StaticError where
 
 import Polysemy
 import Polysemy.Error

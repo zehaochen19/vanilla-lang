@@ -8,14 +8,13 @@ module Vanilla.Static.TypeCheck where
 
 import Data.Foldable (foldlM, toList)
 import Data.Sequence (Seq)
-import Data.Text (Text)
 import Debug.Trace
 import Polysemy
 import Polysemy.Error
 import Polysemy.Reader
 import Polysemy.State
 import Vanilla.Static.Context
-import Vanilla.Static.StaticError
+import Vanilla.Static.TypeCheck.Internal
 import Vanilla.Static.WellForm
 import Vanilla.Syntax.Cons (Constructor (..))
 import Vanilla.Syntax.Decl
@@ -23,37 +22,11 @@ import Vanilla.Syntax.Expr (Branch (..), Expr (..))
 import Vanilla.Syntax.Program
 import Vanilla.Syntax.Type
   ( TEVar (..),
-    TVar,
     Type (..),
     isMono,
     tyFreeTEVars,
+    tySubstitue,
   )
-import Vanilla.Utils (freshVarStream)
-
--- | Apply bidirectional typechecking
-newtype CheckState = CheckState {freshTypeVars :: [Text]}
-
-initCheckState :: CheckState
-initCheckState = CheckState freshVarStream
-
-type TypeCheck r = Members '[Error StaticError, Reader DeclarationMap, State CheckState] r
-
-freshTEVar :: Member (State CheckState) r => Sem r TEVar
-freshTEVar = do
-  vars <- gets freshTypeVars
-  put $ CheckState (tail vars)
-  return $ MkTEVar . head $ vars
-
--- | [ty1/alpha]ty2
-tySubstitue :: TVar -> Type -> Type -> Type
-tySubstitue alpha ty1 ty2 =
-  case ty2 of
-    TVar alpha' -> if alpha == alpha' then ty1 else ty2
-    TEVar _ -> ty2
-    TAll beta a ->
-      if alpha == beta then ty2 else TAll beta (tySubstitue alpha ty1 a)
-    TArr a b -> TArr (tySubstitue alpha ty1 a) (tySubstitue alpha ty1 b)
-    TData d pat -> TData d (tySubstitue alpha ty1 <$> pat)
 
 subtype :: TypeCheck r => Context -> Type -> Type -> Sem r Context
 -- <:Var
