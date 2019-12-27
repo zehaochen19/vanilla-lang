@@ -13,7 +13,7 @@ Simple as it is, Vanilla contains many features that many main-stream languages 
 - Algebraic data types
 - Pattern matching
 - Simplicity
-  - Only polymorphism`∀` and arrows`→` are built-in types
+  - Only foralls`∀` and arrows`→` are built-in types
   - All regular types such as `Unit` and `Bool` can be declared as ADT and eliminated by pattern matching
 
 ## Defects
@@ -270,3 +270,5 @@ vanilla-lang> Test suite vanilla-test passed
 ## References
 
 - [Complete and Easy Bidirectional Typechecking for Higher-Rank Polymorphism](https://arxiv.org/abs/1306.6032)
+- [Bidirectional Typing](https://arxiv.org/abs/1908.05839)
+- [Kind Inference for Datatypes](https://richarde.dev/papers/2020/kind-inference/kind-inference.pdf)
