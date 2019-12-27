@@ -2,7 +2,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fplugin=Polysemy.Plugin #-}
+
 
 module Vanilla.Static.TypeCheck where
 
@@ -13,13 +15,11 @@ import           Data.Sequence                  ( Seq )
 import           Debug.Trace
 import           Polysemy
 import           Polysemy.Error
-import           Polysemy.Reader
 import           Polysemy.State
 import           Vanilla.Static.Context
 import           Vanilla.Static.TypeCheck.Internal
-import           Vanilla.Static.WellForm
-import           Vanilla.Syntax.Cons            ( Constructor(..) )
-import           Vanilla.Syntax.Decl
+import           Vanilla.Static.TypeCheck.WellForm
+import           Vanilla.Static.TypeCheck.DeclCheck
 import           Vanilla.Syntax.Expr            ( Branch(..)
                                                 , Expr(..)
                                                 )
@@ -320,32 +320,14 @@ typeCheckExpr :: Member (Error String) r => Expr -> Sem r (Type, Context)
 typeCheckExpr expr = typeCheck $ Program [] expr
 
 typeCheck :: Member (Error String) r => Program -> Sem r (Type, Context)
-typeCheck prog = do
+typeCheck Program {..} = do
   (ty, ctx) <- mapError
     show
-    (runReader decls . evalState initCheckState $ do
-      initCtx <- checkDecls mempty (declarations prog)
-      synthesize initCtx expr
+    (evalState initCheckState $ do
+      decls <- checkDataTypes declarations
+      modify $ \s -> s { declMap = decls }
+      initCtx <- checkDecls mempty declarations
+      synthesize initCtx mainExpr
     )
   return (applyCtx ctx ty, ctx)
- where
-  decls :: DeclarationMap
-  decls = declMap (declarations prog)
-  expr  = mainExpr prog
 
--- | check a declaration is well-formed in a context
--- and output typings of its data constructors
-checkDecl :: TypeCheck r => Context -> Declaration -> Sem r Context
-checkDecl ctx dec = do
-  let constrs = constructors dec
-  foldlM (\c con -> checkConstructor c dec con) ctx constrs
-
-checkDecls :: TypeCheck r => Context -> [Declaration] -> Sem r Context
-checkDecls = foldlM checkDecl
-
-checkConstructor
-  :: TypeCheck r => Context -> Declaration -> Constructor -> Sem r Context
-checkConstructor ctx dec cons@(Constructor consVar _) = do
-  let ty = consType dec cons
-  ctx |- ty
-  pure $ ctx |> CCons consVar ty

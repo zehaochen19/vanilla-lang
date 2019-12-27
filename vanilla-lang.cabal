@@ -30,9 +30,10 @@ library
     Vanilla.Server
     Vanilla.Static.Context
     Vanilla.Static.TypeCheck
+    Vanilla.Static.TypeCheck.DeclCheck
     Vanilla.Static.TypeCheck.Internal
     Vanilla.Static.TypeCheck.StaticError
-    Vanilla.Static.WellForm
+    Vanilla.Static.TypeCheck.WellForm
     Vanilla.Syntax.Cons
     Vanilla.Syntax.Decl
     Vanilla.Syntax.Expr

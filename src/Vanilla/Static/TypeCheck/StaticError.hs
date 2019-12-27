@@ -8,6 +8,7 @@ import           Polysemy.Error
 import           Vanilla.Syntax.Cons            ( ConsVar )
 import           Vanilla.Syntax.Expr
 import           Vanilla.Syntax.Type
+import           Data.Text                      ( Text )
 
 newtype StaticError
   = TypeCheckError TypeCheckError
@@ -24,6 +25,8 @@ data TypeCheckError
   | CheckError Expr Type
   | ApplyError Type Expr
   | UndefinedConstructor ConsVar
+  | DuplicateConstructor ConsVar
+  | DuplicateDataType Text
   deriving (Eq)
 
 instance Show StaticError where
@@ -49,6 +52,8 @@ instance Show TypeCheckError where
     "cannot infer type after applying " ++ show ty ++ " with " ++ show e
   show (UndefinedConstructor cons) =
     "undefined data constructor: " ++ show cons
+  show (DuplicateConstructor cons) = "duplicate constructor: " ++ show cons
+  show (DuplicateDataType    dt  ) = "duplicate data type: " ++ show dt
 
 throwTyErr :: Member (Error StaticError) r => TypeCheckError -> Sem r a
 throwTyErr = throw . TypeCheckError

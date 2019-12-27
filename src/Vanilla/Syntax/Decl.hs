@@ -47,6 +47,3 @@ initDeclCtx :: [Declaration] -> Context
 initDeclCtx decls = Context . S.fromList $ decls >>= \dec ->
   consCtxMember dec <$> constructors dec
 
-declMap :: [Declaration] -> DeclarationMap
-declMap decls = M.fromList $ fmap loop decls
-  where loop dec@(Declaration name _ _) = (name, dec)

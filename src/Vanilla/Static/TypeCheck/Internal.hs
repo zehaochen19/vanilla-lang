@@ -9,7 +9,7 @@ module Vanilla.Static.TypeCheck.Internal
   , throwTyErr
   , initCheckState
   , freshTEVar
-  , CheckState
+  , CheckState(..)
   , TypeCheck
   )
 where
@@ -17,23 +17,25 @@ where
 import           Data.Text                      ( Text )
 import           Polysemy
 import           Polysemy.Error
-import           Polysemy.Reader
 import           Polysemy.State
 import           Vanilla.Static.TypeCheck.StaticError
 import           Vanilla.Syntax.Decl            ( DeclarationMap )
 import           Vanilla.Syntax.Type            ( TEVar(..) )
 import           Vanilla.Utils                  ( freshVarStream )
 
-type TypeCheck r
-  = Members '[Error StaticError, Reader DeclarationMap, State CheckState] r
+type TypeCheck r = Members '[Error StaticError, State CheckState] r
 
-newtype CheckState = CheckState {freshTypeVars :: [Text]}
+data CheckState = CheckState
+  {
+    freshTypeVars :: [Text],
+    declMap :: DeclarationMap
+  }
 
 initCheckState :: CheckState
-initCheckState = CheckState freshVarStream
+initCheckState = CheckState freshVarStream mempty
 
 freshTEVar :: Member (State CheckState) r => Sem r TEVar
 freshTEVar = do
   vars <- gets freshTypeVars
-  put $ CheckState (tail vars)
+  modify $ \s -> s { freshTypeVars = tail vars }
   return $ MkTEVar . head $ vars
