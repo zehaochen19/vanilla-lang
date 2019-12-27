@@ -262,6 +262,7 @@ vanilla-lang> Test suite vanilla-test passed
 - [x] Algebraic data types
   - [x] Declarations
   - [x] Pattern match
+  - [x] Well-formedness checking
 - [x] Type application
 - [x] If-Else clause
 - [x] Fixpoint for general recursion
