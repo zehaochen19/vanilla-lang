@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
+{-# OPTIONS_GHC -fplugin=Polysemy.Plugin #-}
 
 module Vanilla.Static.TypeCheck where
 
@@ -14,6 +15,7 @@ import Polysemy.Error
 import Polysemy.Reader
 import Polysemy.State
 import Vanilla.Static.Context
+import Vanilla.Static.StaticError
 import Vanilla.Static.WellForm
 import Vanilla.Syntax.Decl
 import Vanilla.Syntax.Expr (Branch (..), Expr (..))
@@ -33,7 +35,7 @@ newtype CheckState = CheckState {freshTypeVars :: [Text]}
 initCheckState :: CheckState
 initCheckState = CheckState freshVarStream
 
-type TypeCheck r = Members '[Error String, Reader DeclarationMap, State CheckState] r
+type TypeCheck r = Members '[Error StaticError, Reader DeclarationMap, State CheckState] r
 
 freshTEVar :: Member (State CheckState) r => Sem r TEVar
 freshTEVar = do
@@ -90,7 +92,7 @@ subtype ctx a (TEVar alphaHat)
   | alphaHat `notElem` tyFreeTEVars a =
     instantiateR ctx a alphaHat
 subtype _ a b =
-  throw $ "cannot establish subtyping with " ++ show a ++ " <: " ++ show b
+  throwTyErr $ SubtypeError a b
 
 instantiateL :: TypeCheck r => Context -> TEVar -> Type -> Sem r Context
 -- InstLReach
@@ -122,9 +124,9 @@ instantiateL ctx ea ty
     decls <- ask
     if typeWellForm decls gamma ty
       then pure $ gamma |> CSolve ea ty <> gamma'
-      else throw $ "ill-formed type: " ++ show ty
+      else throwTyErr $ IllformedError ty
 instantiateL ctx ea ty =
-  throw $ "cannot instantiate " ++ show ea ++ " with " ++ show ty
+  throwTyErr $ InstantiateLError ea ty
 
 -- | Under input context gamma, instantiate ea such that A <: ea, with output context delta
 instantiateR :: TypeCheck r => Context -> Type -> TEVar -> Sem r Context
@@ -159,16 +161,16 @@ instantiateR ctx ty ea
     decls <- ask
     if typeWellForm decls gamma ty
       then pure $ gamma |> CSolve ea ty <> gamma'
-      else throw $ "ill-formed type: " ++ show ty
+      else throwTyErr $ IllformedError ty
 instantiateR ctx ty eb =
-  throw $ "cannot instantiate " ++ show ty ++ " with " ++ show eb
+  throwTyErr $ InstantiateRError ty eb
 
 synthesize :: TypeCheck r => Context -> Expr -> Sem r (Type, Context)
 -- Var
 synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
 -- Cons
 synthesize ctx (ECons name mempty) | Just ty <- ctxCons ctx name = pure (ty, ctx)
-synthesize ctx (ECase e branches) = do
+synthesize ctx e'@(ECase e branches) = do
   (ty, theta) <- synthesize ctx e
   let ty' = applyCtx theta ty
   case ty' of
@@ -176,21 +178,21 @@ synthesize ctx (ECase e branches) = do
       (branchTys, delta) <- synthesizeBranch theta types branches
       sigma <- allSubype delta branchTys
       case branchTys of
-        [] -> throw "Empty branch"
+        [] -> throwTyErr $ EmptyBranchError e'
         (t : _) -> return (applyCtx sigma t, sigma)
-    _ -> throw $ "cannot use pattern match on: " ++ show ty'
+    _ -> throwTyErr $ CannotPatternMatch ty'
 -- Anno
 synthesize ctx (EAnno e ty) = do
   decls <- ask
   if typeWellForm decls ctx ty
     then (,) ty <$> check ctx e ty
-    else throw $ "ill-formed type " ++ show ty
+    else throwTyErr $ IllformedError ty
 -- TyApp ==>
 synthesize ctx (ETApp e tyArg) = do
   (polyTy, theta) <- synthesize ctx e
   case polyTy of
     TAll tv ty' -> return (applyCtx theta $ tySubstitue tv tyArg ty', theta)
-    _ -> throw $ "cannot apply type to non-poly type: " ++ show polyTy
+    _ -> throwTyErr $ ApplyOnNonPolyType polyTy
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -224,15 +226,15 @@ synthesize ctx (EALetRec x ty e1 e2) = do
   theta <- check (ctx |> CAssump x ty) e1 ty
   (b, delta) <- synthesize theta e2
   return (applyCtx delta b, ctxUntil (CAssump x ty) delta)
-synthesize ctx (EFix e) = do
+synthesize ctx e'@(EFix e) = do
   (ty, theta) <- synthesize ctx e
   case applyCtx theta ty of
     TArr a b | a == b -> do
       delta <- subtype theta (applyCtx theta a) (applyCtx theta b)
       sigma <- subtype delta (applyCtx delta a) (applyCtx delta b)
       return (applyCtx sigma a, sigma)
-    _ -> throw $ "cannot synthesize fixpoint: " ++ show (EFix e)
-synthesize ctx e = throw $ "cannot synthesize expression " ++ show e
+    _ -> throwTyErr $ SynthesizeError e'
+synthesize ctx e = throwTyErr $ SynthesizeError e
 
 check :: TypeCheck r => Context -> Expr -> Type -> Sem r Context
 -- Case
@@ -241,7 +243,7 @@ check ctx (ECase e branches) target = do
   let ty' = applyCtx theta ty
   case ty' of
     TData cName types -> checkBranch ctx types branches target
-    _ -> throw $ "cannot use pattern match on: " ++ show ty'
+    _ -> throwTyErr $ CannotPatternMatch ty'
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
@@ -277,7 +279,7 @@ check ctx (ETApp e tyArg) ty = do
         theta
         (applyCtx theta $ tySubstitue tv tyArg ty')
         (applyCtx theta ty)
-    _ -> throw $ "cannot apply type to non-poly type: " ++ show polyTy
+    _ -> throwTyErr $ ApplyOnNonPolyType polyTy
 -- Sub
 check ctx e b = do
   (a, theta) <- synthesize ctx e
@@ -310,7 +312,7 @@ apply ctx (TArr a c) e = do
 apply ctx ty1 e2 = do
   trace (show ty1) $ pure ()
   trace (show e2) $ pure ()
-  throw $ "cannot infer type after applying " ++ show ty1 ++ " with " ++ show e2
+  throwTyErr $ ApplyError ty1 e2
 
 -- | Given context and type variables, checking
 --   pattern match branches will be evaluated to a target type
@@ -318,7 +320,7 @@ checkBranch :: TypeCheck r => Context -> Seq Type -> [Branch] -> Type -> Sem r C
 checkBranch ctx tys [] target = pure ctx
 checkBranch ctx tys (Branch cons evars e : bs) target =
   case ctxCons ctx cons of
-    Nothing -> throw $ "undefined constructor: " ++ show cons
+    Nothing -> throwTyErr $ UndefinedConstructor cons
     Just consTy -> do
       eTy <- freshTEVar
       let ctx' = ctx |> CMarker eTy <> typings
@@ -332,7 +334,7 @@ synthesizeBranch :: TypeCheck r => Context -> Seq Type -> [Branch] -> Sem r ([Ty
 synthesizeBranch ctx tys [] = pure ([], ctx)
 synthesizeBranch ctx tys (Branch cons evars e : bs) =
   case ctxCons ctx cons of
-    Nothing -> throw $ "undefined constructor: " ++ show cons
+    Nothing -> throwTyErr $ UndefinedConstructor cons
     Just consTy -> do
       eTy <- freshTEVar
       let ctx' = ctx |> CMarker eTy <> typings
@@ -358,8 +360,11 @@ typeCheckExpr expr = typeCheck $ Program [] expr
 typeCheck :: Member (Error String) r => Program -> Sem r (Type, Context)
 typeCheck prog = do
   (ty, ctx) <-
-    runReader decls . evalState initCheckState $
-      synthesize (initDeclCtx . declarations $ prog) expr
+    mapError
+      show
+      ( runReader decls . evalState initCheckState $
+          synthesize (initDeclCtx . declarations $ prog) expr
+      )
   return (applyCtx ctx ty, ctx)
   where
     decls :: DeclarationMap

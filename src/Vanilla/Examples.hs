@@ -191,7 +191,9 @@ nonZero =
 
 nonZeroZero = Program [natDec, boolDec] $ nonZero $$ cons "Zero"
 
-nonZeroTwo = Program [natDec, boolDec] $ nonZero $$ (cons "Succ" $$(cons "Succ" $$ cons "Zero"))
+nonZeroTwo =
+  Program [natDec, boolDec] $
+    nonZero $$ (cons "Succ" $$ (cons "Succ" $$ cons "Zero"))
 
 natAdd :: Expr
 natAdd =

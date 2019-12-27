@@ -28,6 +28,7 @@ dependencies:
   - extra
   - filepath
   - polysemy
+  - polysemy-plugin
   - megaparsec
   - parser-combinators
   - servant
