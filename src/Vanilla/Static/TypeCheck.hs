@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fplugin=Polysemy.Plugin #-}
 
 module Vanilla.Static.TypeCheck where
@@ -17,6 +18,7 @@ import Polysemy.State
 import Vanilla.Static.Context
 import Vanilla.Static.StaticError
 import Vanilla.Static.WellForm
+import Vanilla.Syntax.Cons (Constructor)
 import Vanilla.Syntax.Decl
 import Vanilla.Syntax.Expr (Branch (..), Expr (..))
 import Vanilla.Syntax.Program
@@ -370,3 +372,21 @@ typeCheck prog = do
     decls :: DeclarationMap
     decls = declMap (declarations prog)
     expr = mainExpr prog
+
+-- | check a declaration is well-formed in a context
+-- and output typings of its data constructors
+checkDecl :: TypeCheck r => Context -> Declaration -> Sem r Context
+checkDecl ctx dec = do
+  let constrs = constructors dec
+  foldlM (\c con -> checkConstructor c dec con) ctx constrs
+
+checkDecls :: TypeCheck r => Context -> [Declaration] -> Sem r Context
+checkDecls = foldlM checkDecl
+
+checkConstructor :: TypeCheck r => Context -> Declaration -> Constructor -> Sem r Context
+checkConstructor ctx dec constructor = do
+  let ty = consType dec constructor
+  decls <- ask
+  if typeWellForm decls ctx ty
+    then pure $ ctx |> CCons undefined ty
+    else throwTyErr $ IllformedError ty
