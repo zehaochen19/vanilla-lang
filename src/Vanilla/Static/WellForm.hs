@@ -1,18 +1,31 @@
 module Vanilla.Static.WellForm where
 
+import Control.Monad (forM_)
 import Data.Map as M
 import Data.Maybe (isJust)
-import Data.Text (Text)
+import Polysemy
+import Polysemy.Reader (ask)
 import Vanilla.Static.Context
+import Vanilla.Static.TypeCheck.Internal
 import Vanilla.Syntax.Decl
 import Vanilla.Syntax.Type
 
-typeWellForm :: Map Text Declaration -> Context -> Type -> Bool
-typeWellForm decls ctx ty = case ty of
-  TVar alpha -> CVar alpha `ctxElem` ctx
-  TArr a b -> typeWellForm decls ctx a && typeWellForm decls ctx b
-  TAll alpha a -> typeWellForm decls (ctx |> CVar alpha) a
-  TEVar ea -> CEVar ea `ctxElem` ctx || isJust (ctxSolve ctx ea)
-  TData name pat -> case M.lookup name decls of
-    Nothing -> False
-    Just dec -> length pat == length (tvars dec) && all (typeWellForm decls ctx) pat
+typeWellForm :: TypeCheck r => Context -> Type -> Sem r ()
+typeWellForm ctx ty =
+  case ty of
+    TVar alpha | CVar alpha `ctxElem` ctx -> pure ()
+    TArr a b -> ctx |- a >> ctx |- b
+    TAll alpha a -> typeWellForm (ctx |> CVar alpha) a
+    TEVar ea | CEVar ea `ctxElem` ctx || isJust (ctxSolve ctx ea) -> pure ()
+    TData name pat ->
+      ask >>= \decls ->
+        case M.lookup name decls of
+          Nothing -> throwTyErr $ IllformedError ty
+          Just dec ->
+            if length pat == length (tvars dec)
+              then forM_ pat (typeWellForm ctx)
+              else throwTyErr $ IllformedError ty
+    _ -> throwTyErr $ IllformedError ty
+
+(|-) :: TypeCheck r => Context -> Type -> Sem r ()
+(|-) = typeWellForm

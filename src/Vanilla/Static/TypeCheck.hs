@@ -95,10 +95,8 @@ instantiateL ctx ea (TAll beta b) =
 instantiateL ctx ea ty
   | isMono ty,
     Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
-    decls <- ask
-    if typeWellForm decls gamma ty
-      then pure $ gamma |> CSolve ea ty <> gamma'
-      else throwTyErr $ IllformedError ty
+    gamma |- ty
+    pure $ gamma |> CSolve ea ty <> gamma'
 instantiateL ctx ea ty =
   throwTyErr $ InstantiateLError ea ty
 
@@ -132,10 +130,8 @@ instantiateR ctx (TAll beta b) ea = do
 instantiateR ctx ty ea
   | isMono ty,
     Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
-    decls <- ask
-    if typeWellForm decls gamma ty
-      then pure $ gamma |> CSolve ea ty <> gamma'
-      else throwTyErr $ IllformedError ty
+    gamma |- ty
+    pure $ gamma |> CSolve ea ty <> gamma'
 instantiateR ctx ty eb =
   throwTyErr $ InstantiateRError ty eb
 
@@ -157,10 +153,8 @@ synthesize ctx e'@(ECase e branches) = do
     _ -> throwTyErr $ CannotPatternMatch ty'
 -- Anno
 synthesize ctx (EAnno e ty) = do
-  decls <- ask
-  if typeWellForm decls ctx ty
-    then (,) ty <$> check ctx e ty
-    else throwTyErr $ IllformedError ty
+  ctx |- ty
+  (,) ty <$> check ctx e ty
 -- TyApp ==>
 synthesize ctx (ETApp e tyArg) = do
   (polyTy, theta) <- synthesize ctx e
@@ -359,7 +353,5 @@ checkDecls = foldlM checkDecl
 checkConstructor :: TypeCheck r => Context -> Declaration -> Constructor -> Sem r Context
 checkConstructor ctx dec cons@(Constructor consVar _) = do
   let ty = consType dec cons
-  decls <- ask
-  if typeWellForm decls ctx ty
-    then pure $ ctx |> CCons consVar ty
-    else throwTyErr $ IllformedError ty
+  ctx |- ty
+  pure $ ctx |> CCons consVar ty
