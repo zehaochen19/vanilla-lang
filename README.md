@@ -4,7 +4,7 @@ Vanilla is a pure functional programming language based on System F, a classic b
 
 ## Merits
 
-Simple as it is, Vanilla contains many features that many main-stream languages don't have:
+Simple as it is, Vanilla contains many features that most main-stream languages don't have:
 
 - Higher-rank polymorphism
   - It allows using polymorphic functions as arguments of higher-order functions
