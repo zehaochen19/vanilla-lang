@@ -55,8 +55,6 @@ A valid Vanilla program consists of several ADT declarations followed by a main 
 
 ADT declarations are similar to ones in Haskell, except that they end with a dot for easy parsing.
 
-For legacy reasons, some types such as Nat and Bool are built-in, but they shouldn't be too annoying.
-
 Haskell-style comments (`--` and `{- -}`) are also supported.
 
 ## Usage
