@@ -20,8 +20,9 @@ Simple as it is, Vanilla contains many features that many main-stream languages 
 
 - No modules
 - No higher-kinded types
-
-For simplicity, this programming language only supports type checking and evaluation on closed terms.
+  - Well, this is just a System F :(
+  - I plan to extend this language to a System Fω minus type lambdas in future
+- For simplicity, this programming language only supports type checking and evaluation on closed terms.
 
 ## Grammar
 

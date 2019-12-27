@@ -1,0 +1,4 @@
+data List a = Nil | Cons b (List a).
+data Bool = False | True.
+
+Nil : List Bool
