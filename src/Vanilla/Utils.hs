@@ -2,20 +2,20 @@
 
 module Vanilla.Utils where
 
-import qualified Data.Sequence as S
-import Data.Text (Text)
-import qualified Data.Text as T
-import Vanilla.Syntax.Cons
-import Vanilla.Syntax.Expr
+import qualified Data.Sequence                 as S
+import           Data.Text                      ( Text )
+import qualified Data.Text                     as T
+import           Vanilla.Syntax.Cons
+import           Vanilla.Syntax.Expr
 
 freshVarStream :: [Text]
 freshVarStream = do
-  digit <- nums
+  digit  <- nums
   letter <- letters
   return . T.pack $ '\'' : letter : show digit
-  where
-    letters = ['a' .. 'z']
-    nums = [0 ..]
+ where
+  letters = ['a' .. 'z']
+  nums    = [0 ..]
 
 natToInt :: Expr -> Integer
 natToInt (ECons (MkConsVar "Zero") mempty) = 0
@@ -24,4 +24,4 @@ natToInt _ = 0
 
 intToNat :: Integer -> Expr
 intToNat n | n <= 0 = cons "Zero"
-intToNat n = cons' "Succ" [intToNat $ n -1]
+intToNat n          = cons' "Succ" [intToNat $ n - 1]

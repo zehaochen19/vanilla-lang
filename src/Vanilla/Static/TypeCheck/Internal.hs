@@ -4,27 +4,28 @@
 {-# LANGUAGE GADTs #-}
 
 module Vanilla.Static.TypeCheck.Internal
-  ( StaticError (..),
-    TypeCheckError (..),
-    throwTyErr,
-    initCheckState,
-    freshTEVar,
-    CheckState,
-    TypeCheck,
+  ( StaticError(..)
+  , TypeCheckError(..)
+  , throwTyErr
+  , initCheckState
+  , freshTEVar
+  , CheckState
+  , TypeCheck
   )
 where
 
-import Data.Text (Text)
-import Polysemy
-import Polysemy.Error
-import Polysemy.Reader
-import Polysemy.State
-import Vanilla.Static.TypeCheck.StaticError
-import Vanilla.Syntax.Decl (DeclarationMap)
-import Vanilla.Syntax.Type (TEVar (..))
-import Vanilla.Utils (freshVarStream)
+import           Data.Text                      ( Text )
+import           Polysemy
+import           Polysemy.Error
+import           Polysemy.Reader
+import           Polysemy.State
+import           Vanilla.Static.TypeCheck.StaticError
+import           Vanilla.Syntax.Decl            ( DeclarationMap )
+import           Vanilla.Syntax.Type            ( TEVar(..) )
+import           Vanilla.Utils                  ( freshVarStream )
 
-type TypeCheck r = Members '[Error StaticError, Reader DeclarationMap, State CheckState] r
+type TypeCheck r
+  = Members '[Error StaticError, Reader DeclarationMap, State CheckState] r
 
 newtype CheckState = CheckState {freshTypeVars :: [Text]}
 

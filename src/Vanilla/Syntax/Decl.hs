@@ -2,13 +2,13 @@
 
 module Vanilla.Syntax.Decl where
 
-import Data.List (intercalate)
-import qualified Data.Map as M
-import qualified Data.Sequence as S
-import Data.Text (Text)
-import Vanilla.Static.Context
-import Vanilla.Syntax.Cons
-import Vanilla.Syntax.Type
+import           Data.List                      ( intercalate )
+import qualified Data.Map                      as M
+import qualified Data.Sequence                 as S
+import           Data.Text                      ( Text )
+import           Vanilla.Static.Context
+import           Vanilla.Syntax.Cons
+import           Vanilla.Syntax.Type
 
 -- | user defined data type declaration
 data Declaration
@@ -35,20 +35,18 @@ emptyDecls = mempty
 
 consType :: Declaration -> Constructor -> Type
 consType dec (Constructor conName pat) = genTy
-  where
-    monoTy = foldr TArr (TData (name dec) (S.fromList $ TVar <$> tvars dec)) pat
-    genTy = foldr TAll monoTy (tvars dec)
+ where
+  monoTy = foldr TArr (TData (name dec) (S.fromList $ TVar <$> tvars dec)) pat
+  genTy  = foldr TAll monoTy (tvars dec)
 
 consCtxMember :: Declaration -> Constructor -> CtxMember
 consCtxMember dec c@(Constructor conName pat) = CCons conName $ consType dec c
 
 -- | initialize typing context for constructors
 initDeclCtx :: [Declaration] -> Context
-initDeclCtx decls = Context . S.fromList $
-  decls
-    >>= \dec -> consCtxMember dec <$> constructors dec
+initDeclCtx decls = Context . S.fromList $ decls >>= \dec ->
+  consCtxMember dec <$> constructors dec
 
 declMap :: [Declaration] -> DeclarationMap
 declMap decls = M.fromList $ fmap loop decls
-  where
-    loop dec@(Declaration name _ _) = (name, dec)
+  where loop dec@(Declaration name _ _) = (name, dec)

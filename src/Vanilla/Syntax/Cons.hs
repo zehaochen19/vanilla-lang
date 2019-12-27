@@ -2,10 +2,10 @@
 
 module Vanilla.Syntax.Cons where
 
-import Data.String (IsString)
-import Data.Text (Text)
-import qualified Data.Text as T
-import Vanilla.Syntax.Type (Type)
+import           Data.String                    ( IsString )
+import           Data.Text                      ( Text )
+import qualified Data.Text                     as T
+import           Vanilla.Syntax.Type            ( Type )
 
 newtype ConsVar = MkConsVar Text deriving (Eq, Ord, IsString)
 
