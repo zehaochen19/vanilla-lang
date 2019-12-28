@@ -29,7 +29,7 @@ programP :: Parser Program
 programP = sc $> Program <*> many declP <*> exprP <* eof
 
 runProgramP :: String -> Text -> Either (ParseErrorBundle Text Void) Program
-runProgramP path prog = mapLeft id $ runParser programP path prog
+runProgramP = runParser programP
 
 sc :: Parser ()
 sc = L.space space1 lineComment blockComment

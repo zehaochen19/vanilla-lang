@@ -20,11 +20,12 @@ import           Vanilla.Syntax.Type
 interpret :: MonadError String m => Program -> m (Expr, Type)
 interpret prog = do
   (ty, ctx) <-
-    ( runExceptT
-      . withExceptT (\e -> "Typechecking error:\n" ++ show e)
-      $ typeCheck prog
-      )
-      >>= liftEither
+    liftEither
+      =<< ( runExceptT
+          . withExceptT (\e -> "Typechecking error:\n" ++ show e)
+          $ typeCheck prog
+          )
+
   return (eval . mainExpr $ prog, applyCtx ctx ty)
 
 vanilla :: MonadError String m => FilePath -> Text -> m (Expr, Type)
