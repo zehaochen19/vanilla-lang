@@ -4,38 +4,37 @@
 {-# LANGUAGE GADTs #-}
 
 module Vanilla.Static.TypeCheck.Internal
-  ( StaticError(..)
-  , TypeCheckError(..)
-  , throwTyErr
-  , initCheckState
-  , freshTEVar
-  , CheckState(..)
-  , TypeCheck
+  ( StaticError (..),
+    TypeCheckError (..),
+    throwTyErr,
+    initCheckState,
+    freshTEVar,
+    CheckState (..),
+    TypeCheck,
   )
 where
 
-import           Data.Text                      ( Text )
-import           Polysemy
-import           Polysemy.Error
-import           Polysemy.State
-import           Vanilla.Static.TypeCheck.StaticError
-import           Vanilla.Syntax.Decl            ( DeclarationMap )
-import           Vanilla.Syntax.Type            ( TEVar(..) )
-import           Vanilla.Utils                  ( freshVarStream )
+import Control.Monad.Except
+import Control.Monad.State
+import Data.Text (Text)
+import Vanilla.Static.TypeCheck.StaticError
+import Vanilla.Syntax.Decl (DeclarationMap)
+import Vanilla.Syntax.Type (TEVar (..))
+import Vanilla.Utils (freshVarStream)
 
-type TypeCheck r = Members '[Error StaticError, State CheckState] r
+type TypeCheck m = (MonadError StaticError m, MonadState CheckState m)
 
-data CheckState = CheckState
-  {
-    freshTypeVars :: [Text],
-    declMap :: DeclarationMap
-  }
+data CheckState
+  = CheckState
+      { freshTypeVars :: [Text],
+        declMap :: DeclarationMap
+      }
 
 initCheckState :: CheckState
 initCheckState = CheckState freshVarStream mempty
 
-freshTEVar :: Member (State CheckState) r => Sem r TEVar
+freshTEVar :: TypeCheck m => m TEVar
 freshTEVar = do
   vars <- gets freshTypeVars
-  modify $ \s -> s { freshTypeVars = tail vars }
+  modify $ \s -> s {freshTypeVars = tail vars}
   return $ MkTEVar . head $ vars

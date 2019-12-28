@@ -30,6 +30,7 @@ dependencies:
   - polysemy
   - polysemy-plugin
   - megaparsec
+  - mtl
   - parser-combinators
   - servant
   - servant-server

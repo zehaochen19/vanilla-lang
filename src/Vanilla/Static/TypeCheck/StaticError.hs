@@ -3,12 +3,11 @@
 
 module Vanilla.Static.TypeCheck.StaticError where
 
-import           Polysemy
-import           Polysemy.Error
-import           Vanilla.Syntax.Cons            ( ConsVar )
-import           Vanilla.Syntax.Expr
-import           Vanilla.Syntax.Type
-import           Data.Text                      ( Text )
+import Control.Monad.Except
+import Data.Text (Text)
+import Vanilla.Syntax.Cons (ConsVar)
+import Vanilla.Syntax.Expr
+import Vanilla.Syntax.Type
 
 newtype StaticError
   = TypeCheckError TypeCheckError
@@ -53,7 +52,7 @@ instance Show TypeCheckError where
   show (UndefinedConstructor cons) =
     "undefined data constructor: " ++ show cons
   show (DuplicateConstructor cons) = "duplicate constructor: " ++ show cons
-  show (DuplicateDataType    dt  ) = "duplicate data type: " ++ show dt
+  show (DuplicateDataType dt) = "duplicate data type: " ++ show dt
 
-throwTyErr :: Member (Error StaticError) r => TypeCheckError -> Sem r a
-throwTyErr = throw . TypeCheckError
+throwTyErr :: MonadError StaticError m => TypeCheckError -> m a
+throwTyErr = throwError . TypeCheckError
