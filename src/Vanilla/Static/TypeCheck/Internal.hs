@@ -15,6 +15,7 @@ module Vanilla.Static.TypeCheck.Internal
 where
 
 import           Control.Monad.Except
+import           Control.Monad.Reader
 import           Control.Monad.State
 import           Data.Text                      ( Text )
 import           Vanilla.Static.TypeCheck.StaticError
@@ -22,16 +23,19 @@ import           Vanilla.Syntax.Decl            ( DeclarationMap )
 import           Vanilla.Syntax.Type            ( TEVar(..) )
 import           Vanilla.Utils                  ( freshVarStream )
 
-type TypeCheck m = (MonadError StaticError m, MonadState CheckState m)
+type TypeCheck m
+  = ( MonadReader DeclarationMap m
+    , MonadError StaticError m
+    , MonadState CheckState m
+    )
 
-data CheckState
+newtype CheckState
   = CheckState
-      { freshTypeVars :: [Text],
-        declMap :: DeclarationMap
+      { freshTypeVars :: [Text]
       }
 
 initCheckState :: CheckState
-initCheckState = CheckState freshVarStream mempty
+initCheckState = CheckState freshVarStream
 
 freshTEVar :: TypeCheck m => m TEVar
 freshTEVar = do
