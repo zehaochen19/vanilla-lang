@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "vanilla-lang:lib"
+    - path: "./test/Spec.hs"
+      component: "vanilla-lang:test:vanilla-test"
+    - path: "./app/Main.hs"
+      component: "vanilla-lang:exe:vanilla"
+    - path: "./backend/Main.hs"
+      component: "vanilla-lang:exe:vanilla-backend"
+
+dependencies:
+  - package.yaml

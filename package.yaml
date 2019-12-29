@@ -56,7 +56,6 @@ executables:
     source-dirs: backend
     ghc-options:
       - -threaded
-      - -O2
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:

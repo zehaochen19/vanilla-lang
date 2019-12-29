@@ -3,7 +3,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# OPTIONS_GHC -fplugin=Polysemy.Plugin #-}
 
 module Vanilla.Static.TypeCheck where
 
