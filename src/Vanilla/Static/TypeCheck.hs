@@ -265,10 +265,7 @@ apply ctx (TEVar ea) e | Just (l, r) <- ctxHole (CEVar ea) ctx = do
 apply ctx (TArr a c) e = do
   delta <- check ctx e a
   return (c, delta)
-apply ctx ty1 e2 = do
-  trace (show ty1) $ pure ()
-  trace (show e2) $ pure ()
-  throwTyErr $ ApplyError ty1 e2
+apply _ ty1 e2 = throwTyErr $ ApplyError ty1 e2
 
 -- | Given context and type variables, checking
 --   pattern match branches will be evaluated to a target type
