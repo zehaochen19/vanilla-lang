@@ -37,7 +37,7 @@ subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
 -- <:-->
 subtype ctx (TArr a1 a2) (TArr b1 b2)                      = do
   theta <- subtype ctx b1 a1
-  subtype theta (applyCtx theta a2) (applyCtx theta b2)
+  subtype theta (ctxApply theta a2) (ctxApply theta b2)
 -- <:forallL
 subtype ctx (TAll alpha a) b = do
   alphaHat <- freshTEVar
@@ -55,7 +55,7 @@ subtype ctx (TData t1 pat1) (TData t2 pat2) | t1 == t2 = do
   let pat2' = toList pat2
   ctx' <- foldlM subtypePair ctx $ zip pat1' pat2'
   foldlM subtypePair ctx' $ zip pat2' pat1'
-  where subtypePair c (ty1, ty2) = subtype c (applyCtx c ty1) (applyCtx c ty2)
+  where subtypePair c (ty1, ty2) = subtype c (ctxApply c ty1) (ctxApply c ty2)
 -- <:InstantiateL
 subtype ctx (TEVar alphaHat) a | alphaHat `notElem` tyFreeTEVars a =
   instantiateL ctx alphaHat a
@@ -82,7 +82,7 @@ instantiateL ctx ea (TArr a1 a2) | Just (l, r) <- ctxHole (CEVar ea) ctx = do
     )
     a1
     ea1
-  instantiateL theta ea2 (applyCtx theta a2)
+  instantiateL theta ea2 (ctxApply theta a2)
 -- InstLAllR
 instantiateL ctx ea (TAll beta b) =
   ctxUntil (CVar beta) <$> instantiateL (ctx |> CVar beta) ea b
@@ -112,7 +112,7 @@ instantiateR ctx (TArr a1 a2) ea | Just (l, r) <- ctxHole (CEVar ea) ctx = do
     )
     ea1
     a1
-  instantiateR theta (applyCtx theta a2) ea2
+  instantiateR theta (ctxApply theta a2) ea2
 -- InstRAllL
 instantiateR ctx (TAll beta b) ea = do
   eb <- freshTEVar
@@ -133,14 +133,14 @@ synthesize ctx (ECons name mempty) | Just ty <- ctxCons ctx name =
   pure (ty, ctx)
 synthesize ctx e'@(ECase e branches) = do
   (ty, theta) <- synthesize ctx e
-  let ty' = applyCtx theta ty
+  let ty' = ctxApply theta ty
   case ty' of
     TData cName types -> do
       (branchTys, delta) <- synthesizeBranch theta types branches
       sigma              <- allSubype delta branchTys
       case branchTys of
         []      -> throwTyErr $ EmptyBranchError e'
-        (t : _) -> return (applyCtx sigma t, sigma)
+        (t : _) -> return (ctxApply sigma t, sigma)
     _ -> throwTyErr $ CannotPatternMatch ty'
 -- Anno
 synthesize ctx (EAnno e ty) = do
@@ -150,7 +150,7 @@ synthesize ctx (EAnno e ty) = do
 synthesize ctx (ETApp e tyArg) = do
   (polyTy, theta) <- synthesize ctx e
   case polyTy of
-    TAll tv ty' -> return (applyCtx theta $ tySubstitue tv tyArg ty', theta)
+    TAll tv ty' -> return (ctxApply theta $ tySubstitue tv tyArg ty', theta)
     _           -> throwTyErr $ ApplyOnNonPolyType polyTy
 -- -->I==>
 synthesize ctx (ELam x e) = do
@@ -168,30 +168,30 @@ synthesize ctx (EALam x ty e) = do
 -- -->E
 synthesize ctx (EApp e1 e2) = do
   (a, theta) <- synthesize ctx e1
-  apply theta (applyCtx theta a) e2
+  apply theta (ctxApply theta a) e2
 -- Let==>
 synthesize ctx (ELet x e1 e2) = do
   (a, theta) <- synthesize ctx e1
-  let a' = applyCtx theta a
+  let a' = ctxApply theta a
   (b, delta) <- synthesize (theta |> CAssump x a') e2
-  return (applyCtx delta b, ctxUntil (CAssump x a') delta)
+  return (ctxApply delta b, ctxUntil (CAssump x a') delta)
 -- ALet==>
 synthesize ctx (EALet x ty e1 e2) = do
   theta <- check ctx e1 ty
-  let xAssump = CAssump x (applyCtx theta ty)
+  let xAssump = CAssump x (ctxApply theta ty)
   (b, delta) <- synthesize (theta |> xAssump) e2
-  return (applyCtx delta b, ctxUntil xAssump delta)
+  return (ctxApply delta b, ctxUntil xAssump delta)
 synthesize ctx (EALetRec x ty e1 e2) = do
   theta      <- check (ctx |> CAssump x ty) e1 ty
   (b, delta) <- synthesize theta e2
-  return (applyCtx delta b, ctxUntil (CAssump x ty) delta)
+  return (ctxApply delta b, ctxUntil (CAssump x ty) delta)
 synthesize ctx e'@(EFix e) = do
   (ty, theta) <- synthesize ctx e
-  case applyCtx theta ty of
+  case ctxApply theta ty of
     TArr a b | a == b -> do
-      delta <- subtype theta (applyCtx theta a) (applyCtx theta b)
-      sigma <- subtype delta (applyCtx delta a) (applyCtx delta b)
-      return (applyCtx sigma a, sigma)
+      delta <- subtype theta (ctxApply theta a) (ctxApply theta b)
+      sigma <- subtype delta (ctxApply delta a) (ctxApply delta b)
+      return (ctxApply sigma a, sigma)
     _ -> throwTyErr $ SynthesizeError e'
 synthesize ctx e = throwTyErr $ SynthesizeError e
 
@@ -199,7 +199,7 @@ check :: TypeCheck m => Context -> Expr -> Type -> m Context
 -- Case
 check ctx (ECase e branches) target = do
   (ty, theta) <- synthesize ctx e
-  let ty' = applyCtx theta ty
+  let ty' = ctxApply theta ty
   case ty' of
     TData cName types -> checkBranch ctx types branches target
     _                 -> throwTyErr $ CannotPatternMatch ty'
@@ -212,13 +212,13 @@ check ctx (ELam x e) (TArr a b) =
 -- A-->I
 check ctx (EALam x ty e) (TArr a b) = do
   theta <- subtype ctx a ty
-  let ty' = applyCtx theta ty
-  delta <- check (theta |> CAssump x ty') e (applyCtx theta b)
+  let ty' = ctxApply theta ty
+  delta <- check (theta |> CAssump x ty') e (ctxApply theta b)
   return $ ctxUntil (CAssump x ty') delta
 -- Let
 check ctx (ELet x e1 e2) b = do
   (a, theta) <- synthesize ctx e1
-  let a' = applyCtx theta a
+  let a' = ctxApply theta a
   ctxUntil (CAssump x a') <$> check (theta |> CAssump x a') e2 b
 -- ALet
 check ctx (EALet x ty e1 e2) b = do
@@ -226,7 +226,7 @@ check ctx (EALet x ty e1 e2) b = do
   ctxUntil (CAssump x ty) <$> check (theta |> CAssump x ty) e2 b
 check ctx (EALetRec x ty e1 e2) b = do
   theta <- check (ctx |> CAssump x ty) e1 ty
-  ctxUntil (CAssump x ty) <$> check theta e2 (applyCtx theta b)
+  ctxUntil (CAssump x ty) <$> check theta e2 (ctxApply theta b)
 -- Fix
 check ctx (EFix e       ) ty = check ctx e $ TArr ty ty
 -- TyApp
@@ -234,13 +234,13 @@ check ctx (ETApp e tyArg) ty = do
   (polyTy, theta) <- synthesize ctx e
   case polyTy of
     TAll tv ty' -> subtype theta
-                           (applyCtx theta $ tySubstitue tv tyArg ty')
-                           (applyCtx theta ty)
+                           (ctxApply theta $ tySubstitue tv tyArg ty')
+                           (ctxApply theta ty)
     _ -> throwTyErr $ ApplyOnNonPolyType polyTy
 -- Sub
 check ctx e b = do
   (a, theta) <- synthesize ctx e
-  subtype theta (applyCtx theta a) (applyCtx theta b)
+  subtype theta (ctxApply theta a) (ctxApply theta b)
 
 apply :: TypeCheck m => Context -> Type -> Expr -> m (Type, Context)
 -- ForallApp
@@ -308,8 +308,8 @@ allSubype ctx []         = pure ctx
 allSubype ctx (ty : tys) = foldlM loop ctx tys
  where
   loop gamma ty' = do
-    theta <- subtype gamma (applyCtx gamma ty) (applyCtx gamma ty')
-    subtype theta (applyCtx theta ty') (applyCtx theta ty)
+    theta <- subtype gamma (ctxApply gamma ty) (ctxApply gamma ty')
+    subtype theta (ctxApply theta ty') (ctxApply theta ty)
 
 typeCheckExpr :: MonadError StaticError m => Expr -> m (Type, Context)
 typeCheckExpr expr = typeCheck $ Program [] expr
@@ -320,7 +320,7 @@ typeCheck Program {..} = do
   (ty, ctx) <- flip evalStateT initCheckState . flip runReaderT decls $ do
     initCtx <- checkDecls mempty declarations
     synthesize initCtx mainExpr
-  return (applyCtx ctx ty, ctx)
+  return (ctxApply ctx ty, ctx)
 
 runTypeCheck :: Program -> Either StaticError (Type, Context)
 runTypeCheck = runExcept . typeCheck

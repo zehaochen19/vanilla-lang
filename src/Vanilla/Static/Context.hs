@@ -71,10 +71,10 @@ ctxCons (Context gamma) c = loop gamma
   loop (ctx' S.:|> _)                  = loop ctx'
 
 -- | Applying a context, as a substitution, to a type
-applyCtx :: Context -> Type -> Type
-applyCtx gamma ty = case ty of
+ctxApply :: Context -> Type -> Type
+ctxApply gamma ty = case ty of
   TVar  _         -> ty
-  TEVar alpha     -> maybe ty (applyCtx gamma) $ ctxSolve gamma alpha
-  TArr  a     b   -> TArr (applyCtx gamma a) (applyCtx gamma b)
-  TAll  alpha a   -> TAll alpha $ applyCtx gamma a
-  TData d     pat -> TData d (applyCtx gamma <$> pat)
+  TEVar alpha     -> maybe ty (ctxApply gamma) $ ctxSolve gamma alpha
+  TArr  a     b   -> TArr (ctxApply gamma a) (ctxApply gamma b)
+  TAll  alpha a   -> TAll alpha $ ctxApply gamma a
+  TData d     pat -> TData d (ctxApply gamma <$> pat)

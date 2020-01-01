@@ -10,7 +10,7 @@ import           Data.Text                      ( Text )
 import           Text.Megaparsec.Error          ( errorBundlePretty )
 import           Vanilla.Dynamic.Eval           ( eval )
 import           Vanilla.Parser                 ( runProgramP )
-import           Vanilla.Static.Context         ( applyCtx )
+import           Vanilla.Static.Context         ( ctxApply )
 import           Vanilla.Static.TypeCheck
 import           Vanilla.Syntax.Expr
 import           Vanilla.Syntax.Program
@@ -26,7 +26,7 @@ interpret prog = do
           $ typeCheck prog
           )
 
-  return (eval . mainExpr $ prog, applyCtx ctx ty)
+  return (eval . mainExpr $ prog, ctxApply ctx ty)
 
 vanilla :: MonadError String m => FilePath -> Text -> m (Expr, Type)
 vanilla src prog = do
