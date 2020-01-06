@@ -10,7 +10,7 @@ bug-reports:    https://github.com/zehaochen19/vanilla-lang/issues
 author:         Zehao Chen
 maintainer:     zehaochen19@gmail.com
 copyright:      2019 Zehao Chen
-license:        MIT
+license:        AGPL-3.0-only
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
