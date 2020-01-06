@@ -11,10 +11,9 @@ Simple as it is, Vanilla contains many features that most main-stream languages 
 - Strong type inference
   - Only polymorphic and recursive bindings need annotations
 - Algebraic data types
-- Pattern matching
 - Simplicity
   - Only foralls`∀` and arrows`→` are built-in types
-  - All regular types such as `Unit` and `Bool` can be declared as ADT and eliminated by pattern matching
+  - All regular types such as `Unit` and `Bool` can be declared as ADT and eliminated by `case` expression
 
 ## Defects
 
@@ -34,15 +33,16 @@ Pattern         p         ::= K x1...xn
 
 Expressions     e, f      ::=   x                                     -- variable
                               | K                                     -- constructor
-                              | case e of {pi → ei}                   -- pattern match
+                              | case e of {pi → ei}                   -- case
                               | λx.e                                  -- implicit λ
                               | λx : A.e                              -- annotated λ
                               | e1 e2                                 -- application
                               | e : A                                 -- annotation
                               | let x = e1 in e2                      -- let binding
                               | let x : A = e1 in e2                  -- annotated let binding
-                              | let rec f : A = e1 in e2              -- recursive binding
+                              | let rec f : A = e1 in e2              -- recursive binding (sugar)
                               | fix e                                 -- fixpoint
+                              | e @ A                                 -- type application
 
 Program         P         ::= D P | e
 ```
@@ -55,7 +55,7 @@ Haskell-style comments (`--` and `{- -}`) are also supported.
 
 ## Usage
 
-First of all, `ghc` and `cabal-install` should be installed in your `$PATH`
+First of all, `stack` should be installed in your `$PATH`
 
 ## Examples
 
@@ -84,7 +84,7 @@ runCont (cont Unit)
 Run
 
 ```
-cabal run example/cont.vn
+stack run example/cont.vn
 ```
 
 It should output:
@@ -125,7 +125,7 @@ map not xs
 Run
 
 ```
-$ cabal run example/map.vn
+$ stack run example/map.vn
 ```
 
 It should output:
@@ -166,7 +166,7 @@ Prod (add three two) (add2 three two)
 Run
 
 ```
-$ cabal run example/add.vn
+$ stack run example/add.vn
 ```
 
 It should output the inferred type and evaluated value of this program:
@@ -236,13 +236,12 @@ cannot establish subtyping with Unit <: Nat
 ### Unit tests
 
 ```
-$ cabal test
+$ stack test
 ...
-Running 1 test suites...
-Test suite vanilla-test: RUNNING...
-Test suite vanilla-test: PASS
-...
-1 of 1 test suites (1 of 1 test cases) passed.
+Finished in 0.0575 seconds
+121 examples, 0 failures
+
+vanilla-lang> Test suite vanilla-test passed
 ```
 
 ## Features
@@ -257,7 +256,7 @@ Test suite vanilla-test: PASS
 - [x] Let Binding
 - [x] Algebraic data types
   - [x] Declarations
-  - [x] Pattern match
+  - [x] Introductions and eliminations
   - [x] Well-formedness checking
 - [x] Type application
 - [x] Fixpoint for general recursion
@@ -268,5 +267,6 @@ Test suite vanilla-test: PASS
 ## References
 
 - [Complete and Easy Bidirectional Typechecking for Higher-Rank Polymorphism](https://arxiv.org/abs/1306.6032)
+- [Minimal Haskell implementation of Complete and Easy Bidirectional Typechecking for Higher-Rank Polymorphism](https://gist.github.com/lexi-lambda/287dc8513f6a20424457b9d3eda5026a)
 - [Bidirectional Typing](https://arxiv.org/abs/1908.05839)
 - [Kind Inference for Datatypes](https://richarde.dev/papers/2020/kind-inference/kind-inference.pdf)
