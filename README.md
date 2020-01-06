@@ -55,7 +55,7 @@ Haskell-style comments (`--` and `{- -}`) are also supported.
 
 ## Usage
 
-First of all, `stack` should be installed in your `$PATH`
+First of all, `ghc` and `cabal-install` should be installed in your `$PATH`
 
 ## Examples
 
@@ -84,7 +84,7 @@ runCont (cont Unit)
 Run
 
 ```
-stack run example/cont.vn
+cabal run example/cont.vn
 ```
 
 It should output:
@@ -125,7 +125,7 @@ map not xs
 Run
 
 ```
-$ stack run example/map.vn
+$ cabal run example/map.vn
 ```
 
 It should output:
@@ -166,7 +166,7 @@ Prod (add three two) (add2 three two)
 Run
 
 ```
-$ stack run example/add.vn
+$ cabal run example/add.vn
 ```
 
 It should output the inferred type and evaluated value of this program:
@@ -236,12 +236,12 @@ cannot establish subtyping with Unit <: Nat
 ### Unit tests
 
 ```
-$ stack test
+$ cabal test
 ...
-Finished in 0.0575 seconds
-121 examples, 0 failures
-
-vanilla-lang> Test suite vanilla-test passed
+Running 1 test suites...
+Test suite vanilla-test: RUNNING...
+Test suite vanilla-test: PASS
+...
 ```
 
 ## Features

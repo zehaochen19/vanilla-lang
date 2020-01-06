@@ -24,4 +24,3 @@ cabal.project.local~
 .ghc.environment.*
 .ghci
 .ghcid
-vanilla-lang.cabal  

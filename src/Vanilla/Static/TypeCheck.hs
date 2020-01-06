@@ -13,7 +13,6 @@ import           Data.Foldable                  ( foldlM
                                                 , toList
                                                 )
 import           Data.Sequence                  ( Seq )
-import           Debug.Trace
 import           Vanilla.Static.Context
 import           Vanilla.Static.TypeCheck.DeclCheck
 import           Vanilla.Static.TypeCheck.Internal
