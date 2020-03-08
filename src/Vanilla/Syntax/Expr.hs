@@ -1,31 +1,33 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Vanilla.Syntax.Expr
-  ( EVar(..)
-  , Expr(..)
-  , evar
-  , ($$)
-  , (-:)
-  , (-@)
-  , isELam
-  , cons
-  , cons'
-  , Branch(..)
+  ( EVar (..),
+    Expr (..),
+    evar,
+    ($$),
+    (-:),
+    (-@),
+    isELam,
+    cons,
+    cons',
+    Branch (..),
   )
 where
 
-import           Data.Foldable                  ( toList )
-import           Data.List                      ( intercalate )
-import           Data.Sequence                  ( Seq
-                                                , fromList
-                                                )
-import           Data.String                    ( IsString )
-import           Data.Text                      ( Text )
-import qualified Data.Text                     as T
-import           Vanilla.Syntax.Cons            ( ConsVar(..) )
-import           Vanilla.Syntax.Type            ( Type
-                                                , tyParen
-                                                )
+import Data.Foldable (toList)
+import Data.List (intercalate)
+import Data.Sequence
+  ( Seq,
+    fromList,
+  )
+import Data.String (IsString)
+import Data.Text (Text)
+import qualified Data.Text as T
+import Vanilla.Syntax.Cons (ConsVar (..))
+import Vanilla.Syntax.Type
+  ( Type,
+    tyParen,
+  )
 
 newtype EVar = MkEVar Text deriving (Eq, Ord, IsString)
 
@@ -59,8 +61,8 @@ data Expr
 
 isELam :: Expr -> Bool
 isELam (ELam _ _) = True
-isELam EALam{}    = True
-isELam _          = False
+isELam EALam {} = True
+isELam _ = False
 
 infixl 2 $$
 
@@ -86,20 +88,21 @@ cons' name pat = ECons (MkConsVar name) (fromList pat)
 instance Show Expr where
   show (EVar v) = show v
   show (ECons name pat) =
-    let patStr = if null pat
-          then ""
-          else " " ++ (unwords . toList . fmap eParen $ pat)
-    in  show name ++ patStr
+    let patStr =
+          if null pat
+            then ""
+            else " " ++ (unwords . toList . fmap eParen $ pat)
+     in show name ++ patStr
   show (ECase e branch) =
     "case " ++ eParen e ++ " { " ++ intercalate ", " (show <$> branch) ++ " }"
-  show (ELam x e    ) = "λ" ++ show x ++ " . " ++ eParen e
+  show (ELam x e) = "λ" ++ show x ++ " . " ++ eParen e
   show (EALam x ty e) = "λ" ++ show x ++ " : " ++ show ty ++ " . " ++ eParen e
-  show (EApp  e1 e2 ) = eParen e1 ++ " " ++ eParen e2
-  show (EAnno e  ty ) = eParen e ++ " : " ++ tyParen ty
-  show (ETApp e  ty ) = eParen e ++ " @" ++ tyParen ty
+  show (EApp e1 e2) = eParen e1 ++ " " ++ eParen e2
+  show (EAnno e ty) = eParen e ++ " : " ++ tyParen ty
+  show (ETApp e ty) = eParen e ++ " @" ++ tyParen ty
   show (ELet x e1 e2) =
     "let " ++ show x ++ " = " ++ eParen e1 ++ " in " ++ eParen e2
-  show (EALet    x ty e1 e2) = "let " ++ annottatedLet x ty e1 e2
+  show (EALet x ty e1 e2) = "let " ++ annottatedLet x ty e1 e2
   show (EALetRec x ty e1 e2) = "let rec " ++ annottatedLet x ty e1 e2
   show (EIf b e1 e2) =
     "if " ++ eParen b ++ " then " ++ eParen e1 ++ " else " ++ show e2
@@ -110,6 +113,6 @@ annottatedLet x ty e1 e2 =
 
 eParen :: Expr -> String
 eParen e = case e of
-  EVar _               -> show e
+  EVar _ -> show e
   ECons _ es | null es -> show e
-  _                    -> "(" ++ show e ++ ")"
+  _ -> "(" ++ show e ++ ")"

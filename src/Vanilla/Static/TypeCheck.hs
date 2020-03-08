@@ -6,42 +6,45 @@
 
 module Vanilla.Static.TypeCheck where
 
-import           Control.Monad.Except
-import           Control.Monad.Reader
-import           Control.Monad.State
-import           Data.Foldable                  ( foldlM
-                                                , toList
-                                                )
-import           Data.Sequence                  ( Seq )
-import           Vanilla.Static.Context
-import           Vanilla.Static.TypeCheck.DeclCheck
-import           Vanilla.Static.TypeCheck.Internal
-import           Vanilla.Static.TypeCheck.WellForm
-import           Vanilla.Syntax.Expr            ( Branch(..)
-                                                , Expr(..)
-                                                )
-import           Vanilla.Syntax.Program
-import           Vanilla.Syntax.Type            ( TEVar(..)
-                                                , Type(..)
-                                                , isMono
-                                                , tyFreeTEVars
-                                                , tySubstitue
-                                                )
+import Control.Monad.Except
+import Control.Monad.Reader
+import Control.Monad.State
+import Data.Foldable
+  ( foldlM,
+    toList,
+  )
+import Data.Sequence (Seq)
+import Vanilla.Static.Context
+import Vanilla.Static.TypeCheck.DeclCheck
+import Vanilla.Static.TypeCheck.Internal
+import Vanilla.Static.TypeCheck.WellForm
+import Vanilla.Syntax.Expr
+  ( Branch (..),
+    Expr (..),
+  )
+import Vanilla.Syntax.Program
+import Vanilla.Syntax.Type
+  ( TEVar (..),
+    Type (..),
+    isMono,
+    tyFreeTEVars,
+    tySubstitue,
+  )
 
 subtype :: TypeCheck m => Context -> Type -> Type -> m Context
 -- <:Var
-subtype ctx (TVar a) (TVar a') | a == a'                   = pure ctx
+subtype ctx (TVar a) (TVar a') | a == a' = pure ctx
 -- <:ExVar
 subtype ctx (TEVar alpha) (TEVar alpha') | alpha == alpha' = pure ctx
 -- <:-->
-subtype ctx (TArr a1 a2) (TArr b1 b2)                      = do
+subtype ctx (TArr a1 a2) (TArr b1 b2) = do
   theta <- subtype ctx b1 a1
   subtype theta (ctxApply theta a2) (ctxApply theta b2)
 -- <:forallL
 subtype ctx (TAll alpha a) b = do
   alphaHat <- freshTEVar
   let ctx' = ctx |> CMarker alphaHat |> CEVar alphaHat
-      a'   = tySubstitue alpha (TEVar alphaHat) a
+      a' = tySubstitue alpha (TEVar alphaHat) a
   ctxUntil (CMarker alphaHat) <$> subtype ctx' a' b
 -- <:forallR
 subtype ctx a (TAll alpha b) =
@@ -54,40 +57,45 @@ subtype ctx (TData t1 pat1) (TData t2 pat2) | t1 == t2 = do
   let pat2' = toList pat2
   ctx' <- foldlM subtypePair ctx $ zip pat1' pat2'
   foldlM subtypePair ctx' $ zip pat2' pat1'
-  where subtypePair c (ty1, ty2) = subtype c (ctxApply c ty1) (ctxApply c ty2)
+  where
+    subtypePair c (ty1, ty2) = subtype c (ctxApply c ty1) (ctxApply c ty2)
 -- <:InstantiateL
-subtype ctx (TEVar alphaHat) a | alphaHat `notElem` tyFreeTEVars a =
-  instantiateL ctx alphaHat a
+subtype ctx (TEVar alphaHat) a
+  | alphaHat `notElem` tyFreeTEVars a =
+    instantiateL ctx alphaHat a
 -- <:InstantiateR
-subtype ctx a (TEVar alphaHat) | alphaHat `notElem` tyFreeTEVars a =
-  instantiateR ctx a alphaHat
+subtype ctx a (TEVar alphaHat)
+  | alphaHat `notElem` tyFreeTEVars a =
+    instantiateR ctx a alphaHat
 subtype _ a b = throwTyErr $ SubtypeError a b
 
 instantiateL :: TypeCheck m => Context -> TEVar -> Type -> m Context
 -- InstLReach
 instantiateL ctx ea (TEVar eb)
-  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx
-  = pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
+  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx =
+    pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
 -- InstLArr
 instantiateL ctx ea (TArr a1 a2) | Just (l, r) <- ctxHole (CEVar ea) ctx = do
-  ea1   <- freshTEVar
-  ea2   <- freshTEVar
-  theta <- instantiateR
-    (  l
-    |> CEVar ea2
-    |> CEVar ea1
-    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-    <> r
-    )
-    a1
-    ea1
+  ea1 <- freshTEVar
+  ea2 <- freshTEVar
+  theta <-
+    instantiateR
+      ( l
+          |> CEVar ea2
+          |> CEVar ea1
+          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+          <> r
+      )
+      a1
+      ea1
   instantiateL theta ea2 (ctxApply theta a2)
 -- InstLAllR
 instantiateL ctx ea (TAll beta b) =
   ctxUntil (CVar beta) <$> instantiateL (ctx |> CVar beta) ea b
 -- InstLSolve
 instantiateL ctx ea ty
-  | isMono ty, Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
+  | isMono ty,
+    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
     gamma |- ty
     pure $ gamma |> CSolve ea ty <> gamma'
 instantiateL ctx ea ty = throwTyErr $ InstantiateLError ea ty
@@ -96,21 +104,22 @@ instantiateL ctx ea ty = throwTyErr $ InstantiateLError ea ty
 instantiateR :: TypeCheck m => Context -> Type -> TEVar -> m Context
 -- InstRReach
 instantiateR ctx (TEVar eb) ea
-  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx
-  = pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
+  | Just (l, m, r) <- ctxHole2 (CEVar ea) (CEVar eb) ctx =
+    pure $ l |> CEVar ea <> m |> CSolve eb (TEVar ea) <> r
 -- InstRArr
 instantiateR ctx (TArr a1 a2) ea | Just (l, r) <- ctxHole (CEVar ea) ctx = do
-  ea1   <- freshTEVar
-  ea2   <- freshTEVar
-  theta <- instantiateL
-    (  l
-    |> CEVar ea2
-    |> CEVar ea1
-    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-    <> r
-    )
-    ea1
-    a1
+  ea1 <- freshTEVar
+  ea2 <- freshTEVar
+  theta <-
+    instantiateL
+      ( l
+          |> CEVar ea2
+          |> CEVar ea1
+          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+          <> r
+      )
+      ea1
+      a1
   instantiateR theta (ctxApply theta a2) ea2
 -- InstRAllL
 instantiateR ctx (TAll beta b) ea = do
@@ -119,7 +128,8 @@ instantiateR ctx (TAll beta b) ea = do
   ctxUntil (CMarker eb) <$> instantiateR ctx' (tySubstitue beta (TEVar eb) b) ea
 -- InstRSolve
 instantiateR ctx ty ea
-  | isMono ty, Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
+  | isMono ty,
+    Just (gamma, gamma') <- ctxHole (CEVar ea) ctx = do
     gamma |- ty
     pure $ gamma |> CSolve ea ty <> gamma'
 instantiateR ctx ty eb = throwTyErr $ InstantiateRError ty eb
@@ -128,17 +138,18 @@ synthesize :: TypeCheck m => Context -> Expr -> m (Type, Context)
 -- Var
 synthesize ctx (EVar x) | Just ty <- ctxAssump ctx x = pure (ty, ctx)
 -- Cons
-synthesize ctx (ECons name mempty) | Just ty <- ctxCons ctx name =
-  pure (ty, ctx)
+synthesize ctx (ECons name mempty)
+  | Just ty <- ctxCons ctx name =
+    pure (ty, ctx)
 synthesize ctx e'@(ECase e branches) = do
   (ty, theta) <- synthesize ctx e
   let ty' = ctxApply theta ty
   case ty' of
     TData cName types -> do
       (branchTys, delta) <- synthesizeBranch theta types branches
-      sigma              <- allSubype delta branchTys
+      sigma <- allSubype delta branchTys
       case branchTys of
-        []      -> throwTyErr $ EmptyBranchError e'
+        [] -> throwTyErr $ EmptyBranchError e'
         (t : _) -> return (ctxApply sigma t, sigma)
     _ -> throwTyErr $ CannotPatternMatch ty'
 -- Anno
@@ -150,7 +161,7 @@ synthesize ctx (ETApp e tyArg) = do
   (polyTy, theta) <- synthesize ctx e
   case polyTy of
     TAll tv ty' -> return (ctxApply theta $ tySubstitue tv tyArg ty', theta)
-    _           -> throwTyErr $ ApplyOnNonPolyType polyTy
+    _ -> throwTyErr $ ApplyOnNonPolyType polyTy
 -- -->I==>
 synthesize ctx (ELam x e) = do
   ea <- freshTEVar
@@ -181,7 +192,7 @@ synthesize ctx (EALet x ty e1 e2) = do
   (b, delta) <- synthesize (theta |> xAssump) e2
   return (ctxApply delta b, ctxUntil xAssump delta)
 synthesize ctx (EALetRec x ty e1 e2) = do
-  theta      <- check (ctx |> CAssump x ty) e1 ty
+  theta <- check (ctx |> CAssump x ty) e1 ty
   (b, delta) <- synthesize theta e2
   return (ctxApply delta b, ctxUntil (CAssump x ty) delta)
 synthesize ctx e'@(EFix e) = do
@@ -201,7 +212,7 @@ check ctx (ECase e branches) target = do
   let ty' = ctxApply theta ty
   case ty' of
     TData cName types -> checkBranch ctx types branches target
-    _                 -> throwTyErr $ CannotPatternMatch ty'
+    _ -> throwTyErr $ CannotPatternMatch ty'
 -- ForallI
 check ctx e (TAll alpha a) =
   ctxUntil (CVar alpha) <$> check (ctx |> CVar alpha) e a
@@ -227,14 +238,16 @@ check ctx (EALetRec x ty e1 e2) b = do
   theta <- check (ctx |> CAssump x ty) e1 ty
   ctxUntil (CAssump x ty) <$> check theta e2 (ctxApply theta b)
 -- Fix
-check ctx (EFix e       ) ty = check ctx e $ TArr ty ty
+check ctx (EFix e) ty = check ctx e $ TArr ty ty
 -- TyApp
 check ctx (ETApp e tyArg) ty = do
   (polyTy, theta) <- synthesize ctx e
   case polyTy of
-    TAll tv ty' -> subtype theta
-                           (ctxApply theta $ tySubstitue tv tyArg ty')
-                           (ctxApply theta ty)
+    TAll tv ty' ->
+      subtype
+        theta
+        (ctxApply theta $ tySubstitue tv tyArg ty')
+        (ctxApply theta ty)
     _ -> throwTyErr $ ApplyOnNonPolyType polyTy
 -- Sub
 check ctx e b = do
@@ -248,17 +261,18 @@ apply ctx (TAll alpha a) e = do
   apply (ctx |> CEVar ea) (tySubstitue alpha (TEVar ea) a) e
 -- eaApp
 apply ctx (TEVar ea) e | Just (l, r) <- ctxHole (CEVar ea) ctx = do
-  ea1   <- freshTEVar
-  ea2   <- freshTEVar
-  delta <- check
-    (  l
-    |> CEVar ea2
-    |> CEVar ea1
-    |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
-    <> r
-    )
-    e
-    (TEVar ea1)
+  ea1 <- freshTEVar
+  ea2 <- freshTEVar
+  delta <-
+    check
+      ( l
+          |> CEVar ea2
+          |> CEVar ea1
+          |> CSolve ea (TArr (TEVar ea1) (TEVar ea2))
+          <> r
+      )
+      e
+      (TEVar ea1)
   return (TEVar ea2, delta)
 -- -->App
 apply ctx (TArr a c) e = do
@@ -268,28 +282,30 @@ apply _ ty1 e2 = throwTyErr $ ApplyError ty1 e2
 
 -- | Given context and type variables, checking
 --   pattern match branches will be evaluated to a target type
-checkBranch
-  :: TypeCheck m => Context -> Seq Type -> [Branch] -> Type -> m Context
+checkBranch ::
+  TypeCheck m => Context -> Seq Type -> [Branch] -> Type -> m Context
 checkBranch ctx tys [] target = pure ctx
 checkBranch ctx tys (Branch cons evars e : bs) target =
   case ctxCons ctx cons of
-    Nothing     -> throwTyErr $ UndefinedConstructor cons
+    Nothing -> throwTyErr $ UndefinedConstructor cons
     Just consTy -> do
       eTy <- freshTEVar
       let ctx' = ctx |> CMarker eTy <> typings
       theta <- ctxUntil (CMarker eTy) <$> check ctx' e target
       checkBranch theta tys bs target
-     where
-      instTy       = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
-      (_, typings) = foldl (\(TArr a b, c) x -> (b, c |> CAssump x a))
-                           (instTy, mempty)
-                           evars
+      where
+        instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
+        (_, typings) =
+          foldl
+            (\(TArr a b, c) x -> (b, c |> CAssump x a))
+            (instTy, mempty)
+            evars
 
-synthesizeBranch
-  :: TypeCheck m => Context -> Seq Type -> [Branch] -> m ([Type], Context)
-synthesizeBranch ctx tys []                         = pure ([], ctx)
+synthesizeBranch ::
+  TypeCheck m => Context -> Seq Type -> [Branch] -> m ([Type], Context)
+synthesizeBranch ctx tys [] = pure ([], ctx)
 synthesizeBranch ctx tys (Branch cons evars e : bs) = case ctxCons ctx cons of
-  Nothing     -> throwTyErr $ UndefinedConstructor cons
+  Nothing -> throwTyErr $ UndefinedConstructor cons
   Just consTy -> do
     eTy <- freshTEVar
     let ctx' = ctx |> CMarker eTy <> typings
@@ -297,25 +313,25 @@ synthesizeBranch ctx tys (Branch cons evars e : bs) = case ctxCons ctx cons of
     let theta' = ctxUntil (CMarker eTy) theta
     (inferredTys, delta) <- synthesizeBranch theta' tys bs
     return (inferred : inferredTys, delta)
-   where
-    instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
-    (_, typings) =
-      foldl (\(TArr a b, c) x -> (b, c |> CAssump x a)) (instTy, mempty) evars
+    where
+      instTy = foldl (\(TAll tv t1) t2 -> tySubstitue tv t2 t1) consTy tys
+      (_, typings) =
+        foldl (\(TArr a b, c) x -> (b, c |> CAssump x a)) (instTy, mempty) evars
 
 allSubype :: TypeCheck m => Context -> [Type] -> m Context
-allSubype ctx []         = pure ctx
+allSubype ctx [] = pure ctx
 allSubype ctx (ty : tys) = foldlM loop ctx tys
- where
-  loop gamma ty' = do
-    theta <- subtype gamma (ctxApply gamma ty) (ctxApply gamma ty')
-    subtype theta (ctxApply theta ty') (ctxApply theta ty)
+  where
+    loop gamma ty' = do
+      theta <- subtype gamma (ctxApply gamma ty) (ctxApply gamma ty')
+      subtype theta (ctxApply theta ty') (ctxApply theta ty)
 
 typeCheckExpr :: MonadError StaticError m => Expr -> m (Type, Context)
 typeCheckExpr expr = typeCheck $ Program [] expr
 
 typeCheck :: MonadError StaticError m => Program -> m (Type, Context)
 typeCheck Program {..} = do
-  decls     <- checkDataTypes declarations
+  decls <- checkDataTypes declarations
   (ty, ctx) <- flip evalStateT initCheckState . flip runReaderT decls $ do
     initCtx <- checkDecls mempty declarations
     synthesize initCtx mainExpr

@@ -1,9 +1,9 @@
 module Main where
 
-import qualified Data.Text.IO                  as TIO
-import           System.Environment
-import           System.Exit
-import           Vanilla
+import qualified Data.Text.IO as TIO
+import System.Environment
+import System.Exit
+import Vanilla
 
 main :: IO ()
 main = do
@@ -12,7 +12,7 @@ main = do
     (src : _) -> do
       prog <- TIO.readFile src
       case runVanilla src prog of
-        Left  error      -> putStrLn error
+        Left error -> putStrLn error
         Right (expr, ty) -> do
           putStrLn "Type:"
           print ty

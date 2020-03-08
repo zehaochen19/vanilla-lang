@@ -2,8 +2,8 @@
 
 module Vanilla.Syntax.Program where
 
-import           Vanilla.Syntax.Decl
-import           Vanilla.Syntax.Expr
+import Vanilla.Syntax.Decl
+import Vanilla.Syntax.Expr
 
 data Program
   = Program

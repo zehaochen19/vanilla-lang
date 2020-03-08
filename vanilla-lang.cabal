@@ -1,53 +1,51 @@
-cabal-version: 3.0
+cabal-version:      3.0
+name:               vanilla-lang
+version:            0.1.0.0
+description:
+  Please see the README on GitHub at <https://github.com/zehaochen19/vanilla-lang#readme>
 
-
-
-name:           vanilla-lang
-version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/zehaochen19/vanilla-lang#readme>
-homepage:       https://github.com/zehaochen19/vanilla-lang#readme
-bug-reports:    https://github.com/zehaochen19/vanilla-lang/issues
-author:         Zehao Chen
-maintainer:     zehaochen19@gmail.com
-copyright:      2019 Zehao Chen
-license:        AGPL-3.0-only
-license-file:   LICENSE
-build-type:     Simple
+homepage:           https://github.com/zehaochen19/vanilla-lang#readme
+bug-reports:        https://github.com/zehaochen19/vanilla-lang/issues
+author:             Zehao Chen
+maintainer:         zehaochen19@gmail.com
+copyright:          2019 Zehao Chen
+license:            AGPL-3.0-only
+license-file:       LICENSE
+build-type:         Simple
 extra-source-files:
-    README.md
-    ChangeLog.md
+  README.md
+  ChangeLog.md
 
 source-repository head
-  type: git
+  type:     git
   location: https://github.com/zehaochen19/vanilla-lang
 
 library
   exposed-modules:
-      Vanilla
-      Vanilla.Dynamic.Eval
-      Vanilla.Dynamic.Step
-      Vanilla.Examples
-      Vanilla.Parser
-      Vanilla.Server
-      Vanilla.Static.Context
-      Vanilla.Static.TypeCheck
-      Vanilla.Static.TypeCheck.DeclCheck
-      Vanilla.Static.TypeCheck.Internal
-      Vanilla.Static.TypeCheck.StaticError
-      Vanilla.Static.TypeCheck.WellForm
-      Vanilla.Syntax.Cons
-      Vanilla.Syntax.Decl
-      Vanilla.Syntax.Expr
-      Vanilla.Syntax.Program
-      Vanilla.Syntax.Type
-      Vanilla.Utils
-  other-modules:
-      Paths_vanilla_lang
-  hs-source-dirs:
-      src
+    Vanilla
+    Vanilla.Dynamic.Eval
+    Vanilla.Dynamic.Step
+    Vanilla.Examples
+    Vanilla.Parser
+    Vanilla.Server
+    Vanilla.Static.Context
+    Vanilla.Static.TypeCheck
+    Vanilla.Static.TypeCheck.DeclCheck
+    Vanilla.Static.TypeCheck.Internal
+    Vanilla.Static.TypeCheck.StaticError
+    Vanilla.Static.TypeCheck.WellForm
+    Vanilla.Syntax.Cons
+    Vanilla.Syntax.Decl
+    Vanilla.Syntax.Expr
+    Vanilla.Syntax.Program
+    Vanilla.Syntax.Type
+    Vanilla.Utils
+
+  other-modules:    Paths_vanilla_lang
+  hs-source-dirs:   src
   build-depends:
-      aeson
-    , base ^>=4.13
+    , aeson
+    , base                ^>=4.13
     , bytestring
     , containers
     , directory
@@ -59,18 +57,17 @@ library
     , servant
     , servant-server
     , text
+
   default-language: Haskell2010
 
 executable vanilla
-  main-is: Main.hs
-  other-modules:
-      Paths_vanilla_lang
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -O2 -rtsopts -with-rtsopts=-N
+  main-is:          Main.hs
+  other-modules:    Paths_vanilla_lang
+  hs-source-dirs:   app
+  ghc-options:      -threaded -O2 -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , base ^>=4.13
+    , aeson
+    , base                ^>=4.13
     , bytestring
     , containers
     , directory
@@ -83,18 +80,17 @@ executable vanilla
     , servant-server
     , text
     , vanilla-lang
+
   default-language: Haskell2010
 
 executable vanilla-backend
-  main-is: Main.hs
-  other-modules:
-      Paths_vanilla_lang
-  hs-source-dirs:
-      backend
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  main-is:          Main.hs
+  other-modules:    Paths_vanilla_lang
+  hs-source-dirs:   backend
+  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , base ^>=4.13
+    , aeson
+    , base                ^>=4.13
     , bytestring
     , containers
     , directory
@@ -110,23 +106,24 @@ executable vanilla-backend
     , wai
     , wai-logger
     , warp
+
   default-language: Haskell2010
 
 test-suite vanilla-test
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
+  type:             exitcode-stdio-1.0
+  main-is:          Spec.hs
   other-modules:
-      DeclSpec
-      EvalSpec
-      ParserSpec
-      TypeCheckSpec
-      Paths_vanilla_lang
-  hs-source-dirs:
-      test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+    DeclSpec
+    EvalSpec
+    ParserSpec
+    Paths_vanilla_lang
+    TypeCheckSpec
+
+  hs-source-dirs:   test
+  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , base ^>=4.13
+    , aeson
+    , base                ^>=4.13
     , bytestring
     , containers
     , directory
@@ -140,4 +137,5 @@ test-suite vanilla-test
     , servant-server
     , text
     , vanilla-lang
+
   default-language: Haskell2010

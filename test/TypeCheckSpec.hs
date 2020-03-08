@@ -2,17 +2,19 @@
 
 module TypeCheckSpec where
 
-import           Data.Either                    ( isLeft
-                                                , isRight
-                                                )
-import           Test.Hspec
-import           Vanilla.Examples
-import           Vanilla.Static.TypeCheck       ( runTypeCheck
-                                                , runTypeCheckExpr
-                                                )
-import           Vanilla.Syntax.Expr
-import           Vanilla.Syntax.Program         ( Program(..) )
-import           Vanilla.Syntax.Type
+import Data.Either
+  ( isLeft,
+    isRight,
+  )
+import Test.Hspec
+import Vanilla.Examples
+import Vanilla.Static.TypeCheck
+  ( runTypeCheck,
+    runTypeCheckExpr,
+  )
+import Vanilla.Syntax.Expr
+import Vanilla.Syntax.Program (Program (..))
+import Vanilla.Syntax.Type
 
 resShouldBe res ty = do
   res `shouldSatisfy` isRight
@@ -49,9 +51,10 @@ typeCheckSpec = describe "typeCheck" $ do
     ty `shouldBe` TAll "C" (TVar "C" --> TVar "C")
   it "infers nestedId" $ do
     let Right (ty, _) = runTypeCheckExpr nestedId
-    ty `shouldBe` TAll
-      "B"
-      (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B"))
+    ty
+      `shouldBe` TAll
+        "B"
+        (TAll "A" (TVar "A" --> TVar "A") --> (TVar "B" --> TVar "B"))
   it "infers nestedIdId" $ do
     let Right (ty, _) = runTypeCheckExpr nestedIdId
     ty `shouldBe` TAll "A" (TVar "A" --> TVar "A")
@@ -65,103 +68,107 @@ typeCheckSpec = describe "typeCheck" $ do
     let Right (ty, _) = runTypeCheck letIdUnit
     ty `shouldBe` tdata "Unit"
   it "infers letNestedIdUnit" $ checkAndShouldBe letNestedIdUnit $ tdata "Unit"
-  it "rejects illtypedLetNestedUnit"
-    $               runTypeCheck illtypedLetNestedUnit
-    `shouldSatisfy` isLeft
+  it "rejects illtypedLetNestedUnit" $
+    runTypeCheck illtypedLetNestedUnit
+      `shouldSatisfy` isLeft
   it "checks unitId" $ do
     let Right (ty, _) = runTypeCheck (Program [unitDec] unitId)
     ty `shouldBe` (tdata "Unit" --> tdata "Unit")
-  it "infers illtypedLetNestIdUnitId"
-    $               runTypeCheck illtypedLetNestIdUnitId
-    `shouldSatisfy` isLeft
-  it "rejects illtypedLetNestedIdUnitIdId"
-    $               runTypeCheck illtypedLetNestedIdUnitIdId
-    `shouldSatisfy` isLeft
+  it "infers illtypedLetNestIdUnitId" $
+    runTypeCheck illtypedLetNestIdUnitId
+      `shouldSatisfy` isLeft
+  it "rejects illtypedLetNestedIdUnitIdId" $
+    runTypeCheck illtypedLetNestedIdUnitIdId
+      `shouldSatisfy` isLeft
   it "checks applyToUnit"
-    $   checkAndShouldBe (Program [unitDec] applyToUnit)
-    $   TAll "A" (TVar "A" --> TVar "A")
-    --> tdata "Unit"
+    $ checkAndShouldBe (Program [unitDec] applyToUnit)
+    $ TAll "A" (TVar "A" --> TVar "A")
+      --> tdata "Unit"
   it "checks applyToUnitId" $ checkAndShouldBe applyToUnitId $ tdata "Unit"
   it "checks cont" $ runTypeCheckExpr cont `shouldSatisfy` isRight
   it "checks runCont" $ runTypeCheckExpr runCont `shouldSatisfy` isRight
   it "infers polyLet" $ checkAndShouldBe polyLet $ tdata "Unit"
   it "infers polyLetNat" $ checkAndShouldBe polyLetNat $ tdata "Nat"
   it "infers annotedIdSZero" $ checkAndShouldBe annotedIdSZero $ tdata "Nat"
-  it "checks if" $ checkAndShouldBe (Program [boolDec] if') $ TAll
-    "a"
-    (tdata "Bool" --> TVar "a" --> TVar "a" --> TVar "a")
+  it "checks if" $ checkAndShouldBe (Program [boolDec] if') $
+    TAll
+      "a"
+      (tdata "Bool" --> TVar "a" --> TVar "a" --> TVar "a")
   it "checks ifElseIdNat"
-    $   checkAndShouldBe (Program [natDec, boolDec] ifElseIdNat)
-    $   tdata "Nat"
-    --> tdata "Nat"
+    $ checkAndShouldBe (Program [natDec, boolDec] ifElseIdNat)
+    $ tdata "Nat"
+      --> tdata "Nat"
   it "infers ifElseIdNatZero" $ checkAndShouldBe ifElseIdNatZero $ tdata "Nat"
   it "checks nonZero"
-    $   checkAndShouldBe (Program [natDec, boolDec] nonZero)
-    $   tdata "Nat"
-    --> tdata "Bool"
+    $ checkAndShouldBe (Program [natDec, boolDec] nonZero)
+    $ tdata "Nat"
+      --> tdata "Bool"
   it "infers nonZeroZero" $ checkAndShouldBe nonZeroZero $ tdata "Bool"
   it "infers nonZeroTwo" $ checkAndShouldBe nonZeroTwo $ tdata "Bool"
   it "infers natAdd"
-    $   checkAndShouldBe (Program [natDec] natAdd)
-    $   tdata "Nat"
-    --> tdata "Nat"
-    --> tdata "Nat"
+    $ checkAndShouldBe (Program [natDec] natAdd)
+    $ tdata "Nat"
+      --> tdata "Nat"
+      --> tdata "Nat"
   it "checks natAddAnno"
-    $   checkAndShouldBe (Program [natDec] natAddAnno)
-    $   tdata "Nat"
-    --> tdata "Nat"
-    --> tdata "Nat"
+    $ checkAndShouldBe (Program [natDec] natAddAnno)
+    $ tdata "Nat"
+      --> tdata "Nat"
+      --> tdata "Nat"
   it "checks natMinus"
-    $   checkAndShouldBe (Program [natDec] natMinus)
-    $   tdata "Nat"
-    --> tdata "Nat"
-    --> tdata "Nat"
+    $ checkAndShouldBe (Program [natDec] natMinus)
+    $ tdata "Nat"
+      --> tdata "Nat"
+      --> tdata "Nat"
   it "checks fibonacci"
-    $   checkAndShouldBe (Program [natDec] fibonacci)
-    $   tdata "Nat"
-    --> tdata "Nat"
+    $ checkAndShouldBe (Program [natDec] fibonacci)
+    $ tdata "Nat"
+      --> tdata "Nat"
   it "infers aLetId" $ checkAndShouldBe aLetId $ tdata "Bool"
   it "infers boolNatProd"
     $ checkAndShouldBe (Program [boolDec, prodDec, natDec] boolNatProd)
     $ tdata' "Prod" [tdata "Bool", tdata "Nat"]
-  it "infers idProd" $ checkAndShouldBe idProd $ tdata'
-    "Prod"
-    [tdata "Bool", tdata "Nat"]
+  it "infers idProd" $ checkAndShouldBe idProd $
+    tdata'
+      "Prod"
+      [tdata "Bool", tdata "Nat"]
   it "infers boolNatProj1" $ checkAndShouldBe boolNatProj1 $ tdata "Bool"
   it "checks sumUnit"
     $ checkAndShouldBe (Program [unitDec, sumDec, natDec] sumUnit)
     $ TAll "A" (tdata' "Sum" [tdata "Nat", TVar "A"] --> tdata "Unit")
   it "infers (sumUnit inj1Nat)"
     $ checkAndShouldBe
-        (Program [unitDec, sumDec, natDec] $ EApp sumUnit inj1Nat)
+      (Program [unitDec, sumDec, natDec] $ EApp sumUnit inj1Nat)
     $ tdata "Unit"
   it "infers (sumUnit inj2Unit)"
     $ checkAndShouldBe
-        (Program [unitDec, sumDec, natDec] $ EApp sumUnit inj2Unit)
+      (Program [unitDec, sumDec, natDec] $ EApp sumUnit inj2Unit)
     $ tdata "Unit"
-  it "checks isInj1"
-    $               runTypeCheck (Program [sumDec, boolDec] isInj1)
-    `shouldSatisfy` isRight
+  it "checks isInj1" $
+    runTypeCheck (Program [sumDec, boolDec] isInj1)
+      `shouldSatisfy` isRight
   it "infers (isInj1 inj2Unit)"
     $ checkAndShouldBe
-        (Program [sumDec, boolDec, natDec, unitDec] $ isInj1 $$ inj2Unit)
+      (Program [sumDec, boolDec, natDec, unitDec] $ isInj1 $$ inj2Unit)
     $ tdata "Bool"
   it "infers (isInj1 inj1Nat)"
     $ checkAndShouldBe
-        (Program [sumDec, boolDec, natDec, unitDec] $ isInj1 $$ inj1Nat)
+      (Program [sumDec, boolDec, natDec, unitDec] $ isInj1 $$ inj1Nat)
     $ tdata "Bool"
-  it "checks listDummyProg" $ checkAndShouldBe listDummyProg $ tdata'
-    "List"
-    [tdata "Unit"]
+  it "checks listDummyProg" $ checkAndShouldBe listDummyProg $
+    tdata'
+      "List"
+      [tdata "Unit"]
   it "checks listEmptyProg" $ checkAndShouldBe listEmptyProg $ tdata "Bool"
-  it "checks listNonEmptyProg" $ checkAndShouldBe listNonEmptyProg $ tdata
-    "Bool"
+  it "checks listNonEmptyProg" $ checkAndShouldBe listNonEmptyProg $
+    tdata
+      "Bool"
   it "checks nonzeroSingletonList"
     $ checkAndShouldBe nonzeroSingletonList
     $ tdata' "List" [tdata "Nat"]
   it "infers map function"
-    $   checkAndShouldBe mapProgram
-    $   TAll "a"
-    $   TAll "b"
-    $   (TVar "a" --> TVar "b")
-    --> (tdata' "List" [TVar "a"] --> tdata' "List" [TVar "b"])
+    $ checkAndShouldBe mapProgram
+    $ TAll "a"
+    $ TAll "b"
+    $ (TVar "a" --> TVar "b")
+      --> (tdata' "List" [TVar "a"] --> tdata' "List" [TVar "b"])
