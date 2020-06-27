@@ -27,7 +27,6 @@ library
     Vanilla.Dynamic.Step
     Vanilla.Examples
     Vanilla.Parser
-    Vanilla.Server
     Vanilla.Static.Context
     Vanilla.Static.TypeCheck
     Vanilla.Static.TypeCheck.DeclCheck
@@ -45,7 +44,7 @@ library
   hs-source-dirs:   src
   build-depends:
     , aeson
-    , base                ^>=4.13
+    , base                ^>=4.14
     , bytestring
     , containers
     , directory
@@ -54,8 +53,6 @@ library
     , megaparsec
     , mtl
     , parser-combinators
-    , servant
-    , servant-server
     , text
 
   default-language: Haskell2010
@@ -67,7 +64,7 @@ executable vanilla
   ghc-options:      -threaded -O2 -rtsopts -with-rtsopts=-N
   build-depends:
     , aeson
-    , base                ^>=4.13
+    , base                ^>=4.14
     , bytestring
     , containers
     , directory
@@ -76,36 +73,8 @@ executable vanilla
     , megaparsec
     , mtl
     , parser-combinators
-    , servant
-    , servant-server
     , text
     , vanilla-lang
-
-  default-language: Haskell2010
-
-executable vanilla-backend
-  main-is:          Main.hs
-  other-modules:    Paths_vanilla_lang
-  hs-source-dirs:   backend
-  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-    , aeson
-    , base                ^>=4.13
-    , bytestring
-    , containers
-    , directory
-    , extra
-    , filepath
-    , megaparsec
-    , mtl
-    , parser-combinators
-    , servant
-    , servant-server
-    , text
-    , vanilla-lang
-    , wai
-    , wai-logger
-    , warp
 
   default-language: Haskell2010
 
@@ -123,7 +92,7 @@ test-suite vanilla-test
   ghc-options:      -threaded -rtsopts -with-rtsopts=-N
   build-depends:
     , aeson
-    , base                ^>=4.13
+    , base                ^>=4.14
     , bytestring
     , containers
     , directory
@@ -133,8 +102,6 @@ test-suite vanilla-test
     , megaparsec
     , mtl
     , parser-combinators
-    , servant
-    , servant-server
     , text
     , vanilla-lang
 
