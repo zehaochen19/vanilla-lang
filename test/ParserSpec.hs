@@ -24,29 +24,29 @@ parserSpec = do
   programPSpec
 
 programPSpec =
-  describe "programP should"
-    $ it "parse a program with List type"
-    $ runParser
-      programP
-      ""
-      " data List a = Nil | Cons a (List a) .\
-      \ data MyUnit = MyUnit .\
-      \ Cons MyUnit (Cons MyUnit Nil)"
-      `shouldBe` Right
-        ( Program
-            [ Declaration
-                "List"
-                ["a"]
-                [ Constructor "Nil" [],
-                  Constructor "Cons" [TVar "a", tdata' "List" [TVar "a"]]
-                ],
-              Declaration "MyUnit" [] [Constructor "MyUnit" []]
-            ]
-            ( cons "Cons"
-                $$ cons "MyUnit"
-                $$ (cons "Cons" $$ cons "MyUnit" $$ cons "Nil")
-            )
-        )
+  describe "programP should" $
+    it "parse a program with List type" $
+      runParser
+        programP
+        ""
+        " data List a = Nil | Cons a (List a) .\
+        \ data MyUnit = MyUnit .\
+        \ Cons MyUnit (Cons MyUnit Nil)"
+        `shouldBe` Right
+          ( Program
+              [ Declaration
+                  "List"
+                  ["a"]
+                  [ Constructor "Nil" [],
+                    Constructor "Cons" [TVar "a", tdata' "List" [TVar "a"]]
+                  ],
+                Declaration "MyUnit" [] [Constructor "MyUnit" []]
+              ]
+              ( cons "Cons"
+                  $$ cons "MyUnit"
+                  $$ (cons "Cons" $$ cons "MyUnit" $$ cons "Nil")
+              )
+          )
 
 branchPSpec = describe "branchP should" $ do
   it "parse a Zero branch" $
@@ -140,10 +140,10 @@ typeParserSpec = describe "typeP should" $ do
   it "parse map type" $
     runParser typeP "" "∀a. ∀b. (a → b) → (List a) → (List b)"
       `shouldBe` Right
-        ( TAll "a"
-            $ TAll "b"
-            $ (TVar "a" --> TVar "b")
-              --> (tdata' "List" [TVar "a"] --> tdata' "List" [TVar "b"])
+        ( TAll "a" $
+            TAll "b" $
+              (TVar "a" --> TVar "b")
+                --> (tdata' "List" [TVar "a"] --> tdata' "List" [TVar "b"])
         )
 
 expressionParseSpec = describe "exprP should" $ do
@@ -298,14 +298,15 @@ expressionParseSpec = describe "exprP should" $ do
         ( EALetRec
             "add"
             (tdata "Nat" --> tdata "Nat" --> tdata "Nat")
-            ( ELam "x" $ ELam "y" $
-                ECase
-                  (EVar "x")
-                  [ Branch "Zero" [] $ EVar "y",
-                    Branch "Succ" ["a"] $
-                      cons "Succ"
-                        $$ (EVar "add" $$ EVar "a" $$ EVar "y")
-                  ]
+            ( ELam "x" $
+                ELam "y" $
+                  ECase
+                    (EVar "x")
+                    [ Branch "Zero" [] $ EVar "y",
+                      Branch "Succ" ["a"] $
+                        cons "Succ"
+                          $$ (EVar "add" $$ EVar "a" $$ EVar "y")
+                    ]
             )
             (EVar "add")
         )
