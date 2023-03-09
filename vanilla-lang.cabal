@@ -44,7 +44,7 @@ library
   hs-source-dirs:   src
   build-depends:
     , aeson
-    , base                ^>=4.14
+    , base                ^>= 4.16.4.0
     , bytestring
     , containers
     , directory
@@ -64,7 +64,7 @@ executable vanilla
   ghc-options:      -threaded -O2 -rtsopts -with-rtsopts=-N
   build-depends:
     , aeson
-    , base                ^>=4.14
+    , base                ^>= 4.16.4.0
     , bytestring
     , containers
     , directory
@@ -92,7 +92,7 @@ test-suite vanilla-test
   ghc-options:      -threaded -rtsopts -with-rtsopts=-N
   build-depends:
     , aeson
-    , base                ^>=4.14
+    , base                ^>= 4.16.4.0
     , bytestring
     , containers
     , directory
